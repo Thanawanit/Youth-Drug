@@ -158,9 +158,9 @@ class _HomeTabState extends State<HomeTab> {
                           border: Border.all(color: borderColor, width: 1.5),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(isDark ? 0.25 : 0.02),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.015),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
@@ -198,6 +198,15 @@ class _HomeTabState extends State<HomeTab> {
                                 height: 1.5,
                               ),
                             ),
+                            const SizedBox(height: 8),
+                            Text(
+                              AppText.appSubtitleSupporting,
+                              style: TextStyle(
+                                fontSize: 12.5 * state.fontScale,
+                                color: subTextColor.withValues(alpha: 0.92),
+                                height: 1.6,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -205,7 +214,7 @@ class _HomeTabState extends State<HomeTab> {
 
                       // 2. Quick Access (บทเรียน & กฎหมาย)
                       Text(
-                        'บทเรียนหลักเพื่อการศึกษา',
+                        'เริ่มต้นจากหัวข้อสำคัญ',
                         style: TextStyle(
                           fontSize: 16 * state.fontScale,
                           fontWeight: FontWeight.w800,
@@ -219,8 +228,8 @@ class _HomeTabState extends State<HomeTab> {
                           children: [
                             Expanded(
                               child: _buildEditorialLinkCard(
-                                title: 'บทเรียนศึกษา',
-                                desc: 'บทนำความรู้ & ค้นพบผลกระทบ',
+                                title: 'บทเรียนเรียนรู้',
+                                desc: 'เริ่มจากพื้นฐานและค่อยๆ เข้าใจผลกระทบ',
                                 icon: Icons.local_library_rounded,
                                 color: isDark ? AppColors.success : AppColors.primary,
                                 cardBg: cardBg,
@@ -256,7 +265,7 @@ class _HomeTabState extends State<HomeTab> {
 
                       // 3. Interactive Reflection (สุ่มคำถาม & ทำแบบทดสอบ)
                       Text(
-                        'กิจกรรมฝึกทักษะและทบทวน',
+                        'ลองเรียนรู้และทบทวนแบบสบายๆ',
                         style: TextStyle(
                           fontSize: 16 * state.fontScale,
                           fontWeight: FontWeight.w800,
@@ -271,7 +280,7 @@ class _HomeTabState extends State<HomeTab> {
                             Expanded(
                               child: _buildEditorialLinkCard(
                                 title: 'สุ่มการ์ดความรู้',
-                                desc: 'แตะสุ่มเรียนรู้ข้อมูลย่อยด่วน',
+                                desc: 'หยิบเกร็ดสั้นๆ มาอ่านได้ทุกเมื่อ',
                                 icon: Icons.casino_rounded,
                                 color: Colors.amber,
                                 cardBg: cardBg,
@@ -288,8 +297,8 @@ class _HomeTabState extends State<HomeTab> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: _buildEditorialLinkCard(
-                                title: 'แบบทดสอบตนเอง',
-                                desc: 'ฝึกทบทวนทักษะปฏิเสธ 5 ข้อ',
+                                title: 'ทบทวนความเข้าใจ',
+                                desc: 'ลองตอบคำถามสั้นๆ เพื่อเช็กสิ่งที่เพิ่งเรียนรู้',
                                 icon: Icons.assignment_turned_in_rounded,
                                 color: Colors.teal,
                                 cardBg: cardBg,
@@ -307,7 +316,7 @@ class _HomeTabState extends State<HomeTab> {
 
                       // 4. Featured Fact Section (รู้หรือไม่?) - Moved to the bottom
                       Text(
-                        'การเรียนรู้แนะนำวันนี้',
+                        'สำรวจต่อในแบบที่คุณสนใจ',
                         style: TextStyle(
                           fontSize: 16 * state.fontScale,
                           fontWeight: FontWeight.w800,
@@ -418,7 +427,7 @@ class _HomeTabState extends State<HomeTab> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 20),
