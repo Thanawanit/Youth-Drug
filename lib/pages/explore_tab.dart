@@ -199,7 +199,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'แนะนำวันนี้: ${_topSuggestedFact.title}',
+                                'เรื่องน่าสนใจวันนี้: ${_topSuggestedFact.title}',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -221,7 +221,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            'อ่านต่อ',
+                            'ดูเพิ่ม',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
@@ -245,9 +245,9 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                       border: Border.all(color: borderColor, width: 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(isDark ? 0.1 : 0.01),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                          color: Colors.black.withValues(alpha: isDark ? 0.08 : 0.008),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
@@ -255,8 +255,8 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                       controller: _searchController,
                       style: TextStyle(color: textColor, fontFamily: 'Prompt', fontSize: 14),
                       decoration: InputDecoration(
-                        hintText: 'ค้นหาการ์ดความรู้...',
-                        hintStyle: TextStyle(color: subTextColor.withOpacity(0.6), fontFamily: 'Prompt'),
+                        hintText: 'ค้นหาความรู้ที่อยากอ่าน...',
+                        hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.6), fontFamily: 'Prompt'),
                         prefixIcon: Icon(Icons.search_rounded, color: subTextColor),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -486,7 +486,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
+                    color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 10,
                   ),
                 ],
@@ -499,7 +499,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
             ),
             const SizedBox(height: 24),
             const Text(
-              'ยังไม่มีรายการที่บันทึก',
+              'ยังไม่มีการ์ดที่บันทึกไว้',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -507,7 +507,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
             ),
             const SizedBox(height: 8),
             Text(
-              'คุณสามารถกดบันทึกการ์ดความรู้ที่ประทับใจโดยการแตะไอคอนบันทึก เพื่อกลับมาอ่านใหม่หน้านี้ได้ทุกเมื่อ',
+              'หากเจอการ์ดที่อยากกลับมาอ่านอีกครั้ง สามารถแตะไอคอนบันทึกไว้ก่อนได้',
               style: TextStyle(
                 fontSize: 13,
                 color: subTextColor,
@@ -540,7 +540,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
         border: Border.all(color: borderColor, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.15 : 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -557,7 +557,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
             ),
             const SizedBox(height: 8),
             Text(
-              'ปัดเพื่อดู',
+              'เลื่อนดูต่อ',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -648,7 +648,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
             ? null
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.25 : 0.03),
+                  color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.02),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -681,7 +681,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: stripeColor.withOpacity(0.12),
+                            color: stripeColor.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -753,7 +753,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                         // Bookmark toggle
                         _buildInlineActionButton(
                           icon: isBookmarked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                          label: isBookmarked ? 'บันทึกแล้ว' : 'บันทึก',
+                          label: isBookmarked ? 'เก็บไว้แล้ว' : 'เก็บไว้อ่าน',
                           color: isBookmarked ? Colors.redAccent : AppColors.textGrey,
                           onPressed: () {
                             appStateNotifier.toggleBookmark(fact.id);
@@ -762,14 +762,14 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                         // Shuffle Card
                         _buildInlineActionButton(
                           icon: Icons.casino_rounded,
-                          label: 'สุ่มใหม่',
+                          label: 'สุ่มอีกใบ',
                           color: isDark ? AppColors.success : AppColors.primary,
                           onPressed: () => _shuffleToRandomPage(filteredCount),
                         ),
                         // Read related
                         _buildInlineActionButton(
                           icon: Icons.library_books_rounded,
-                          label: 'อ่านต่อ',
+                          label: 'อ่านแบบเต็ม',
                           color: Colors.blueAccent,
                           onPressed: () {
                             _showRelatedFactsBottomSheet(context, fact, state);
@@ -972,7 +972,9 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                             ...related.map((f) {
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 12),
-                                color: state.isDarkMode ? const Color(0xFF334155).withOpacity(0.4) : AppColors.background,
+                                color: state.isDarkMode
+                                    ? const Color(0xFF334155).withValues(alpha: 0.4)
+                                    : AppColors.background,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 elevation: 0,
                                 child: ListTile(

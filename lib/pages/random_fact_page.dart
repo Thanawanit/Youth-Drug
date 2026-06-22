@@ -126,8 +126,8 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                 end: Alignment.bottomRight,
               );
               dynamicBlobs = [
-                Colors.amber.withOpacity(0.06),
-                Colors.orange.withOpacity(0.04),
+                Colors.amber.withValues(alpha: 0.06),
+                Colors.orange.withValues(alpha: 0.04),
               ];
               break;
             case 'การป้องกัน':
@@ -137,8 +137,8 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                 end: Alignment.bottomRight,
               );
               dynamicBlobs = [
-                const Color(0xFF10B981).withOpacity(0.06),
-                Colors.teal.withOpacity(0.04),
+                const Color(0xFF10B981).withValues(alpha: 0.06),
+                Colors.teal.withValues(alpha: 0.04),
               ];
               break;
             case 'ข้อควรระวัง':
@@ -148,8 +148,8 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                 end: Alignment.bottomRight,
               );
               dynamicBlobs = [
-                Colors.red.withOpacity(0.05),
-                const Color(0xFFF43F5E).withOpacity(0.04),
+                Colors.red.withValues(alpha: 0.05),
+                const Color(0xFFF43F5E).withValues(alpha: 0.04),
               ];
               break;
             case 'ความรู้เพิ่มเติม':
@@ -160,8 +160,8 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                 end: Alignment.bottomRight,
               );
               dynamicBlobs = [
-                Colors.indigo.withOpacity(0.06),
-                Colors.blue.withOpacity(0.04),
+                Colors.indigo.withValues(alpha: 0.06),
+                Colors.blue.withValues(alpha: 0.04),
               ];
               break;
           }
@@ -174,8 +174,8 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                 end: Alignment.bottomRight,
               );
               dynamicBlobs = [
-                Colors.amber.withOpacity(0.12),
-                Colors.orange.withOpacity(0.08),
+                Colors.amber.withValues(alpha: 0.12),
+                Colors.orange.withValues(alpha: 0.08),
               ];
               break;
             case 'การป้องกัน':
@@ -185,8 +185,8 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                 end: Alignment.bottomRight,
               );
               dynamicBlobs = [
-                const Color(0xFF10B981).withOpacity(0.12),
-                Colors.teal.withOpacity(0.08),
+                const Color(0xFF10B981).withValues(alpha: 0.12),
+                Colors.teal.withValues(alpha: 0.08),
               ];
               break;
             case 'ข้อควรระวัง':
@@ -196,8 +196,8 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                 end: Alignment.bottomRight,
               );
               dynamicBlobs = [
-                Colors.red.withOpacity(0.1),
-                const Color(0xFFF43F5E).withOpacity(0.08),
+                Colors.red.withValues(alpha: 0.1),
+                const Color(0xFFF43F5E).withValues(alpha: 0.08),
               ];
               break;
             case 'ความรู้เพิ่มเติม':
@@ -208,8 +208,8 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                 end: Alignment.bottomRight,
               );
               dynamicBlobs = [
-                Colors.indigo.withOpacity(0.12),
-                Colors.blue.withOpacity(0.08),
+                Colors.indigo.withValues(alpha: 0.12),
+                Colors.blue.withValues(alpha: 0.08),
               ];
               break;
           }
@@ -225,7 +225,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'สุ่มความรู้เสพติด',
+              'เกร็ดความรู้แบบสุ่ม',
               style: TextStyle(fontWeight: FontWeight.w700, color: textColor),
             ),
             actions: [
@@ -235,7 +235,9 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                   _isAutoPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
                   color: _isAutoPlaying ? AppColors.success : null,
                 ),
-                tooltip: _isAutoPlaying ? 'หยุดเล่นอัตโนมัติ' : 'เล่นอัตโนมัติ (เปลี่ยนทุก 8 วิ)',
+                tooltip: _isAutoPlaying
+                    ? 'หยุดการเปลี่ยนข้อความอัตโนมัติ'
+                    : 'เปลี่ยนข้อความอัตโนมัติทุก 8 วินาที',
                 onPressed: _toggleAutoPlay,
               ),
               // Reading Mode toggle button
@@ -280,7 +282,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                                         ? null
                                         : [
                                             BoxShadow(
-                                              color: stripeColor.withOpacity(isDark ? 0.2 : 0.04),
+                                              color: stripeColor.withValues(alpha: isDark ? 0.2 : 0.04),
                                               blurRadius: 20,
                                               offset: const Offset(0, 10),
                                             ),
@@ -303,7 +305,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                                                   Container(
                                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                                     decoration: BoxDecoration(
-                                                      color: stripeColor.withOpacity(0.12),
+                                                      color: stripeColor.withValues(alpha: 0.12),
                                                       borderRadius: BorderRadius.circular(30),
                                                     ),
                                                     child: Row(
@@ -326,7 +328,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                                                     Container(
                                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                       decoration: BoxDecoration(
-                                                        color: AppColors.success.withOpacity(0.1),
+                                                        color: AppColors.success.withValues(alpha: 0.1),
                                                         borderRadius: BorderRadius.circular(8),
                                                       ),
                                                       child: const Row(
@@ -341,7 +343,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                                                           ),
                                                           SizedBox(width: 6),
                                                           Text(
-                                                            'อัตโนมัติ',
+                                                            'กำลังเปลี่ยนอัตโนมัติ',
                                                             style: TextStyle(
                                                               fontSize: 9,
                                                               fontWeight: FontWeight.w800,
@@ -393,7 +395,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                                   // 1. Bookmarked
                                   _buildBottomButton(
                                     icon: isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                                    label: isBookmarked ? 'บันทึกแล้ว' : 'บันทึก',
+                                    label: isBookmarked ? 'เก็บไว้แล้ว' : 'เก็บไว้อ่าน',
                                     color: isBookmarked ? AppColors.success : (isDark ? Colors.white70 : AppColors.textDark),
                                     onPressed: () {
                                       appStateNotifier.toggleBookmark(fact.id);
@@ -417,7 +419,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                                         Icon(Icons.casino_rounded, size: 20),
                                         SizedBox(width: 8),
                                         Text(
-                                          'สุ่มอีกครั้ง',
+                                          'สุ่มอีกใบ',
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w700,
@@ -430,7 +432,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
                                   // 3. Share Button
                                   _buildBottomButton(
                                     icon: Icons.share_rounded,
-                                    label: 'แชร์',
+                                    label: 'แชร์ต่อ',
                                     color: isDark ? Colors.white70 : AppColors.textDark,
                                     onPressed: () {
                                       _shareFact(fact);
@@ -489,11 +491,11 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           title: const Text(
-            'แชร์ความรู้สำเร็จ',
+            'แชร์ความรู้เรียบร้อยแล้ว',
             style: TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.w700),
           ),
           content: Text(
-            'คัดลอกเนื้อหา "${fact.title}" ไปยังคลิปบอร์ดแล้ว เพื่อให้คุณนำไปส่งต่อแชร์ข้อมูลแก่เพื่อนๆ ได้ทันที',
+            'คัดลอก "${fact.title}" ไปยังคลิปบอร์ดแล้ว',
             style: const TextStyle(fontFamily: 'Prompt', fontSize: 14),
           ),
           actions: [
