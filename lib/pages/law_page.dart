@@ -54,7 +54,7 @@ class _LawPageState extends State<LawPage> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.blueAccent.withOpacity(0.12),
+                              color: Colors.blueAccent.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -234,9 +234,9 @@ class _LawPageState extends State<LawPage> {
               question: 'คุณควรตัดสินใจอย่างไรกับสถานการณ์นี้?',
               optionUnsafeText: 'ตกลงรับฝาก (เพราะไว้ใจเพื่อนสนิทและอยากช่วยเหลือ)',
               optionSafeText: 'ปฏิเสธอย่างสุภาพ (ไม่รับฝากของที่ตรวจสอบภายในไม่ได้)',
-              outcomeUnsafe: 'มีความเสี่ยงสูงมาก! หากโรงเรียนสุ่มตรวจหรือสุนัขตำรวจตรวจค้นแล้วพบสารเสพติด คุณจะตกเป็นผู้ต้องหาฐานครอบครองยาเสพติดทันที การอ้างว่า "ไม่รู้ตัวยาข้างใน" เป็นข้อพิสูจน์ทางกฎหมายที่ทำได้ยากยิ่งและทำให้ประวัติเสียทันที',
-              outcomeSafe: 'ปลอดภัย 100%! การปฏิเสธรับฝากสิ่งของที่คุณตรวจสอบของภายในไม่ได้ เป็นสิทธิขั้นพื้นฐานในการป้องกันตัวเองจากคดีอาญาและรักษาความปลอดภัยในชีวิตคุณ',
-              tip: 'หลีกเลี่ยงการรับฝากสิ่งของที่ไม่ชัดเจนจากผู้อื่นเด็ดขาด โดยเฉพาะอย่างยิ่งของที่ปิดผนึกแน่นหนาหรือผู้ฝากสั่งห้ามเปิดดู',
+              outcomeUnsafe: 'สถานการณ์นี้มีความเสี่ยงมาก เพราะหากมีการตรวจพบสิ่งผิดกฎหมาย คุณอาจถูกมองว่าเกี่ยวข้องกับการครอบครองได้ แม้จะไม่ได้ตั้งใจรับรู้รายละเอียดของสิ่งของนั้นก็ตาม',
+              outcomeSafe: 'ทางเลือกนี้ช่วยลดความเสี่ยงและปกป้องตัวเองได้ดีกว่า เพราะคุณไม่ได้รับฝากสิ่งของที่ตรวจสอบไม่ได้และยังรักษาความปลอดภัยของตัวเองไว้',
+              tip: 'หากไม่แน่ใจว่าสิ่งของคืออะไร การปฏิเสธอย่างสุภาพคือวิธีดูแลตัวเองที่ปลอดภัยกว่า',
               icon: Icons.backpack_rounded,
               color: Colors.orangeAccent,
               isDark: isDark,
@@ -247,10 +247,10 @@ class _LawPageState extends State<LawPage> {
               scenario: 'รุ่นพี่ขาใหญ่ในชุมชนข่มขู่ว่าถ้าคุณไม่เอาห่อกระดาษขนาดเล็กไปส่งต่อให้ลูกค้าหลังโรงเรียน จะดักรุมทำร้ายคุณหลังเลิกเรียนวันนี้...',
               question: 'คุณควรจัดการกับภัยคุกคามนี้อย่างไร?',
               optionUnsafeText: 'ยอมเดินไปส่งของให้ (เพื่อหลีกเลี่ยงการถูกทำร้ายร่างกาย)',
-              optionSafeText: 'ปฏิเสธเด็ดขาดแล้วรีบแจ้งพ่อแม่และครูฝ่ายปกครองทันที',
-              outcomeUnsafe: 'อันตรายร้ายแรง! หากคุณนำส่งมอบยาเสพติด คุณจะมีส่วนร่วมฐานเป็นผู้จัดจำหน่าย/ส่งมอบสารเสพติดทันที มีโทษจำคุกสูง และประวัติคดีอาญาจะติดตัวไปตลอดชีวิต (การอ้างว่าถูกข่มขู่ทำร้ายในทางกฎหมายไม่พ้นโทษฐานร่วมขบวนการ)',
-              outcomeSafe: 'ปลอดภัยและได้รับการปกป้อง! ทางโรงเรียน คณะครู และเจ้าหน้าที่ตำรวจมีมาตรการช่วยเหลือและคุ้มครองความปลอดภัยให้นักเรียน คุณจะไม่ต้องมีคดีความทางกฎหมายหรือความเสี่ยงใดๆ',
-              tip: 'เมื่อถูกข่มขู่ให้ทำสิ่งผิดกฎหมาย อย่าเก็บบางเรื่องไว้คนเดียว การขอความช่วยเหลือจากผู้ใหญ่ที่ไว้ใจได้คือทางออกที่ถูกต้องและปลอดภัยที่สุด',
+              optionSafeText: 'ปฏิเสธแล้วรีบแจ้งพ่อแม่และครูฝ่ายปกครองทันที',
+              outcomeUnsafe: 'หากยอมส่งของให้ผู้อื่น คุณอาจถูกมองว่ามีส่วนร่วมกับการกระทำผิดกฎหมายได้ จึงควรรีบหาทางออกที่ปลอดภัยกว่าด้วยการขอความช่วยเหลือจากผู้ใหญ่ที่ไว้ใจได้',
+              outcomeSafe: 'การขอความช่วยเหลือทันทีเป็นทางเลือกที่ปลอดภัยกว่า และเปิดโอกาสให้ผู้ใหญ่ช่วยดูแลสถานการณ์รวมถึงความปลอดภัยของคุณได้เร็วขึ้น',
+              tip: 'เมื่อถูกกดดันให้ทำสิ่งผิดกฎหมาย อย่ารับมือคนเดียว การบอกผู้ใหญ่ที่ไว้ใจได้ช่วยลดความเสี่ยงได้มาก',
               icon: Icons.error_outline_rounded,
               color: Colors.redAccent,
               isDark: isDark,
@@ -301,9 +301,9 @@ class _LawPageState extends State<LawPage> {
               question: 'คุณควรรับมือกับการชักชวนนี้อย่างไร?',
               optionUnsafeText: 'ขอลองสูบดูสักครั้ง (เพราะคิดว่าไม่มีอันตรายรุนแรง)',
               optionSafeText: 'ปฏิเสธหนักแน่นแล้วชวนคุยเรื่องอื่นหรือชวนไปเตะบอลแทน',
-              outcomeUnsafe: 'คิดผิดมหันต์! บุหรี่ไฟฟ้ายังคงผิดกฎหมายในประเทศไทย (ห้ามนำเข้า ครอบครอง และจำหน่าย) การครอบครองในโรงเรียนจะถูกลงโทษทางวินัยหนัก แจ้งผู้ปกครอง และนิโคตินเข้มข้นจะกัดกินทำลายปอดกับขัดขวางสมองวัยรุ่นทันที',
-              outcomeSafe: 'รักษาสุขภาพและวินัย! ปอดและพัฒนาการสมองของคุณปลอดภัย 100% เพื่อนที่ดีจะเคารพการตัดสินใจของคุณ และไม่พาคุณเข้าสู่ความเสี่ยงใดๆ',
-              tip: 'บุหรี่ไฟฟ้ามีสารนิโคตินเหลวเข้มข้นสูงมากและสารระเหยพิษทำลายเซลล์ระบบหายใจโดยตรง อย่าลองโดยเด็ดขาด',
+              outcomeUnsafe: 'ทางเลือกนี้เพิ่มความเสี่ยงทั้งด้านสุขภาพและด้านวินัยในโรงเรียน เพราะบุหรี่ไฟฟ้ายังเป็นสิ่งที่ผิดกฎหมายและมีสารที่กระทบต่อปอดรวมถึงพัฒนาการของสมองวัยรุ่น',
+              outcomeSafe: 'ทางเลือกนี้ช่วยดูแลทั้งสุขภาพและบรรยากาศรอบตัวได้ดีกว่า และยังช่วยให้คุณรักษาขอบเขตของตัวเองเมื่อเจอการชักชวน',
+              tip: 'บุหรี่ไฟฟ้ามีนิโคตินและสารระเหยหลายชนิดที่กระทบระบบหายใจและสมอง จึงควรหลีกเลี่ยงแม้จะดูเหมือนไม่รุนแรง',
               icon: Icons.smoke_free_rounded,
               color: Colors.blueAccent,
               isDark: isDark,
@@ -418,7 +418,7 @@ class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
         border: Border.all(color: borderColor, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(widget.isDark ? 0.15 : 0.02),
+            color: Colors.black.withValues(alpha: widget.isDark ? 0.15 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -444,7 +444,7 @@ class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: widget.color.withOpacity(0.12),
+                          color: widget.color.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(widget.icon, color: widget.color, size: 22),
@@ -593,7 +593,7 @@ class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          side: BorderSide(color: activeColor.withOpacity(0.5), width: 1.5),
+          side: BorderSide(color: activeColor.withValues(alpha: 0.5), width: 1.5),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           foregroundColor: activeColor,
         ),
@@ -615,7 +615,7 @@ class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
 
   Widget _buildOutcomeCard() {
     final isUnsafe = _selectedChoice == 1;
-    final titleText = isUnsafe ? 'ผลกระทบทางกฎหมาย (ความเสี่ยงสูงมาก)' : 'ผลลัพธ์การตัดสินใจ (ปลอดภัย)';
+    final titleText = isUnsafe ? 'ผลที่อาจตามมา (ควรระวัง)' : 'ผลลัพธ์ของทางเลือกนี้';
     final contentText = isUnsafe ? widget.outcomeUnsafe : widget.outcomeSafe;
     final cardColor = isUnsafe ? AppColors.error : AppColors.success;
     final iconData = isUnsafe ? Icons.dangerous_rounded : Icons.check_circle_rounded;
@@ -624,9 +624,9 @@ class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: cardColor.withOpacity(0.06),
+        color: cardColor.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cardColor.withOpacity(0.2), width: 1.5),
+        border: Border.all(color: cardColor.withValues(alpha: 0.2), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -653,7 +653,7 @@ class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
             contentText,
             style: TextStyle(
               fontSize: 12.5,
-              color: widget.isDark ? Colors.white70 : AppColors.textDark.withOpacity(0.85),
+              color: widget.isDark ? Colors.white70 : AppColors.textDark.withValues(alpha: 0.85),
               height: 1.45,
               fontFamily: 'Prompt',
             ),
