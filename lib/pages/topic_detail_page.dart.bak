@@ -1,0 +1,3622 @@
+import 'package:flutter/material.dart';
+import 'dart:math';
+import 'dart:async';
+import '../state/app_state.dart';
+import '../main.dart';
+import '../constants/app_colors.dart';
+import '../widgets/app_background.dart';
+
+enum TopicType {
+  definition,
+  classification,
+  impact,
+  prevention,
+  law,
+}
+
+class TopicDetailPage extends StatefulWidget {
+  final TopicType topicType;
+
+  const TopicDetailPage({
+    super.key,
+    required this.topicType,
+  });
+
+  @override
+  State<TopicDetailPage> createState() => _TopicDetailPageState();
+}
+
+class _TopicDetailPageState extends State<TopicDetailPage> {
+  late final PageController _pageController;
+  int _currentPageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<AppState>(
+      valueListenable: appStateNotifier,
+      builder: (context, state, child) {
+        final isDark = state.isDarkMode;
+        final textColor = isDark ? Colors.white : AppColors.textDark;
+        final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+        final borderColor = isDark ? const Color(0xFF334155) : AppColors.border;
+
+        final info = _getTopicInfo(widget.topicType);
+        final total = info.sections.length;
+
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: textColor,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              info.title,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: textColor,
+                fontSize: 18 * state.fontScale,
+                fontFamily: 'Prompt',
+              ),
+            ),
+          ),
+          body: BackgroundWrapper(
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // 1. Top progress indicator
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: (_currentPageIndex + 1) / total,
+                        minHeight: 6,
+                        backgroundColor: isDark ? const Color(0xFF334155) : AppColors.border,
+                        valueColor: AlwaysStoppedAnimation<Color>(info.color),
+                      ),
+                    ),
+                  ),
+
+                  // 2. Swipable Custom Slides Area
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      physics: const BouncingScrollPhysics(),
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentPageIndex = index;
+                        });
+                      },
+                      itemCount: total,
+                      itemBuilder: (context, index) {
+                        final sec = info.sections[index];
+                        final secColor = sec.iconColor ?? info.color;
+
+                        return SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(28),
+                              border: Border.all(color: borderColor, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(isDark ? 0.25 : 0.03),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: _buildCustomSlideLayout(
+                              widget.topicType,
+                              index,
+                              sec,
+                              secColor,
+                              isDark,
+                              state.fontScale,
+                              textColor,
+                              cardBg,
+                              borderColor,
+                              total,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // 3. Dot Indicators
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(total, (idx) {
+                      final isActive = idx == _currentPageIndex;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                        height: 6,
+                        width: isActive ? 16 : 6,
+                        decoration: BoxDecoration(
+                          color: isActive ? info.color : (isDark ? Colors.white24 : AppColors.border),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+
+                  // 4. Navigation Buttons
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                    child: Row(
+                      children: [
+                        // Back Button
+                        Expanded(
+                          child: SizedBox(
+                            height: 52,
+                            child: OutlinedButton.icon(
+                              onPressed: _currentPageIndex == 0
+                                  ? null
+                                  : () {
+                                      _pageController.previousPage(
+                                        duration: const Duration(milliseconds: 300),
+                                        curve: Curves.easeInOut,
+                                      );
+                                    },
+                              icon: const Icon(Icons.arrow_back_rounded),
+                              label: const Text(
+                                '犧｢犹霞ｸｭ犧吭ｸ≒ｸ･犧ｱ犧�',
+                                style: TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.bold),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: info.color,
+                                side: BorderSide(
+                                  color: _currentPageIndex == 0
+                                      ? Colors.transparent
+                                      : info.color,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Next/Complete Button
+                        Expanded(
+                          child: SizedBox(
+                            height: 52,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                if (_currentPageIndex < total - 1) {
+                                  _pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                } else {
+                                  Navigator.pop(context);
+                                }
+                              },
+                              icon: Icon(
+                                _currentPageIndex < total - 1
+                                    ? Icons.arrow_forward_rounded
+                                    : Icons.check_circle_rounded,
+                              ),
+                              label: Text(
+                                _currentPageIndex < total - 1
+                                    ? '犧籾ｸｱ犧扉ｹ�ｸ�'
+                                    : '犹犧｣犧ｵ犧｢犧吭ｸ｣犧ｹ犹霞ｹ犧ｪ犧｣犹�ｸ謂ｸｪ犧ｴ犹霞ｸ�',
+                                style: const TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDark
+                                    ? AppColors.success
+                                    : AppColors.primary,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ==================== DISPATCH LAYOUT FOR EACH SLIDE ====================
+  Widget _buildCustomSlideLayout(
+    TopicType type,
+    int index,
+    TopicSection sec,
+    Color secColor,
+    bool isDark,
+    double fontScale,
+    Color textColor,
+    Color cardBg,
+    Color borderColor,
+    int total,
+  ) {
+    // Shared header for custom layouts
+    Widget slideHeader = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: secColor.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Text(
+            '犧壟ｸ伶ｹ犧｣犧ｵ犧｢犧吭ｸ｢犹謂ｸｭ犧｢ ${index + 1} 犧謂ｸｲ犧� $total',
+            style: TextStyle(
+              fontSize: 10 * fontScale,
+              fontWeight: FontWeight.w800,
+              color: secColor,
+              fontFamily: 'Prompt',
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Icon(sec.icon ?? Icons.bookmark_rounded, color: secColor, size: 28),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                sec.title,
+                style: TextStyle(
+                  fontSize: 16 * fontScale,
+                  fontWeight: FontWeight.w900,
+                  color: textColor,
+                  fontFamily: 'Prompt',
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          sec.summary,
+          style: TextStyle(
+            fontSize: 13 * fontScale,
+            fontWeight: FontWeight.w500,
+            color: isDark ? Colors.white70 : AppColors.textGrey,
+            fontFamily: 'Prompt',
+            height: 1.35,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+
+    // Tips footer template
+    Widget buildTipsFooter(String tips) {
+      return Container(
+        margin: const EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: secColor.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: secColor.withOpacity(0.15), width: 1.2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.lightbulb_outline_rounded, color: secColor, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  '犧｣犧ｹ犹霞ｸｫ犧｣犧ｷ犧ｭ犹�ｸ｡犹� / 犧もｹ霞ｸｭ犧�ｸｧ犧｣犧謂ｸｳ',
+                  style: TextStyle(
+                    fontSize: 11 * fontScale,
+                    fontWeight: FontWeight.w800,
+                    color: secColor,
+                    fontFamily: 'Prompt',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              tips,
+              style: TextStyle(
+                fontSize: 11 * fontScale,
+                color: isDark ? Colors.white70 : AppColors.textDark.withOpacity(0.85),
+                height: 1.4,
+                fontFamily: 'Prompt',
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Determine custom visual and layout depending on topic type and current slide index
+    final Widget visualWidget;
+    switch (type) {
+      // ----------------------------------------------------
+      // DEFINITIONS
+      // ----------------------------------------------------
+      case TopicType.definition:
+        if (index == 0) {
+          visualWidget = ContrastBattleVisual(isDark: isDark, fontScale: fontScale);
+        } else if (index == 1) {
+          visualWidget = BrainDopamineVisual(isDark: isDark, fontScale: fontScale);
+        } else {
+          visualWidget = ArmorShieldVisual(isDark: isDark, fontScale: fontScale);
+        }
+        break;
+
+      // ----------------------------------------------------
+      // CLASSIFICATIONS
+      // ----------------------------------------------------
+      case TopicType.classification:
+        if (index == 0) {
+          visualWidget = StimulantRushVisual(isDark: isDark, fontScale: fontScale);
+        } else if (index == 1) {
+          visualWidget = DepressantSlowVisual(isDark: isDark, fontScale: fontScale);
+        } else if (index == 2) {
+          visualWidget = RealityDistorterVisual(isDark: isDark, fontScale: fontScale);
+        } else {
+          visualWidget = MixedStormVisual(isDark: isDark, fontScale: fontScale);
+        }
+        break;
+
+      // ----------------------------------------------------
+      // IMPACTS
+      // ----------------------------------------------------
+      case TopicType.impact:
+        if (index == 0) {
+          visualWidget = MoodCrackedMirror(isDark: isDark, fontScale: fontScale);
+        } else if (index == 1) {
+          visualWidget = HumanBodyScanner(isDark: isDark, fontScale: fontScale);
+        } else if (index == 2) {
+          visualWidget = FuturePathGpaVisual(isDark: isDark, fontScale: fontScale);
+        } else {
+          visualWidget = BrokenFamilyNetwork(isDark: isDark, fontScale: fontScale);
+        }
+        break;
+
+      // ----------------------------------------------------
+      // PREVENTIONS
+      // ----------------------------------------------------
+      case TopicType.prevention:
+        if (index == 0) {
+          visualWidget = RefusalChatSimulator(isDark: isDark);
+        } else if (index == 1) {
+          visualWidget = FriendFilterVisual(isDark: isDark, fontScale: fontScale);
+        } else {
+          visualWidget = StressBusterVisual(isDark: isDark, fontScale: fontScale);
+        }
+        break;
+
+      // ----------------------------------------------------
+      // LAW
+      // ----------------------------------------------------
+      case TopicType.law:
+        if (index == 0) {
+          visualWidget = LawDecisionPathways(isDark: isDark, fontScale: fontScale);
+        } else if (index == 1) {
+          visualWidget = ScalesOfJusticeVisual(isDark: isDark, fontScale: fontScale);
+        } else {
+          visualWidget = CareerPassportStamps(isDark: isDark, fontScale: fontScale);
+        }
+        break;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        slideHeader,
+        visualWidget,
+        const SizedBox(height: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: sec.bullets.map((bullet) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 6.0, right: 10.0),
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: secColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      bullet,
+                      style: TextStyle(
+                        fontSize: 12.5 * fontScale,
+                        color: textColor,
+                        height: 1.45,
+                        fontFamily: 'Prompt',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+        if (sec.tips != null) buildTipsFooter(sec.tips!),
+      ],
+    );
+  }
+
+  TopicInfo _getTopicInfo(TopicType type) {
+    switch (type) {
+      case TopicType.definition:
+        return TopicInfo(
+          title: 'ยาเสพติดคืออะไร?',
+          icon: Icons.help_outline_rounded,
+          color: AppColors.primary,
+          sections: [
+            TopicSection(
+              title: 'ความหมายของยาเสพติด',
+              summary: 'สารเคมีแปลกปลอมที่เข้าสู่ร่างกายแล้วส่งผลกระทบรุนแรง',
+              bullets: [
+                'สารที่ออกฤทธิ์ต่อสมองและร่างกายจนเสี่ยงเกิดการพึ่งพา',
+                'การใช้ต่อเนื่องอาจส่งผลต่อสุขภาพและการใช้ชีวิต',
+                'หาข้อมูลจากแหล่งที่เชื่อถือได้ก่อนตัดสินใจ',
+              ],
+              icon: Icons.info_outline_rounded,
+              iconColor: AppColors.primary,
+              tips: 'ยาเสพติดต่างจากยารักษาโรคทั่วไปเพราะไม่มีผลช่วยรักษาโรค',
+            ),
+            TopicSection(
+              title: 'กลไกสมองติดยา',
+              summary: 'สารเคมีเข้าไปรบกวนระบบสมองส่วนควบคุมความสุข',
+              bullets: [
+                'สารบางชนิดรบกวนระบบรางวัลของสมอง',
+                'อาจทำให้รู้สึกดีชั่วคราวและอยากใช้ซ้ำ',
+                'สังเกตความเปลี่ยนแปลงของตนเองและขอคำปรึกษา',
+              ],
+              icon: Icons.psychology_rounded,
+              iconColor: Colors.purpleAccent,
+              tips: 'สมองวัยรุ่นยังโตไม่เต็มที่ จึงเสี่ยงต่อการพึ่งพาสารเคมีง่ายกว่าผู้ใหญ่',
+            ),
+            TopicSection(
+              title: 'ความสำคัญของการป้องกัน',
+              summary: 'การป้องกันและตัดสินใจไม่ยุ่งเกี่ยวแต่แรกปลอดภัยที่สุด',
+              bullets: [
+                'สภาพแวดล้อมหรือการชักชวนอาจทำให้เกิดความเสี่ยง',
+                'อาจกระทบการใช้ชีวิตและการตัดสินใจระยะยาว',
+                'ฝึกทักษะการปฏิเสธเพื่อดูแลสุขภาพตนเอง',
+              ],
+              icon: Icons.shield_rounded,
+              iconColor: AppColors.success,
+              tips: 'การป้องกันตนเองและปฏิเสธแต่ต้น ง่ายกว่าการดูแลรักษายามสาย',
+            ),
+          ],
+        );
+
+      case TopicType.classification:
+        return TopicInfo(
+          title: 'ประเภทสารเสพติด',
+          icon: Icons.category_rounded,
+          color: Colors.amber,
+          sections: [
+            TopicSection(
+              title: '1. ประเภทกระตุ้นประสาท',
+              summary: 'เร่งระบบการทำงานของสมองและหัวใจให้เร็วขึ้น',
+              bullets: [
+                'ทำให้ร่างกายตื่นตัวมากกว่าปกติ',
+                'อาจใจเต้นเร็ว นอนยาก และเหนื่อยสะสม',
+                'เรียนรู้ผลกระทบและดูแลสุขภาพตนเอง',
+              ],
+              icon: Icons.bolt_rounded,
+              iconColor: Colors.amber,
+              tips: 'สารกระตุ้นประสาทมักทำให้ร่างกายเหนื่อยล้าหนักหลังหมดฤทธิ์',
+            ),
+            TopicSection(
+              title: '2. ประเภทกดประสาท',
+              summary: 'ชะลอการส่งสัญญาณสมองและลดการตอบสนองลง',
+              bullets: [
+                'ชะลอการสั่งการของระบบประสาทและสมอง',
+                'อาจมีอาการง่วงซึม ตอบสนองช้า หรือเบลอ',
+                'ไม่ใช้ยากลุ่มนี้โดยไม่มีคำสั่งจากแพทย์',
+              ],
+              icon: Icons.hotel_rounded,
+              iconColor: Colors.blueAccent,
+              tips: 'แอลกอฮอล์ก็จัดอยู่ในกลุ่มกดประสาทที่ลดสติสัมปชัญญะ',
+            ),
+            TopicSection(
+              title: '3. ประเภทหลอนประสาท',
+              summary: 'บิดเบือนการรับรู้ภาพ เสียง และประสาทสัมผัส',
+              bullets: [
+                'อาจทำให้รับรู้สิ่งรอบตัวผิดเพี้ยน',
+                'เกิดความสับสนและตัดสินใจผิดพลาด',
+                'หลีกเลี่ยงความเสี่ยงและสังเกตสิ่งรอบตัวอย่างมีสติ',
+              ],
+              icon: Icons.bubble_chart_rounded,
+              iconColor: Colors.deepPurpleAccent,
+              tips: 'ไอระเหยจากสารเคมีบางชนิดสามารถทำลายเซลล์สมองระยะยาว',
+            ),
+            TopicSection(
+              title: '4. ประเภทผสมผสาน',
+              summary: 'ออกฤทธิ์หลายรูปแบบร่วมกัน ทั้งกระตุ้น กด หรือหลอน',
+              bullets: [
+                'สารเคมีออกฤทธิ์ควบคู่กันหลายด้านพร้อมกัน',
+                'ส่งผลให้อารมณ์แปรปรวน สับสน และกังวล',
+                'หลีกเลี่ยงการทดลองสารที่ไม่ทราบผลกระทบ',
+              ],
+              icon: Icons.sync_rounded,
+              iconColor: AppColors.success,
+              tips: 'กัญชาและกระท่อมมีสารเคมีที่ออกฤทธิ์ผสมผสานหลายด้าน',
+            ),
+          ],
+        );
+
+      case TopicType.impact:
+        return TopicInfo(
+          title: 'ผลกระทบ 4 ด้าน',
+          icon: Icons.heart_broken_rounded,
+          color: Colors.redAccent,
+          sections: [
+            TopicSection(
+              title: 'ด้านจิตใจและอารมณ์',
+              summary: 'ส่งผลกระทบต่ออารมณ์ความรู้สึกและสภาวะจิตใจ',
+              bullets: [
+                'สารเคมีรบกวนสมดุลอารมณ์ตามธรรมชาติ',
+                'อาจเกิดความหวาดระแวง หงุดหงิด หรือซึมเศร้า',
+                'สังเกตอารมณ์และปรึกษาคนรอบข้างเมื่อเครียด',
+              ],
+              icon: Icons.psychology_rounded,
+              iconColor: Colors.deepPurple,
+              tips: 'ความรู้สึกแปรปรวนมักเกิดจากสารเคมีในสมองทำงานผิดปกติ',
+            ),
+            TopicSection(
+              title: 'ด้านร่างกายและสุขภาพ',
+              summary: 'ส่งผลเสียต่อการทำงานของอวัยวะภายในร่างกาย',
+              bullets: [
+                'สารพิษอาจสะสมและบั่นทอนภูมิต้านทาน',
+                'อวัยวะสำคัญ เช่น ตับ หรือไต ทำงานลดลง',
+                'ดูแลสุขภาพและหลีกเลี่ยงสารแปลกปลอม',
+              ],
+              icon: Icons.favorite_rounded,
+              iconColor: Colors.redAccent,
+              tips: 'ร่างกายทรุดโทรมมักเป็นสัญญาณเตือนว่าอวัยวะภายในกำลังทำงานหนัก',
+            ),
+            TopicSection(
+              title: 'ด้านการเรียนและอนาคต',
+              summary: 'ส่งผลต่อสมาธิและโอกาสในการศึกษาเรียนรู้',
+              bullets: [
+                'ส่งผลต่อสมาธิและการวางแผนระยะยาว',
+                'อาจกระทบการเรียนและโอกาสในอนาคต',
+                'จัดสมดุลการเรียน พักผ่อน และกิจกรรมที่ชอบ',
+              ],
+              icon: Icons.school_rounded,
+              iconColor: Colors.blueAccent,
+              tips: 'สมองที่แจ่มใสช่วยให้จดจำและเรียนรู้สิ่งใหม่ๆ ได้รวดเร็วกว่า',
+            ),
+            TopicSection(
+              title: 'ด้านครอบครัวและสังคม',
+              summary: 'กระทบต่อความอบอุ่นและมิตรภาพของคนรอบข้าง',
+              bullets: [
+                'พฤติกรรมเปลี่ยนไปอาจทำให้เกิดความตึงเครียดในบ้าน',
+                'สูญเสียความไว้ใจและมิตรภาพอันดีกับเพื่อนๆ',
+                'ปรับความเข้าใจและหาทางแก้ไขร่วมกับครอบครัว',
+              ],
+              icon: Icons.groups_rounded,
+              iconColor: Colors.teal,
+              tips: 'ปัญหาที่เกิดขึ้นสามารถปรับความเข้าใจกันได้ด้วยการพูดคุย',
+            ),
+          ],
+        );
+
+      case TopicType.prevention:
+        return TopicInfo(
+          title: 'แนวทางและทักษะป้องกัน',
+          icon: Icons.shield_rounded,
+          color: AppColors.success,
+          sections: [
+            TopicSection(
+              title: '1. ทักษะการปฏิเสธที่หนักแน่น',
+              summary: 'พูดปฏิเสธอย่างมีชั้นเชิงและรักษาจุดยืนของตนเอง',
+              bullets: [
+                'เมื่อเผชิญแรงกดดันหรือการชักชวนให้ลอง',
+                'การตอบปฏิเสธช่วยรักษาความปลอดภัยและอนาคต',
+                'ปฏิเสธสุภาพทันที เช่น "ไม่ขอบคุณครับ ผมไม่สะดวก"',
+              ],
+              icon: Icons.cancel_outlined,
+              iconColor: Colors.redAccent,
+              tips: 'การปฏิเสธอย่างชัดเจนช่วยกรองเพื่อนที่เคารพความคิดเห็นของเราจริงๆ',
+            ),
+            TopicSection(
+              title: '2. การคบเพื่อนสร้างสรรค์',
+              summary: 'พาตนเองไปอยู่ในกลุ่มเพื่อนที่มีทัศนคติเชิงบวก',
+              bullets: [
+                'กลุ่มเพื่อนมีอิทธิพลต่อความประพฤติและการตัดสินใจ',
+                'เพื่อนที่ดีจะช่วยสนับสนุนและเตือนสติซึ่งกันและกัน',
+                'ชวนกันเล่นกีฬา ดนตรี หรือติวบทเรียนร่วมกัน',
+              ],
+              icon: Icons.people_rounded,
+              iconColor: Colors.amber,
+              tips: 'การเลือกคบเพื่อนส่งผลต่อความสุขและพฤติกรรมของเราเกือบทั้งหมด',
+            ),
+            TopicSection(
+              title: '3. การจัดการความเครียดเชิงบวก',
+              summary: 'ระบายความเครียดสะสมด้วยวิธีการที่ปลอดภัยต่อสุขภาพ',
+              bullets: [
+                'เจอปัญหาเรียนหนักหรือความไม่เข้าใจกันในชีวิต',
+                'อาจรู้สึกอึดอัด กดดัน และต้องการหาทางออก',
+                'คุยกับคนที่ไว้ใจหรือระบายออกด้วยงานอดิเรก',
+              ],
+              icon: Icons.spa_rounded,
+              iconColor: Colors.teal,
+              tips: 'สายด่วนสุขภาพจิต โทร 1323 พร้อมให้คำปรึกษาตลอด 24 ชั่วโมง',
+            ),
+          ],
+        );
+
+      case TopicType.law:
+        return TopicInfo(
+          title: 'เข้าใจข้อกฎหมายน่ารู้',
+          icon: Icons.gavel_rounded,
+          color: Colors.blueAccent,
+          sections: [
+            TopicSection(
+              title: 'แนวทางบำบัดรักษาพยาบาล',
+              summary: 'มุมมองทางกฎหมายที่ให้โอกาสฟื้นฟูช่วยเหลือเยาวชน',
+              bullets: [
+                'กฎหมายมีทั้งการป้องกันและแนวทางช่วยเหลือ',
+                'การพิจารณาขึ้นอยู่กับพฤติการณ์และกฎหมาย',
+                'ขอคำแนะนำจากผู้เชี่ยวชาญเมื่อมีข้อสงสัย',
+              ],
+              icon: Icons.health_and_safety_rounded,
+              iconColor: AppColors.success,
+              tips: 'การส่งเสริมให้ผู้รับการฟื้นฟูกลับตัวช่วยสร้างโอกาสใหม่ในสังคม',
+            ),
+            TopicSection(
+              title: 'บทลงโทษของผู้กระทำผิดร้ายแรง',
+              summary: 'มาตรการเด็ดขาดเพื่อปราบปรามขบวนการค้ายาเสพติด',
+              bullets: [
+                'กฎหมายลงโทษต่อผู้ผลิต นำเข้า หรือจัดจำหน่าย',
+                'ผู้เกี่ยวข้องอาจได้รับโทษทางคดีอาญาและถูกยึดทรัพย์',
+                'ไม่รับจ้างส่งของหรือยุ่งเกี่ยวกับการค้า',
+              ],
+              icon: Icons.gavel_rounded,
+              iconColor: Colors.redAccent,
+              tips: 'การหลีกเลี่ยงไม่ยุ่งเกี่ยวกับขบวนการค้าช่วยรักษาประวัติสะอาดร้อยเปอร์เซ็นต์',
+            ),
+            TopicSection(
+              title: 'อนาคตและหน้าที่ในการป้องกัน',
+              summary: 'รักษาความประพฤติที่ดีเพื่อเป้าหมายและอาชีพการงาน',
+              bullets: [
+                'บางโอกาสทางการศึกษาและงานอาจมีเงื่อนไขเพิ่มเติม',
+                'การขออนุมัติศึกษาต่อหรือเดินทางต่างประเทศอาจล่าช้า',
+                'ดูแลพฤติกรรมตนเองให้อยู่ในกรอบวินัยที่ถูกต้อง',
+              ],
+              icon: Icons.card_membership_rounded,
+              iconColor: Colors.amber,
+              tips: 'ประวัติการเรียนและความประพฤติที่ดีคือหนังสือเดินทางสู่อนาคตที่สดใส',
+            ),
+          ],
+        );
+    }
+  }
+}
+
+class TopicInfo {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final List<TopicSection> sections;
+
+  TopicInfo({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.sections,
+  });
+}
+
+class TopicSection {
+  final String title;
+  final String summary;
+  final List<String> bullets;
+  final IconData? icon;
+  final Color? iconColor;
+  final String? tips;
+
+  TopicSection({
+    required this.title,
+    required this.summary,
+    required this.bullets,
+    this.icon,
+    this.iconColor,
+    this.tips,
+  });
+}
+
+// ============================================================================
+// WIDGET 1.0: ContrastBattleVisual
+// ============================================================================
+class ContrastBattleVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const ContrastBattleVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<ContrastBattleVisual> createState() => _ContrastBattleVisualState();
+}
+
+class _ContrastBattleVisualState extends State<ContrastBattleVisual> {
+  int _selectedIndex = 0; // 0 for medicine, 1 for drugs
+
+  @override
+  Widget build(BuildContext context) {
+    final greenColor = const Color(0xFF10B981);
+    final redColor = const Color(0xFFEF4444);
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedIndex = 0),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: _selectedIndex == 0
+                        ? greenColor.withOpacity(0.12)
+                        : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _selectedIndex == 0 ? greenColor : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.healing_rounded,
+                          color: _selectedIndex == 0 ? greenColor : Colors.grey, size: 28),
+                      const SizedBox(height: 4),
+                      Text(
+                        '犧｢犧ｲ犧｣犧ｱ犧≒ｸｩ犧ｲ犹もｸ｣犧�',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13 * widget.fontScale,
+                          color: _selectedIndex == 0 ? greenColor : Colors.grey,
+                          fontFamily: 'Prompt',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedIndex = 1),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: _selectedIndex == 1
+                        ? redColor.withOpacity(0.12)
+                        : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _selectedIndex == 1 ? redColor : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.coronavirus_rounded,
+                          color: _selectedIndex == 1 ? redColor : Colors.grey, size: 28),
+                      const SizedBox(height: 4),
+                      Text(
+                        '犧｢犧ｲ犹犧ｪ犧樅ｸ歩ｸｴ犧�',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13 * widget.fontScale,
+                          color: _selectedIndex == 1 ? redColor : Colors.grey,
+                          fontFamily: 'Prompt',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _selectedIndex == 0
+                ? greenColor.withOpacity(0.06)
+                : redColor.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: _selectedIndex == 0
+                  ? greenColor.withOpacity(0.2)
+                  : redColor.withOpacity(0.2),
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _selectedIndex == 0
+                ? [
+                    Text('窶｢ 犧壟ｸｳ犧壟ｸｱ犧扉ｹ≒ｸ･犧ｰ犧壟ｸ｣犧｣犹犧伶ｸｲ犧ｭ犧ｲ犧≒ｸｲ犧｣犧もｸｭ犧�ｹもｸ｣犧�ｸ�犧ｱ犧｢犹�ｸもｹ霞ｹ犧謂ｹ�ｸ�',
+                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
+                    Text('窶｢ 犧巵ｸ･犧ｭ犧扉ｸ�犧ｱ犧｢犹≒ｸ･犧ｰ犹�ｸ扉ｹ霞ｸ憫ｸ･犧扉ｸｵ犧伶ｸｵ犹謂ｸｪ犧ｸ犧扉ｹ犧｡犧ｷ犹謂ｸｭ犹�ｸ癌ｹ霞ｸ歩ｸｲ犧｡犧�ｸｳ犧ｪ犧ｱ犹謂ｸ�ｸもｸｭ犧�ｹ≒ｸ樅ｸ伶ｸ｢犹�',
+                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
+                    Text('窶｢ 犧癌ｹ謂ｸｧ犧｢犧游ｸｷ犹霞ｸ吭ｸ游ｸｹ犧｣犹謂ｸｲ犧�ｸ≒ｸｲ犧｢犹�ｸｫ犹霞ｸ｡犧ｵ犧ｪ犧ｸ犧もｸ�犧ｲ犧樅ｹ≒ｸもｹ�ｸ�ｹ≒ｸ｣犧�ｸもｸｶ犹霞ｸ�',
+                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
+                  ]
+                : [
+                    Text('窶｢ 犧伶ｸｳ犧･犧ｲ犧｢犹犧金ｸ･犧･犹呉ｸｪ犧｡犧ｭ犧�ｹ≒ｸ･犧ｰ犧ｪ犧｣犹霞ｸｲ犧�ｸｪ犧�犧ｲ犧ｧ犧ｰ犧歩ｸｴ犧扉ｹ犧｣犧ｷ犹霞ｸｭ犧｣犧ｱ犧�',
+                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5, color: redColor)),
+                    Text('窶｢ 犧壟ｸｱ犧�ｸ�ｸｱ犧壟ｹ�ｸｫ犹霞ｸ謂ｸｴ犧歩ｹ�ｸ謂ｸ歩ｹ霞ｸｭ犧�ｸ≒ｸｲ犧｣犹犧ｪ犧樅ｹ犧樅ｸｴ犹謂ｸ｡犧もｸｶ犹霞ｸ吭ｹ犧｣犧ｷ犹謂ｸｭ犧｢犹� 犹犧｣犹謂ｸ�ｸｪ犧｣犹霞ｸｲ犧�ｸ憫ｸ･犧もｹ霞ｸｲ犧�ｹ犧�ｸｵ犧｢犧�ｸ｣犹霞ｸｲ犧｢',
+                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
+                    Text('窶｢ 犧憫ｸｴ犧扉ｸ≒ｸ錫ｸｫ犧｡犧ｲ犧｢犧ｭ犧｢犹謂ｸｲ犧�ｸ｣犹霞ｸｲ犧｢犹≒ｸ｣犧� 犧ｪ犹謂ｸ�ｸ憫ｸ･犹犧ｪ犧ｵ犧｢犧歩ｹ謂ｸｭ犧ｭ犧吭ｸｲ犧�ｸ歩ｹ≒ｸ･犧ｰ犧ｪ犧ｱ犧�ｸ�ｸ｡',
+                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
+                  ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================================
+// WIDGET 1.1: BrainDopamineVisual (Dopamine Control Center)
+// ============================================================================
+class BrainDopamineVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const BrainDopamineVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<BrainDopamineVisual> createState() => _BrainDopamineVisualState();
+}
+
+class _BrainDopamineVisualState extends State<BrainDopamineVisual> with SingleTickerProviderStateMixin {
+  int _currentStep = 0; // 0 = Normal, 1 = Drug, 2 = Crash
+  late AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildStepTab(int stepIndex, String title, IconData icon, Color activeColor) {
+    final bool isSelected = _currentStep == stepIndex;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _currentStep = stepIndex;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? activeColor.withOpacity(widget.isDark ? 0.15 : 0.08)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? activeColor : (widget.isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.06)),
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? activeColor : (widget.isDark ? Colors.white38 : Colors.black38),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 10 * widget.fontScale,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected
+                      ? (widget.isDark ? Colors.white : activeColor)
+                      : (widget.isDark ? Colors.white38 : Colors.black54),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailsRow(String label, String text, bool isDark, double fontScale) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 80,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11 * fontScale,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white70 : AppColors.textDark,
+              fontFamily: 'Prompt',
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 11 * fontScale,
+              color: isDark ? Colors.white60 : AppColors.textGrey,
+              fontFamily: 'Prompt',
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String brainStatus = '犧ｪ犧｡犧ｭ犧�ｸ巵ｸ≒ｸ歩ｸｴ (犧ｪ犧｡犧扉ｸｸ犧･犧倨ｸ｣犧｣犧｡犧癌ｸｲ犧歩ｸｴ)';
+    String brainDesc = '犧ｪ犧ｲ犧｣犹もｸ扉ｸ巵ｸｲ犧｡犧ｵ犧吭ｸｫ犧･犧ｱ犹謂ｸ�ｹ�ｸ吭ｸ｣犧ｰ犧扉ｸｱ犧壟ｸ巵ｸ≒ｸ歩ｸｴ犹犧｡犧ｷ犹謂ｸｭ犧伶ｸｳ犧≒ｸｴ犧謂ｸ≒ｸ｣犧｣犧｡犧伶ｸｱ犹謂ｸｧ犹�ｸ� 犹犧癌ｹ謂ｸ� 犹犧｣犧ｵ犧｢犧吭ｸ｣犧ｹ犹� 犹犧･犹謂ｸ吭ｸ≒ｸｵ犧ｬ犧ｲ 犧ｫ犧｣犧ｷ犧ｭ犧ｧ犧ｲ犧扉ｸ�犧ｲ犧�';
+    Color brainColor = AppColors.success;
+    double dopamineLevel = 0.45;
+
+    String detailFeeling = '犧�ｸｧ犧ｲ犧｡犧ｪ犧ｸ犧もｸ歩ｸｲ犧｡犧倨ｸ｣犧｣犧｡犧癌ｸｲ犧歩ｸｴ 犧ｪ犧�ｸ� 犧｡犧ｵ犧ｪ犧｡犧ｲ犧倨ｸｴ 犧｡犧ｱ犹謂ｸ吭ｸ�ｸ� 犹≒ｸ･犧ｰ犧�ｸｧ犧壟ｸ�ｸｸ犧｡犧歩ｸ吭ｹ犧ｭ犧�ｹ�ｸ扉ｹ霞ｸ扉ｸｵ犹犧｢犧ｵ犹謂ｸ｢犧｡';
+    String detailMechanism = '犧ｪ犧｡犧ｭ犧�ｸｫ犧･犧ｱ犹謂ｸ�ｸｪ犧ｲ犧｣犧ｪ犧ｸ犧もｹもｸ扉ｸ巵ｸｲ犧｡犧ｵ犧吭ｹ≒ｸ･犧ｰ犧｣犧ｰ犧壟ｸｲ犧｢犧≒ｸ･犧ｱ犧壟ｸ伶ｸｲ犧�ｸ癌ｹ謂ｸｭ犧�ｸ扉ｸｹ犧扉ｸ≒ｸ･犧ｱ犧壟ｸ歩ｸｲ犧｡犧倨ｸ｣犧｣犧｡犧癌ｸｲ犧歩ｸｴ 犹犧樅ｸｷ犹謂ｸｭ犧�ｸｧ犧壟ｸ�ｸｸ犧｡犹�ｸ｡犹謂ｹ�ｸｫ犹霞ｸ歩ｸｷ犹謂ｸ吭ｸ歩ｸｱ犧ｧ犹犧≒ｸｴ犧吭ｸもｸ吭ｸｲ犧�';
+    String detailEffect = '犧樅ｸｱ犧亭ｸ吭ｸｲ犧ｪ犧｡犧ｭ犧�ｸｪ犹謂ｸｧ犧吭ｸｫ犧吭ｹ霞ｸｲ 犹犧ｪ犧｣犧ｴ犧｡犧ｪ犧｡犧ｲ犧倨ｸｴ 犧�ｸｧ犧ｲ犧｡犧�ｸｴ犧扉ｸｪ犧｣犹霞ｸｲ犧�ｸｪ犧｣犧｣犧�ｹ� 犹≒ｸ･犧ｰ犧≒ｸｲ犧｣犧�ｸｧ犧壟ｸ�ｸｸ犧｡犧ｭ犧ｲ犧｣犧｡犧内ｹ呉ｹ�ｸ吭ｸ｣犧ｰ犧｢犧ｰ犧｢犧ｲ犧ｧ';
+
+    if (_currentStep == 1) {
+      brainStatus = '犧もｸ内ｸｰ犹犧ｪ犧樅ｸｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧� (犹もｸ扉ｸ巵ｸｲ犧｡犧ｵ犧吭ｸ･犹霞ｸ吭ｸもｸｵ犧扉ｸ謂ｸｳ犧≒ｸｱ犧�)';
+      brainDesc = '犧ｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧扉ｹ犧もｹ霞ｸｲ犹�ｸ巵ｸ壟ｸ･犹�ｸｭ犧≒ｸ癌ｹ謂ｸｭ犧�ｸ扉ｸｹ犧扉ｸ≒ｸ･犧ｱ犧壟ｸもｸｭ犧�ｸｪ犧｡犧ｭ犧� 犧伶ｸｳ犹�ｸｫ犹霞ｹもｸ扉ｸ巵ｸｲ犧｡犧ｵ犧吭ｸ･犹霞ｸ吭ｸ伶ｸｰ犧･犧ｱ犧≒ｹ≒ｸ･犧ｰ犧≒ｸ｣犧ｰ犧歩ｸｸ犹霞ｸ吭ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧伶ｸ｣犧ｸ犧吭ｹ≒ｸ｣犧�ｸ歩ｹ謂ｸｭ犹犧吭ｸｷ犹謂ｸｭ犧�';
+      brainColor = Colors.redAccent;
+      dopamineLevel = 1.0;
+
+      detailFeeling = '犧歩ｸｷ犹謂ｸ吭ｸ歩ｸｱ犧ｧ犧ｪ犧ｸ犧扉ｸもｸｵ犧� 犹犧�ｸ･犧ｴ犧壟ｹ犧�ｸ･犧ｴ犹霞ｸ｡ 犧ｪ犧ｸ犧もｸ癌ｸｱ犹謂ｸｧ犧�ｸ｣犧ｲ犧ｧ犹≒ｸ壟ｸ壟ｸ･犹霞ｸ吭ｸ伶ｸｰ犧･犧ｱ犧� 犹≒ｸ･犧ｰ犧ｫ犧ｱ犧ｧ犹�ｸ謂ｹ犧歩ｹ霞ｸ吭ｹ犧｣犹�ｸｧ犧憫ｸｴ犧扉ｸ巵ｸ≒ｸ歩ｸｴ';
+      detailMechanism = '犹もｸ｡犹犧･犧≒ｸｸ犧･犧｢犧ｲ犹犧ｪ犧樅ｸ歩ｸｴ犧扉ｸ壟ｸ･犹�ｸｭ犧≒ｸ巵ｸｱ犹癌ｸ｡犧扉ｸｹ犧扉ｸ≒ｸ･犧ｱ犧� 犧伶ｸｳ犹�ｸｫ犹霞ｹもｸ扉ｸ巵ｸｲ犧｡犧ｵ犧吭ｸ歩ｸｴ犧扉ｸ�ｹ霞ｸｲ犧�ｸｭ犧｢犧ｹ犹謂ｹ�ｸ吭ｸ癌ｹ謂ｸｭ犧�ｸｧ犹謂ｸｲ犧�ｹ≒ｸ･犧ｰ犧≒ｸ｣犧ｰ犧歩ｸｸ犹霞ｸ吭ｸ歩ｸｱ犧ｧ犧｣犧ｱ犧壟ｹ�ｸ｡犹謂ｸｫ犧｢犧ｸ犧扉ｸｫ犧｢犹謂ｸｭ犧�';
+      detailEffect = '犧ｪ犧｡犧ｭ犧�ｹ犧｣犧ｴ犹謂ｸ｡犹犧ｪ犧ｷ犹謂ｸｭ犧｡犹≒ｸ･犧ｰ犧癌ｸｴ犧吭ｸ≒ｸｱ犧壟ｹ≒ｸ｣犧�ｸ≒ｸ｣犧ｰ犧歩ｸｸ犹霞ｸ吭ｸ伶ｸｵ犹謂ｸ｣犧ｸ犧吭ｹ≒ｸ｣犧� 犧伶ｸｳ犹�ｸｫ犹霞ｸ≒ｸｴ犧謂ｸ≒ｸ｣犧｣犧｡犧巵ｸ≒ｸ歩ｸｴ犹�ｸ吭ｸ癌ｸｵ犧ｧ犧ｴ犧歩ｸ巵ｸ｣犧ｰ犧謂ｸｳ犧ｧ犧ｱ犧吭ｹ�ｸ｡犹謂ｸｪ犧ｲ犧｡犧ｲ犧｣犧籾ｸｪ犧｣犹霞ｸｲ犧�ｸ�ｸｧ犧ｲ犧｡犧ｪ犧ｸ犧もｹ�ｸ扉ｹ霞ｸｭ犧ｵ犧�';
+    } else if (_currentStep == 2) {
+      brainStatus = '犧ｫ犧･犧ｱ犧�ｸｫ犧｡犧扉ｸ､犧伶ｸ倨ｸｴ犹�/犧籾ｸｭ犧吭ｸ｢犧ｲ (犧ｪ犧｡犧ｭ犧�ｹ犧ｫ犧ｵ犹謂ｸ｢犧ｧ犹犧霞ｸｲ)';
+      brainDesc = '犧ｪ犧｡犧ｭ犧�ｸ巵ｸ｣犧ｱ犧壟ｸ歩ｸｱ犧ｧ犹もｸ扉ｸ｢犧伶ｸｳ犧･犧ｲ犧｢犧歩ｸｱ犧ｧ犧｣犧ｱ犧壟ｹもｸ扉ｸ巵ｸｲ犧｡犧ｵ犧吭ｹ≒ｸ･犧ｰ犧ｫ犧｢犧ｸ犧扉ｸ憫ｸ･犧ｴ犧歩ｸｪ犧ｲ犧｣犧ｪ犧ｸ犧もｸ癌ｸｱ犹謂ｸｧ犧�ｸ｣犧ｲ犧ｧ 犧伶ｸｳ犹�ｸｫ犹霞ｸ｣犧ｰ犧扉ｸｱ犧壟ｹもｸ扉ｸ巵ｸｲ犧｡犧ｵ犧吭ｸ扉ｸｴ犹謂ｸ�ｸ歩ｹ謂ｸｳ犧≒ｸｧ犹謂ｸｲ犧巵ｸ≒ｸ歩ｸｴ';
+      brainColor = Colors.grey;
+      dopamineLevel = 0.08;
+
+      detailFeeling = '犧ｫ犧扉ｸｫ犧ｹ犹� 犧金ｸｶ犧｡犹犧ｨ犧｣犹霞ｸｲ 犧ｧ犧ｴ犧歩ｸ≒ｸ≒ｸｱ犧�ｸｧ犧･ 犧ｭ犹謂ｸｭ犧吭ｹ犧樅ｸ･犧ｵ犧｢犹�ｸ｣犹霞ｸ樅ｸ･犧ｱ犧�ｸ�ｸｲ犧� 犹≒ｸ･犧ｰ犹犧≒ｸｴ犧扉ｸｭ犧ｲ犧≒ｸｲ犧｣犹もｸｫ犧｢犧ｫ犧ｲ犹犧樅ｸｷ犹謂ｸｭ犧伶ｸｵ犹謂ｸ謂ｸｰ犹犧ｪ犧樅ｸ金ｹ霞ｸｳ';
+      detailMechanism = '犧巵ｸｱ犹癌ｸ｡犧扉ｸｹ犧扉ｸ≒ｸ･犧ｱ犧壟ｸ伶ｸｳ犧�ｸｲ犧吭ｸｭ犧ｵ犧≒ｸ�ｸ｣犧ｱ犹霞ｸ�ｹ≒ｸ歩ｹ謂ｹもｸ扉ｸ巵ｸｲ犧｡犧ｵ犧吭ｹ≒ｸ伶ｸ壟ｹ�ｸ｡犹謂ｹ犧ｫ犧･犧ｷ犧ｭ 犹≒ｸ･犧ｰ犧歩ｸｱ犧ｧ犧｣犧ｱ犧壟ｸｪ犧ｲ犧｣犧ｪ犧ｸ犧もｸ･犧扉ｸ謂ｸｳ犧吭ｸｧ犧吭ｸ･犧� (Downregulation)';
+      detailEffect = '犹犧≒ｸｴ犧扉ｸ�犧ｲ犧ｧ犧ｰ犧扉ｸｷ犹霞ｸｭ犧｢犧ｲ (Tolerance) 犧歩ｹ霞ｸｭ犧�ｹ犧樅ｸｴ犹謂ｸ｡犧巵ｸ｣犧ｴ犧｡犧ｲ犧内ｸｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧扉ｹ犧樅ｸｷ犹謂ｸｭ犹�ｸｫ犹霞ｹ�ｸ扉ｹ霞ｸ�ｸｧ犧ｲ犧｡犧ｪ犧ｸ犧もｹ犧伶ｹ謂ｸｲ犹犧扉ｸｴ犧｡ 犧吭ｸｳ犹�ｸ巵ｸｪ犧ｹ犹謂ｸ≒ｸｲ犧｣犧歩ｸｴ犧扉ｸ籾ｸｲ犧ｧ犧｣';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: widget.isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                _buildStepTab(0, '1. 犧ｪ犧｡犧ｭ犧�ｸ巵ｸ≒ｸ歩ｸｴ', Icons.spa_rounded, AppColors.success),
+                const SizedBox(width: 4),
+                _buildStepTab(1, '2. 犧もｸ内ｸｰ犹犧ｪ犧樅ｸ｢犧ｲ', Icons.bolt_rounded, Colors.redAccent),
+                const SizedBox(width: 4),
+                _buildStepTab(2, '3. 犧ｫ犧･犧ｱ犧�ｸｫ犧｡犧扉ｸ､犧伶ｸ倨ｸｴ犹�', Icons.mood_bad_rounded, Colors.grey),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+            ),
+            child: CustomPaint(
+              painter: SynapseDopaminePainter(
+                currentStep: _currentStep,
+                isDark: widget.isDark,
+                animValue: _animController.value,
+                repaint: _animController,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('犧｣犧ｰ犧扉ｸｱ犧壟ｸｪ犧ｲ犧｣犧�ｸｧ犧ｲ犧｡犧ｪ犧ｸ犧� Dopamine:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt', color: brainColor)),
+              Text('${(dopamineLevel * 100).toInt()}%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: brainColor, fontFamily: 'Prompt')),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: dopamineLevel,
+              minHeight: 8,
+              backgroundColor: widget.isDark ? Colors.white.withOpacity(0.14) : Colors.black12,
+              valueColor: AlwaysStoppedAnimation<Color>(brainColor),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _currentStep == 0
+                    ? Icons.check_circle_rounded
+                    : (_currentStep == 1 ? Icons.offline_bolt_rounded : Icons.warning_amber_rounded),
+                color: brainColor,
+                size: 16,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  brainStatus,
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12 * widget.fontScale, color: brainColor, fontFamily: 'Prompt'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            brainDesc,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11.5 * widget.fontScale,
+              color: widget.isDark ? Colors.white70 : AppColors.textDark,
+              fontFamily: 'Prompt',
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Deep dive explanation card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: brainColor.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: brainColor.withOpacity(0.18), width: 1.2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '�庁 犹犧謂ｸｲ犧ｰ犧･犧ｶ犧≒ｸｪ犧�犧ｲ犧ｧ犧ｰ犧ｪ犧｡犧ｭ犧�ｸもｸ内ｸｰ犧吭ｸｵ犹�:',
+                  style: TextStyle(
+                    fontSize: 11.5 * widget.fontScale,
+                    fontWeight: FontWeight.bold,
+                    color: brainColor,
+                    fontFamily: 'Prompt',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildDetailsRow('�鹿 犧�ｸｧ犧ｲ犧｡犧｣犧ｹ犹霞ｸｪ犧ｶ犧�:', detailFeeling, widget.isDark, widget.fontScale),
+                const SizedBox(height: 6),
+                _buildDetailsRow('�溌 犧≒ｸ･犹�ｸ≒ｸｪ犧｡犧ｭ犧�:', detailMechanism, widget.isDark, widget.fontScale),
+                const SizedBox(height: 6),
+                _buildDetailsRow('笞��� 犧憫ｸ･犧≒ｸ｣犧ｰ犧伶ｸ�:', detailEffect, widget.isDark, widget.fontScale),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SynapseDopaminePainter extends CustomPainter {
+  final int currentStep;
+  final bool isDark;
+  final double animValue;
+
+  SynapseDopaminePainter({
+    required this.currentStep,
+    required this.isDark,
+    required this.animValue,
+    required Listenable repaint,
+  }) : super(repaint: repaint);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double ySynapseTop = size.height * 0.25;
+    final double ySynapseBottom = size.height * 0.72;
+
+    // Draw neurons outlines
+    final neuronPaint = Paint()
+      ..color = isDark ? Colors.white.withOpacity(0.12) : Colors.black12
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+
+    // Sending terminal (Top bulb with reuptake notches)
+    final topPath = Path();
+    topPath.moveTo(size.width * 0.1, 0);
+    topPath.lineTo(size.width * 0.3, 0);
+    topPath.quadraticBezierTo(size.width * 0.3, ySynapseTop * 0.7, size.width * 0.25, ySynapseTop);
+    
+    // Left reuptake gate (notches upward)
+    topPath.lineTo(size.width * 0.31, ySynapseTop);
+    topPath.lineTo(size.width * 0.31, ySynapseTop - 12);
+    topPath.lineTo(size.width * 0.39, ySynapseTop - 12);
+    topPath.lineTo(size.width * 0.39, ySynapseTop);
+    
+    // Connect center
+    topPath.lineTo(size.width * 0.61, ySynapseTop);
+    
+    // Right reuptake gate (notches upward)
+    topPath.lineTo(size.width * 0.61, ySynapseTop - 12);
+    topPath.lineTo(size.width * 0.69, ySynapseTop - 12);
+    topPath.lineTo(size.width * 0.69, ySynapseTop);
+    
+    // Continue right side
+    topPath.lineTo(size.width * 0.75, ySynapseTop);
+    topPath.quadraticBezierTo(size.width * 0.70, ySynapseTop * 0.7, size.width * 0.70, 0);
+    topPath.lineTo(size.width * 0.9, 0);
+    canvas.drawPath(topPath, neuronPaint);
+
+    // Receiving terminal (Bottom bulb)
+    final bottomPath = Path();
+    bottomPath.moveTo(size.width * 0.1, size.height);
+    bottomPath.lineTo(size.width * 0.2, ySynapseBottom);
+    bottomPath.lineTo(size.width * 0.8, ySynapseBottom);
+    bottomPath.lineTo(size.width * 0.9, size.height);
+    canvas.drawPath(bottomPath, neuronPaint);
+
+    // Label texts inside synapse representation
+    void drawText(String text, Offset position, Color color, {double fontSize = 8.5, bool alignCenter = true}) {
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: TextStyle(
+            color: color,
+            fontSize: fontSize,
+            fontFamily: 'Prompt',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final offset = alignCenter
+          ? Offset(position.dx - textPainter.width / 2, position.dy - textPainter.height / 2)
+          : position;
+      textPainter.paint(canvas, offset);
+    }
+
+    final labelColor = isDark ? Colors.white30 : Colors.black38;
+    drawText('犹犧金ｸ･犧･犹呉ｸｪ犹謂ｸ�ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧� (Sending Neuron)', Offset(size.width / 2, 10), labelColor);
+    drawText('犹犧金ｸ･犧･犹呉ｸ｣犧ｱ犧壟ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧� (Receiving Neuron)', Offset(size.width / 2, size.height - 10), labelColor);
+
+    // Reuptake Pump labels & visual states
+    if (currentStep == 0) {
+      drawText('犧巵ｸｱ犹癌ｸ｡犧扉ｸｹ犧扉ｸ≒ｸ･犧ｱ犧壟ｸ伶ｸｳ犧�ｸｲ犧� �売', Offset(size.width * 0.5, ySynapseTop - 20), AppColors.success, fontSize: 8.5);
+      
+      // Draw upward arrows for both pumps showing active reuptake
+      final arrowPaint = Paint()
+        ..color = AppColors.success.withOpacity(0.8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+      
+      // Left pump arrow
+      final pathArrowLeft = Path()
+        ..moveTo(size.width * 0.35, ySynapseTop + 8)
+        ..lineTo(size.width * 0.35, ySynapseTop - 4)
+        ..moveTo(size.width * 0.35 - 3, ySynapseTop - 1)
+        ..lineTo(size.width * 0.35, ySynapseTop - 4)
+        ..lineTo(size.width * 0.35 + 3, ySynapseTop - 1);
+      canvas.drawPath(pathArrowLeft, arrowPaint);
+
+      // Right pump arrow
+      final pathArrowRight = Path()
+        ..moveTo(size.width * 0.65, ySynapseTop + 8)
+        ..lineTo(size.width * 0.65, ySynapseTop - 4)
+        ..moveTo(size.width * 0.65 - 3, ySynapseTop - 1)
+        ..lineTo(size.width * 0.65, ySynapseTop - 4)
+        ..lineTo(size.width * 0.65 + 3, ySynapseTop - 1);
+      canvas.drawPath(pathArrowRight, arrowPaint);
+    } else if (currentStep == 1) {
+      drawText('�圷 犧巵ｸｱ犹癌ｸ｡犹もｸ扉ｸ吭ｸ壟ｸ･犹�ｸｭ犧�! 犧ｪ犧ｲ犧｣犧ｪ犧ｸ犧もｸ｣犧ｰ犧壟ｸｲ犧｢犹�ｸ｡犹謂ｹ�ｸ扉ｹ�', Offset(size.width * 0.5, ySynapseTop - 20), Colors.redAccent, fontSize: 8.5);
+      
+      // Draw red drug blockers blocking the pumps
+      final drugPaint = Paint()
+        ..color = Colors.redAccent
+        ..style = PaintingStyle.fill;
+      final drugOutline = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
+      
+      // Left pump blocker
+      final rect1 = Rect.fromCenter(center: Offset(size.width * 0.35, ySynapseTop - 6), width: 14, height: 10);
+      canvas.drawRect(rect1, drugPaint);
+      canvas.drawRect(rect1, drugOutline);
+      drawText('犧｢犧ｲ', Offset(size.width * 0.35, ySynapseTop - 6), Colors.white, fontSize: 7);
+
+      // Right pump blocker
+      final rect2 = Rect.fromCenter(center: Offset(size.width * 0.65, ySynapseTop - 6), width: 14, height: 10);
+      canvas.drawRect(rect2, drugPaint);
+      canvas.drawRect(rect2, drugOutline);
+      drawText('犧｢犧ｲ', Offset(size.width * 0.65, ySynapseTop - 6), Colors.white, fontSize: 7);
+    } else {
+      drawText('犧巵ｸｱ犹癌ｸ｡犧ｧ犹謂ｸｲ犧�ｹ犧巵ｸ･犹謂ｸｲ (犹�ｸ｡犹謂ｸ｡犧ｵ犹もｸ扉ｸ巵ｸｲ犧｡犧ｵ犧吭ｹ�ｸｫ犹霞ｸ｣犧ｵ犹�ｸ金ｹ犧�ｸｴ犧･)', Offset(size.width * 0.5, ySynapseTop - 20), Colors.grey, fontSize: 8.5);
+    }
+
+    // Draw receptor gates (U-shapes at the bottom)
+    final receptorPaint = Paint()
+      ..color = currentStep == 2
+          ? Colors.grey
+          : (currentStep == 1 ? Colors.redAccent : AppColors.success)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+
+    final double numReceptors = 5;
+    for (int i = 0; i < numReceptors; i++) {
+      final double rx = size.width * (0.3 + 0.1 * i);
+      final Path rPath = Path()
+        ..moveTo(rx - 8, ySynapseBottom)
+        ..lineTo(rx - 8, ySynapseBottom + 6)
+        ..lineTo(rx + 8, ySynapseBottom + 6)
+        ..lineTo(rx + 8, ySynapseBottom);
+      
+      if (currentStep == 1) {
+        // Glowing overstimulated receptors
+        final glowPaint = Paint()
+          ..color = Colors.orangeAccent.withOpacity(0.35)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 6;
+        canvas.drawPath(rPath, glowPaint);
+      }
+      canvas.drawPath(rPath, receptorPaint);
+      
+      // If overloaded, draw a tiny warning spark symbol over receptors
+      if (currentStep == 1 && i % 2 == 0) {
+        drawText('笞｡', Offset(rx, ySynapseBottom - 4), Colors.amber, fontSize: 9);
+      }
+    }
+
+    // Receptor annotations
+    if (currentStep == 0) {
+      drawText('犧歩ｸｱ犧ｧ犧｣犧ｱ犧壟ｸ�ｸｧ犧ｲ犧｡犧ｪ犧ｸ犧もｸ伶ｸｳ犧�ｸｲ犧吭ｸ巵ｸ≒ｸ歩ｸｴ 笨�', Offset(size.width / 2, ySynapseBottom + 18), AppColors.success, fontSize: 8.5);
+    } else if (currentStep == 1) {
+      drawText('笞｡ 犧歩ｸｱ犧ｧ犧｣犧ｱ犧壟ｹもｸ扉ｸ吭ｸ≒ｸ｣犧ｰ犧歩ｸｸ犹霞ｸ吭ｸ｣犧ｸ犧吭ｹ≒ｸ｣犧�/犧･犹霞ｸｲ', Offset(size.width / 2, ySynapseBottom + 18), Colors.orangeAccent, fontSize: 8.5);
+    } else {
+      drawText('笶� 犧歩ｸｱ犧ｧ犧｣犧ｱ犧壟ｸ癌ｸｴ犧吭ｸ癌ｸｲ犹≒ｸ･犧ｰ犹犧ｪ犧ｵ犧｢犧ｫ犧ｲ犧｢ (犧･犧扉ｸ･犧�)', Offset(size.width / 2, ySynapseBottom + 18), Colors.grey, fontSize: 8.5);
+    }
+
+    // Determine particle properties based on state
+    final dopaminePaint = Paint()..color = Colors.amber..style = PaintingStyle.fill;
+    final toxicPaint = Paint()..color = Colors.redAccent..style = PaintingStyle.fill;
+
+    // Draw flowing particles
+    if (currentStep == 2) {
+      // Crash: Very few, slow particles (represents dopamine depletion)
+      final count = 2;
+      final speedMultiplier = 0.2;
+      for (int i = 0; i < count; i++) {
+        final x = size.width * (0.4 + 0.2 * i);
+        final yFraction = (i * 0.45 + animValue * speedMultiplier) % 1.0;
+        final y = ySynapseTop + (ySynapseBottom - ySynapseTop) * yFraction;
+        canvas.drawCircle(Offset(x, y), 3, Paint()..color = Colors.amber.withOpacity(0.4));
+      }
+    } else if (currentStep == 1) {
+      // Drug Intake: Overloaded flow of dopamine + toxic drug particles
+      final count = 18;
+      final speedMultiplier = 1.8;
+      for (int i = 0; i < count; i++) {
+        final x = size.width * (0.24 + 0.032 * i);
+        final yFraction = (i * 0.17 + animValue * speedMultiplier) % 1.0;
+        final y = ySynapseTop + (ySynapseBottom - ySynapseTop) * yFraction;
+        
+        if (i % 2 == 0) {
+          // Flooding dopamine (larger and brighter)
+          canvas.drawCircle(Offset(x, y), 5.5, dopaminePaint);
+        } else {
+          // Toxic drug molecules (red squares)
+          canvas.drawRect(Rect.fromCenter(center: Offset(x, y), width: 7.5, height: 7.5), toxicPaint);
+        }
+      }
+    } else {
+      // Normal balance: Moderate natural flow
+      // 5 falling downwards in center
+      final count = 5;
+      final speedMultiplier = 0.9;
+      for (int i = 0; i < count; i++) {
+        final x = size.width * (0.42 + 0.04 * i);
+        final yFraction = (i * 0.2 + animValue * speedMultiplier) % 1.0;
+        final y = ySynapseTop + (ySynapseBottom - ySynapseTop) * yFraction;
+        canvas.drawCircle(Offset(x, y), 4.5, dopaminePaint);
+      }
+      
+      // 2 recycling upwards to the pumps
+      final recycleCount = 2;
+      for (int i = 0; i < recycleCount; i++) {
+        final x = size.width * (i == 0 ? 0.35 : 0.65);
+        final yFraction = (i * 0.5 + animValue * 0.8) % 1.0;
+        final y = ySynapseBottom - (ySynapseBottom - ySynapseTop) * yFraction;
+        canvas.drawCircle(Offset(x, y), 3.5, Paint()..color = Colors.amber.withOpacity(0.75));
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant SynapseDopaminePainter oldDelegate) {
+    return oldDelegate.currentStep != currentStep ||
+        oldDelegate.isDark != isDark ||
+        oldDelegate.animValue != animValue;
+  }
+}
+// ============================================================================
+// WIDGET 1.2: ArmorShieldVisual (Armor Up! Shield Game)
+// ============================================================================
+class ArmorShieldVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const ArmorShieldVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<ArmorShieldVisual> createState() => _ArmorShieldVisualState();
+}
+
+class _ArmorShieldVisualState extends State<ArmorShieldVisual> {
+  bool _knowledge = false;
+  bool _mindset = false;
+  bool _refusal = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final allEquipped = _knowledge && _mindset && _refusal;
+    String status = allEquipped ? '犹犧≒ｸ｣犧ｲ犧ｰ犧�ｸ｣犧壟ｸ籾ｹ霞ｸｧ犧� 犧巵ｹ霞ｸｭ犧�ｸ≒ｸｱ犧吭ｸ癌ｸｵ犧ｧ犧ｴ犧� 100%' : '犹もｸ巵ｸ｣犧扉ｹ犧巵ｸｴ犧扉ｹ犧≒ｸ｣犧ｲ犧ｰ犧巵ｹ霞ｸｭ犧�ｸ≒ｸｱ犧吭ｸもｸｭ犧�ｸ�ｸｸ犧内ｹ�ｸｫ犹霞ｸ�ｸ｣犧�';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: 110,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: CustomPaint(
+              painter: DefenseShieldPainter(
+                knowledge: _knowledge,
+                mindset: _mindset,
+                refusal: _refusal,
+                isDark: widget.isDark,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            status,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12 * widget.fontScale,
+              color: allEquipped ? AppColors.success : Colors.grey,
+              fontFamily: 'Prompt',
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _buildShieldButton(Icons.shield_rounded, '犧�ｸｧ犧ｲ犧｡犧｣犧ｹ犹�', _knowledge, () => setState(() => _knowledge = !_knowledge)),
+              const SizedBox(width: 8),
+              _buildShieldButton(Icons.psychology_rounded, '犧｡犧ｵ犧ｪ犧歩ｸｴ', _mindset, () => setState(() => _mindset = !_mindset)),
+              const SizedBox(width: 8),
+              _buildShieldButton(Icons.record_voice_over_rounded, '犧巵ｸ鐘ｸｴ犹犧ｪ犧�', _refusal, () => setState(() => _refusal = !_refusal)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShieldButton(IconData icon, String name, bool active, VoidCallback onTap) {
+    return Expanded(
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 16),
+        label: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(name, style: const TextStyle(fontSize: 11, fontFamily: 'Prompt', fontWeight: FontWeight.bold)),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: active ? AppColors.success : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]),
+          foregroundColor: active ? Colors.white : (widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85)),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+        ),
+      ),
+    );
+  }
+}
+
+class DefenseShieldPainter extends CustomPainter {
+  final bool knowledge;
+  final bool mindset;
+  final bool refusal;
+  final bool isDark;
+
+  DefenseShieldPainter({
+    required this.knowledge,
+    required this.mindset,
+    required this.refusal,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double cx = size.width / 2;
+    final double cy = size.height / 2;
+
+    void drawEmoji(String emoji, Offset center, double size) {
+      final tp = TextPainter(
+        text: TextSpan(
+          text: emoji,
+          style: TextStyle(fontSize: size),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(center.dx - tp.width / 2, center.dy - tp.height / 2));
+    }
+
+    final allEquipped = knowledge && mindset && refusal;
+
+    // Inner Core (Life)
+    final corePaint = Paint()
+      ..color = allEquipped ? Colors.amber : Colors.amber.withOpacity(0.4)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(cx, cy), 16, corePaint);
+
+    final babyEmoji = allEquipped ? '�存' : '�于';
+    drawEmoji(babyEmoji, Offset(cx, cy), 16);
+
+    // Outer Rings
+    if (knowledge) {
+      final p = Paint()
+        ..color = const Color(0xFF3B82F6).withOpacity(0.3)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+      canvas.drawCircle(Offset(cx, cy), 25, p);
+    }
+    if (mindset) {
+      final p = Paint()
+        ..color = const Color(0xFFA855F7).withOpacity(0.3)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+      canvas.drawCircle(Offset(cx, cy), 35, p);
+    }
+    if (refusal) {
+      final p = Paint()
+        ..color = const Color(0xFF10B981).withOpacity(0.35)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+      canvas.drawCircle(Offset(cx, cy), 45, p);
+    }
+
+    // Threat emojis bouncing off or infiltrating
+    if (allEquipped) {
+      // Glow safe ring
+      final safePaint = Paint()
+        ..color = AppColors.success.withOpacity(0.12)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset(cx, cy), 45, safePaint);
+
+      // Skulls/virus bouncing off far away
+      drawEmoji('�逐', Offset(cx - 70, cy - 30), 18);
+      drawEmoji('�ｦ�', Offset(cx + 70, cy + 30), 18);
+      drawEmoji('�徴', Offset(cx - 52, cy - 22), 12);
+      drawEmoji('�徴', Offset(cx + 52, cy + 22), 12);
+    } else {
+      // Threat emojis infiltrating close to the center baby
+      drawEmoji('�逐', Offset(cx - 28, cy - 12), 18);
+      drawEmoji('�ｦ�', Offset(cx + 20, cy + 20), 18);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant DefenseShieldPainter oldDelegate) {
+    return oldDelegate.knowledge != knowledge ||
+        oldDelegate.mindset != mindset ||
+        oldDelegate.refusal != refusal ||
+        oldDelegate.isDark != isDark;
+  }
+}
+
+// ============================================================================
+// WIDGET 2.0: StimulantRushVisual (Heart Rate Rush)
+// ============================================================================
+class StimulantRushVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const StimulantRushVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<StimulantRushVisual> createState() => _StimulantRushVisualState();
+}
+
+class _StimulantRushVisualState extends State<StimulantRushVisual> with SingleTickerProviderStateMixin {
+  bool _isStimulated = false;
+  late AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final speed = _isStimulated ? 180 : 72;
+    _animController.duration = Duration(milliseconds: _isStimulated ? 400 : 1200);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('犹犧�ｸ｣犧ｷ犹謂ｸｭ犧�ｸ謂ｸｳ犧･犧ｭ犧�ｸ≒ｸｲ犧｣犹犧歩ｹ霞ｸ吭ｸもｸｭ犧�ｸｫ犧ｱ犧ｧ犹�ｸ�:', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+              Text('$speed BPM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: _isStimulated ? Colors.redAccent : AppColors.success, fontFamily: 'Prompt')),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            height: 80,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: AnimatedBuilder(
+              animation: _animController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: DynamicEcgPainter(
+                    phase: _animController.value,
+                    isFast: _isStimulated,
+                    color: _isStimulated ? Colors.redAccent : AppColors.success,
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: () {
+              setState(() {
+                _isStimulated = !_isStimulated;
+              });
+            },
+            icon: Icon(_isStimulated ? Icons.stop_circle_rounded : Icons.bolt_rounded, size: 18),
+            label: Text(
+              _isStimulated ? '犧ｫ犧｢犧ｸ犧扉ｸ謂ｸｳ犧･犧ｭ犧�ｸ､犧伶ｸ倨ｸｴ犹�' : '犧ｪ犧ｧ犧ｴ犧歩ｸ癌ｹ呉ｸ謂ｸｳ犧･犧ｭ犧�ｸ､犧伶ｸ倨ｸｴ犹呉ｸ≒ｸ｣犧ｰ犧歩ｸｸ犹霞ｸ�',
+              style: const TextStyle(fontFamily: 'Prompt', fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _isStimulated ? Colors.redAccent : Colors.amber,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DynamicEcgPainter extends CustomPainter {
+  final double phase;
+  final bool isFast;
+  final Color color;
+
+  DynamicEcgPainter({required this.phase, required this.isFast, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.5);
+
+    double loops = isFast ? 4 : 2;
+    for (double i = 0; i <= size.width; i++) {
+      double relativeX = (i / size.width) * loops - phase;
+      double cyclePosition = relativeX - relativeX.floor();
+
+      double y = size.height * 0.5;
+      if (cyclePosition > 0.3 && cyclePosition < 0.35) {
+        y = size.height * 0.2; // QRS peak
+      } else if (cyclePosition > 0.35 && cyclePosition < 0.4) {
+        y = size.height * 0.85; // drop
+      } else if (cyclePosition > 0.45 && cyclePosition < 0.55) {
+        y = size.height * 0.4; // T wave
+      }
+
+      path.lineTo(i, y);
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant DynamicEcgPainter oldDelegate) {
+    return oldDelegate.phase != phase || oldDelegate.isFast != isFast || oldDelegate.color != color;
+  }
+}
+
+// ============================================================================
+// WIDGET 2.1: DepressantSlowVisual (Deep Slow Slumber)
+// ============================================================================
+class DepressantSlowVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const DepressantSlowVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<DepressantSlowVisual> createState() => _DepressantSlowVisualState();
+}
+
+class _DepressantSlowVisualState extends State<DepressantSlowVisual> {
+  double _intake = 0.0; // 0.0 to 1.0
+
+  @override
+  Widget build(BuildContext context) {
+    String stateText = '犧≒ｸｲ犧｣犧伶ｸｳ犧�ｸｲ犧吭ｸｪ犧｡犧ｭ犧�: 犧巵ｸ≒ｸ歩ｸｴ';
+    Color waveColor = Colors.blueAccent;
+    if (_intake > 0.8) {
+      stateText = '犧≒ｸ扉ｸ≒ｸｲ犧｣犧ｫ犧ｲ犧｢犹�ｸ謂ｹ犧霞ｸｵ犧｢犧壟ｸ樅ｸ･犧ｱ犧� (犧ｭ犧ｱ犧吭ｸ歩ｸ｣犧ｲ犧｢犧籾ｸｶ犧�ｸ癌ｸｵ犧ｧ犧ｴ犧�!)';
+      waveColor = Colors.redAccent;
+    } else if (_intake > 0.4) {
+      stateText = '犧�ｹ謂ｸｧ犧�ｸ金ｸｶ犧｡ 犧歩ｸｭ犧壟ｸｪ犧吭ｸｭ犧�ｹ犧癌ｸｷ犹謂ｸｭ犧�ｸ癌ｹ霞ｸｲ 犧�ｸｧ犧ｲ犧｡犧謂ｸｳ犹犧壟ｸ･犧ｭ';
+      waveColor = Colors.orangeAccent;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('犧謂ｸｳ犧･犧ｭ犧�ｸ､犧伶ｸ倨ｸｴ犹呉ｸ≒ｸ扉ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧�:', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+              Text('${(_intake * 100).toInt()}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: waveColor, fontFamily: 'Prompt')),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 70,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: CustomPaint(
+              painter: DepressWavePainter(intake: _intake, color: waveColor),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Slider(
+            value: _intake,
+            min: 0.0,
+            max: 1.0,
+            activeColor: waveColor,
+            onChanged: (val) => setState(() => _intake = val),
+          ),
+          Text(
+            stateText,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5 * widget.fontScale, color: waveColor, fontFamily: 'Prompt'),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DepressWavePainter extends CustomPainter {
+  final double intake;
+  final Color color;
+
+  DepressWavePainter({required this.intake, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.5);
+
+    double frequency = 1.0 + (1.0 - intake) * 4.0;
+    double amplitude = (1.0 - intake) * 16.0;
+
+    if (intake >= 0.95) {
+      // flatline
+      canvas.drawLine(Offset(0, size.height * 0.5), Offset(size.width, size.height * 0.5), paint);
+    } else {
+      for (double i = 0; i <= size.width; i++) {
+        final y = size.height * 0.5 + sin((i / size.width) * 2 * pi * frequency) * amplitude;
+        path.lineTo(i, y);
+      }
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant DepressWavePainter oldDelegate) {
+    return oldDelegate.intake != intake || oldDelegate.color != color;
+  }
+}
+
+// ============================================================================
+// WIDGET 2.2: RealityDistorterVisual (Reality Distorter Kaleidoscope)
+// ============================================================================
+// WIDGET 2.2: RealityDistorterVisual (Reality Distorter Kaleidoscope)
+// ============================================================================
+class RealityDistorterVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const RealityDistorterVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<RealityDistorterVisual> createState() => _RealityDistorterVisualState();
+}
+
+class _RealityDistorterVisualState extends State<RealityDistorterVisual> with SingleTickerProviderStateMixin {
+  bool _hallucinateMode = false;
+  late AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final activeColor = _hallucinateMode ? Colors.purpleAccent : AppColors.primary;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: activeColor.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          // Selectors
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => setState(() => _hallucinateMode = false),
+                  icon: const Icon(Icons.remove_red_eye_rounded, size: 14),
+                  label: const Text('犧�ｸｧ犧ｲ犧｡犧謂ｸ｣犧ｴ犧�', style: TextStyle(fontSize: 11, fontFamily: 'Prompt', fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: !_hallucinateMode
+                        ? AppColors.primary
+                        : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]),
+                    foregroundColor: !_hallucinateMode
+                        ? Colors.white
+                        : (widget.isDark ? Colors.white70 : AppColors.textDark),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => setState(() => _hallucinateMode = true),
+                  icon: const Icon(Icons.blur_on_rounded, size: 14),
+                  label: const Text('犧､犧伶ｸ倨ｸｴ犹呉ｸｫ犧･犧ｭ犧吭ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧�', style: TextStyle(fontSize: 11, fontFamily: 'Prompt', fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _hallucinateMode
+                        ? Colors.purpleAccent
+                        : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]),
+                    foregroundColor: _hallucinateMode ? Colors.white : (widget.isDark ? Colors.white70 : AppColors.textDark),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Simulation Display Box
+          Container(
+            height: 120,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: activeColor.withOpacity(0.25)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Stack(
+                children: [
+                  // Animated background for hallucinogen mode
+                  if (_hallucinateMode)
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: HallucinationWarpPainter(
+                          animValue: _animController.value,
+                          repaint: _animController,
+                        ),
+                      ),
+                    ),
+                  // Content Info
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      children: [
+                        // Left Visual Graphic
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _hallucinateMode
+                                ? Colors.purple.withOpacity(0.15)
+                                : Colors.blue.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                            boxShadow: _hallucinateMode
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.purpleAccent.withOpacity(0.3),
+                                      blurRadius: 10,
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: Icon(
+                            _hallucinateMode ? Icons.hourglass_empty_rounded : Icons.access_time_filled_rounded,
+                            color: _hallucinateMode ? Colors.purpleAccent : Colors.blueAccent,
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        // Right Descriptive Text
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _hallucinateMode ? '犧ｪ犧ｴ犹謂ｸ�ｸ伶ｸｵ犹謂ｸｪ犧｡犧ｭ犧�ｸ歩ｸｵ犧�ｸｧ犧ｲ犧｡犧憫ｸｴ犧�: 犧吭ｸｲ犧ｬ犧ｴ犧≒ｸｲ犧壟ｸｴ犧扉ｹ犧壟ｸｵ犹霞ｸ｢犧ｧ' : '犧ｪ犧ｴ犹謂ｸ�ｸ伶ｸｵ犹謂ｹ犧ｫ犹�ｸ吭ｸ謂ｸ｣犧ｴ犧�: 犧吭ｸｲ犧ｬ犧ｴ犧≒ｸｲ犧歩ｸｴ犧扉ｸ憫ｸ吭ｸｱ犧�ｸ巵ｸ≒ｸ歩ｸｴ',
+                                style: TextStyle(
+                                  fontSize: 13.5 * widget.fontScale,
+                                  fontWeight: FontWeight.w800,
+                                  color: _hallucinateMode ? Colors.purpleAccent : (widget.isDark ? Colors.white : AppColors.textDark),
+                                  fontFamily: 'Prompt',
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _hallucinateMode
+                                    ? '犧≒ｸｲ犧｣犧｣犧ｱ犧壟ｸ｣犧ｹ犹霞ｸ｡犧ｴ犧歩ｸｴ犧伶ｸ｣犧�ｸ≒ｸ･犧｡犹≒ｸ･犧ｰ犧｡犧ｴ犧歩ｸｴ犹犧ｧ犧･犧ｲ犧壟ｸｴ犧扉ｹ犧壟ｸｵ犹霞ｸ｢犧ｧ犹�ｸ巵ｹもｸ扉ｸ｢犧ｪ犧ｴ犹霞ｸ吭ｹ犧癌ｸｴ犧� 犧吭ｸｲ犧ｬ犧ｴ犧≒ｸｲ犧�ｸ･犹霞ｸｲ犧｢犧吭ｸｲ犧ｬ犧ｴ犧≒ｸｲ犧･犧ｰ犧･犧ｲ犧｢犧もｸｭ犧�ｸ扉ｸｲ犧･犧ｴ 犹�ｸｫ犧･犹もｸ�ｹ霞ｸ�ｹ≒ｸ･犧ｰ犹犧もｹ�ｸ｡犧ｫ犧｡犧ｸ犧吭ｸｭ犧｢犹謂ｸｲ犧�ｸｪ犧ｱ犧壟ｸｪ犧�'
+                                    : '犧吭ｸｲ犧ｬ犧ｴ犧≒ｸｲ犧伶ｸ｣犧�ｸ≒ｸ･犧｡犧�ｸ�ｸ｣犧ｹ犧� 犹≒ｸｪ犧扉ｸ�ｸ歩ｸｱ犧ｧ犹犧･犧もｹ≒ｸ･犧ｰ犹犧もｹ�ｸ｡犹犧ｧ犧･犧ｲ犧ｪ犧｡犹謂ｸｳ犹犧ｪ犧｡犧ｭ 犹犧扉ｸｴ犧吭ｹ犧巵ｹ�ｸ吭ｸ謂ｸｱ犧�ｸｫ犧ｧ犧ｰ犧歩ｸｲ犧｡犧ｧ犧ｴ犧吭ｸｲ犧伶ｸｵ犧巵ｸ≒ｸ歩ｸｴ',
+                                style: TextStyle(
+                                  fontSize: 11 * widget.fontScale,
+                                  color: widget.isDark ? Colors.white70 : AppColors.textGrey,
+                                  fontFamily: 'Prompt',
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Bottom Warning Row with expanded text to fix overflow on small screens
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.report_problem_rounded, color: Colors.purpleAccent, size: 16),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '犧､犧伶ｸ倨ｸｴ犹呉ｸｫ犧･犧ｭ犧吭ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧伶ｹ犧もｹ霞ｸｲ犧�ｸｧ犧壟ｸ�ｸｸ犧｡犧｣犧ｰ犧壟ｸ壟ｸ≒ｸｲ犧｣犧伶ｸｳ犧�ｸｲ犧吭ｸｫ犧･犧ｱ犧≒ｸもｸｭ犧�ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧伶ｸｪ犧ｱ犧｡犧憫ｸｱ犧ｪ 犧壟ｸｴ犧扉ｹ犧壟ｸｷ犧ｭ犧吭ｸ�犧ｲ犧� 犧もｸ吭ｸｲ犧� 犧｣犧ｹ犧巵ｸ｣犹謂ｸｲ犧� 犹≒ｸ･犧ｰ犧｣犧ｰ犧｢犧ｰ犹犧ｧ犧･犧ｲ犧謂ｸ｣犧ｴ犧�ｹ�ｸ吭ｸｪ犧｡犧ｭ犧�',
+                  style: TextStyle(
+                    fontSize: 10.5 * widget.fontScale,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purpleAccent,
+                    fontFamily: 'Prompt',
+                    height: 1.3,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HallucinationWarpPainter extends CustomPainter {
+  final double animValue;
+
+  HallucinationWarpPainter({
+    required this.animValue,
+    required Listenable repaint,
+  }) : super(repaint: repaint);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    // Draw shifting background color
+    final bgPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.purple.withOpacity(0.08),
+          Colors.pink.withOpacity(0.05),
+          Colors.deepPurple.withOpacity(0.03),
+        ],
+        center: const Alignment(0, 0),
+        radius: 1.0 + sin(animValue * 2 * pi) * 0.2,
+      ).createShader(Rect.fromLTRB(0, 0, size.width, size.height));
+    canvas.drawRect(Rect.fromLTRB(0, 0, size.width, size.height), bgPaint);
+
+    // Draw concentric pulsing warped rings
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    for (int i = 0; i < 4; i++) {
+      final double progress = (i * 0.25 + animValue) % 1.0;
+      final double radius = size.width * 0.45 * progress;
+      final double opacity = 1.0 - progress;
+
+      ringPaint.color = Colors.purpleAccent.withOpacity(opacity * 0.18);
+
+      final path = Path();
+      final pointsCount = 40;
+      for (int j = 0; j <= pointsCount; j++) {
+        final angle = (j * 2 * pi) / pointsCount;
+        // Add waving/warping sine wave offset to simulate reality distortion
+        final warp = sin(angle * 6 + animValue * 2 * pi) * (radius * 0.08);
+        final currentRadius = radius + warp;
+        final x = cx + cos(angle) * currentRadius;
+        final y = cy + sin(angle) * currentRadius;
+
+        if (j == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+      canvas.drawPath(path, ringPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant HallucinationWarpPainter oldDelegate) {
+    return oldDelegate.animValue != animValue;
+  }
+}
+
+// ============================================================================
+// WIDGET 2.3: MixedStormVisual (Stormy Brain Mixer)
+// ============================================================================
+class MixedStormVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const MixedStormVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<MixedStormVisual> createState() => _MixedStormVisualState();
+}
+
+class _MixedStormVisualState extends State<MixedStormVisual> {
+  double _stim = 0.2;
+  double _depress = 0.2;
+  double _hallucinate = 0.2;
+
+  @override
+  Widget build(BuildContext context) {
+    final mixedVal = _stim + _depress + _hallucinate;
+    String brainStatus = '犧ｪ犧｡犧ｭ犧�ｸ巵ｸ｣犧ｰ犧｡犧ｧ犧･犧憫ｸ･犧ｪ犧ｱ犧壟ｸｪ犧吭ｹ≒ｸ巵ｸ｣犧巵ｸ｣犧ｧ犧�';
+    IconData weatherIcon = Icons.wb_cloudy_rounded;
+    Color weatherColor = Colors.amber;
+    if (mixedVal > 1.8) {
+      brainStatus = '犧ｧ犧ｴ犧≒ｸ､犧�: 犧ｪ犧｡犧ｭ犧�ｸｪ犧ｱ犧壟ｸｪ犧吭ｸ｣犧ｸ犧吭ｹ≒ｸ｣犧� 犹犧ｪ犧ｵ犹謂ｸ｢犧�ｹもｸ｣犧�ｸ謂ｸｴ犧歩ｹ犧�犧伶ｸ籾ｸｲ犧ｧ犧｣!';
+      weatherIcon = Icons.thunderstorm_rounded;
+      weatherColor = Colors.redAccent;
+    } else if (mixedVal > 1.0) {
+      brainStatus = '犧｡犧ｵ犧ｭ犧ｲ犧≒ｸｲ犧｣犧金ｸｶ犧｡犹犧ｨ犧｣犹霞ｸｲ犧ｪ犧･犧ｱ犧壟ｸ歩ｸｷ犹謂ｸ吭ｸ歩ｸ｣犧ｰ犧ｫ犧吭ｸ� 犹≒ｸ巵ｸ｣犧巵ｸ｣犧ｧ犧吭ｹ犧扉ｸｲ犧伶ｸｲ犧�ｸ｢犧ｲ犧�';
+      weatherIcon = Icons.cloud_rounded;
+      weatherColor = Colors.orangeAccent;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(weatherIcon, size: 32, color: weatherColor),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            brainStatus,
+            style: TextStyle(
+              fontSize: 11.5 * widget.fontScale,
+              fontWeight: FontWeight.bold,
+              color: mixedVal > 1.8 ? Colors.redAccent : Colors.amber,
+              fontFamily: 'Prompt',
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          _buildMixerSlider(Icons.bolt_rounded, '犧≒ｸ｣犧ｰ犧歩ｸｸ犹霞ｸ吭ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧�', _stim, (v) => setState(() => _stim = v)),
+          _buildMixerSlider(Icons.nightlight_round, '犧≒ｸ扉ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧�', _depress, (v) => setState(() => _depress = v)),
+          _buildMixerSlider(Icons.blur_on_rounded, '犧ｫ犧･犧ｭ犧吭ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧�', _hallucinate, (v) => setState(() => _hallucinate = v)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMixerSlider(IconData icon, String label, double val, ValueChanged<double> onChanged) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: Colors.grey),
+        const SizedBox(width: 4),
+        SizedBox(
+          width: 80,
+          child: Text(label, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+        ),
+        Expanded(
+          child: Slider(
+            value: val,
+            onChanged: onChanged,
+            min: 0.0,
+            max: 1.0,
+            activeColor: AppColors.success,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================================
+// WIDGET 3.0: MoodCrackedMirror (Mood Cracked Mirror)
+// ============================================================================
+class MoodCrackedMirror extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const MoodCrackedMirror({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<MoodCrackedMirror> createState() => _MoodCrackedMirrorState();
+}
+
+class _MoodCrackedMirrorState extends State<MoodCrackedMirror> {
+  bool _useDrugs = false;
+  String _symptom = '犹�ｸ｡犹謂ｸ｡犧ｵ';
+
+  @override
+  Widget build(BuildContext context) {
+    final greenColor = const Color(0xFF10B981);
+    final purpleColor = const Color(0xFF8B5CF6);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => setState(() {
+                    _useDrugs = false;
+                    _symptom = '犹�ｸ｡犹謂ｸ｡犧ｵ';
+                  }),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: !_useDrugs ? greenColor : Colors.grey[300],
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                  ),
+                  child: const Text('犧謂ｸｴ犧歩ｹ�ｸ謂ｸ巵ｸ≒ｸ歩ｸｴ', style: TextStyle(fontFamily: 'Prompt', fontSize: 11)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => setState(() {
+                    _useDrugs = true;
+                    _symptom = '犧ｫ犧ｧ犧ｲ犧扉ｸ｣犧ｰ犹≒ｸｧ犧�';
+                  }),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _useDrugs ? purpleColor : Colors.grey[300],
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                  ),
+                  child: const Text('犹�ｸ癌ｹ霞ｸｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧�', style: TextStyle(fontFamily: 'Prompt', fontSize: 11)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _useDrugs ? purpleColor.withOpacity(0.4) : greenColor.withOpacity(0.4),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              children: !_useDrugs
+                  ? [
+                      Icon(Icons.sentiment_satisfied_alt_rounded, size: 36, color: greenColor),
+                      const SizedBox(height: 6),
+                      Text('犧謂ｸｴ犧歩ｹ�ｸ謂ｹ犧壟ｸｴ犧≒ｸ壟ｸｲ犧� 犧ｪ犧｡犧ｭ犧�ｹ≒ｸ謂ｹ謂ｸ｡犹�ｸｪ', style: TextStyle(fontWeight: FontWeight.bold, color: greenColor, fontFamily: 'Prompt', fontSize: 13)),
+                      const SizedBox(height: 4),
+                      const Text('犧ｪ犧ｲ犧｡犧ｲ犧｣犧籾ｸ謂ｸ扉ｸ謂ｹ謂ｸｭ犧≒ｸｱ犧壟ｸ≒ｸｲ犧｣犹犧｣犧ｵ犧｢犧� 犧�ｸｧ犧壟ｸ�ｸｸ犧｡犧ｭ犧ｲ犧｣犧｡犧内ｹ呉ｸ歩ｸ吭ｹ犧ｭ犧�ｹ�ｸ扉ｹ霞ｸ扉ｸｵ犹犧｢犧ｵ犹謂ｸ｢犧｡', style: TextStyle(fontSize: 11, fontFamily: 'Prompt'), textAlign: TextAlign.center),
+                    ]
+                  : [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.heart_broken_rounded, size: 28, color: Colors.redAccent),
+                          SizedBox(width: 6),
+                          Icon(Icons.sentiment_very_dissatisfied_rounded, size: 28, color: Colors.orangeAccent),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      const Text('犧ｭ犧ｲ犧｣犧｡犧内ｹ呉ｸ壟ｸｴ犧扉ｹ犧壟ｸｵ犹霞ｸ｢犧ｧ 犧ｪ犧｡犧ｭ犧�ｹ犧ｪ犧ｵ犧｢犧ｫ犧ｲ犧｢', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent, fontFamily: 'Prompt', fontSize: 13)),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _buildSymptomChip('犧ｫ犧ｧ犧ｲ犧扉ｸ｣犧ｰ犹≒ｸｧ犧�'),
+                          _buildSymptomChip('犧金ｸｶ犧｡犹犧ｨ犧｣犹霞ｸｲ'),
+                          _buildSymptomChip('犧霞ｸｸ犧吭ｹ犧霞ｸｵ犧｢犧ｧ'),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _getSymptomDesc(_symptom),
+                        style: const TextStyle(fontSize: 11, height: 1.4, fontFamily: 'Prompt'),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSymptomChip(String name) {
+    final active = _symptom == name;
+    return GestureDetector(
+      onTap: () => setState(() => _symptom = name),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: active ? Colors.redAccent.withOpacity(0.12) : Colors.transparent,
+          border: Border.all(color: active ? Colors.redAccent : Colors.grey.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          name,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: active ? Colors.redAccent : (widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85)),
+            fontFamily: 'Prompt',
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getSymptomDesc(String sym) {
+    switch (sym) {
+      case '犧ｫ犧ｧ犧ｲ犧扉ｸ｣犧ｰ犹≒ｸｧ犧�':
+        return '犧ｫ犧ｧ犧ｲ犧扉ｸ｣犧ｰ犹≒ｸｧ犧�ｸ歩ｸ･犧ｭ犧扉ｹ犧ｧ犧･犧ｲ 犧�ｸｴ犧扉ｸｧ犹謂ｸｲ犧�ｸ吭ｸｭ犧ｷ犹謂ｸ吭ｸ謂ｸｰ犧｡犧ｲ犧伶ｸｳ犧｣犹霞ｸｲ犧｢ 犧吭ｸｭ犧吭ｹ�ｸ｡犹謂ｸｫ犧･犧ｱ犧壟ｸ謂ｸ吭ｸｪ犧ｹ犧財ｹ犧ｪ犧ｵ犧｢犧ｪ犧｡犧ｲ犧倨ｸｴ';
+      case '犧金ｸｶ犧｡犹犧ｨ犧｣犹霞ｸｲ':
+        return '犧ｪ犧｡犧ｭ犧�ｸｫ犧｡犧扉ｸ樅ｸ･犧ｱ犧�ｸｫ犧･犧ｱ犹謂ｸ�ｸｪ犧ｲ犧｣犧ｪ犧ｸ犧� 犧｣犧ｹ犹霞ｸｪ犧ｶ犧≒ｹ�ｸ｣犹霞ｸ�ｹ謂ｸｲ 犧ｫ犧扉ｸｫ犧ｹ犹謂ｸ扉ｸｴ犹謂ｸ�ｸ｣犧ｸ犧吭ｹ≒ｸ｣犧� 犹犧ｪ犧ｵ犹謂ｸ｢犧�ｸ歩ｹ謂ｸｭ犧≒ｸｲ犧｣犧伶ｸｳ犧｣犹霞ｸｲ犧｢犧｣犹謂ｸｲ犧�ｸ≒ｸｲ犧｢犧歩ｸ吭ｹ犧ｭ犧�';
+      case '犧霞ｸｸ犧吭ｹ犧霞ｸｵ犧｢犧ｧ':
+        return '犧霞ｸｸ犧吭ｹ犧霞ｸｵ犧｢犧ｧ犧｣犧ｸ犧吭ｹ≒ｸ｣犧� 犧�ｸｧ犧壟ｸ�ｸｸ犧｡犧�ｸｳ犧樅ｸｹ犧扉ｹ≒ｸ･犧ｰ犧≒ｸｲ犧｣犹≒ｸｪ犧扉ｸ�ｸｭ犧ｭ犧≒ｹ�ｸ｡犹謂ｹ�ｸ扉ｹ� 犧樅ｸ｣犹霞ｸｭ犧｡犧伶ｸｳ犧･犧ｲ犧｢犧ｪ犧ｱ犧｡犧樅ｸｱ犧吭ｸ倨ｸ�犧ｲ犧樅ｸ�ｸ吭ｸ｣犧ｭ犧壟ｸもｹ霞ｸｲ犧�';
+      default:
+        return '';
+    }
+  }
+}
+
+// ============================================================================
+// WIDGET 3.1: HumanBodyScanner (Human Body Scanner)
+// ============================================================================
+class HumanBodyScanner extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const HumanBodyScanner({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<HumanBodyScanner> createState() => _HumanBodyScannerState();
+}
+
+class _HumanBodyScannerState extends State<HumanBodyScanner> {
+  String _selectedOrgan = '犧ｪ犧｡犧ｭ犧�';
+
+  Widget _buildGlowingIndicator(IconData icon, Color color, String organName) {
+    final isSelected = _selectedOrgan == organName;
+    return AnimatedOpacity(
+      opacity: isSelected ? 1.0 : 0.22,
+      duration: const Duration(milliseconds: 200),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? color : color.withOpacity(0.4),
+            width: isSelected ? 2.0 : 1.2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.5),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : [],
+        ),
+        child: Icon(icon, color: isSelected ? color : (widget.isDark ? Colors.white54 : Colors.black45), size: 14),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.redAccent.withOpacity(0.25), width: 1.5),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Body outline
+                      Align(
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.accessibility_new_rounded,
+                          size: 110,
+                          color: widget.isDark ? Colors.white12 : Colors.black.withOpacity(0.08),
+                        ),
+                      ),
+                      // Brain
+                      Align(
+                        alignment: const Alignment(0.0, -0.65),
+                        child: _buildGlowingIndicator(Icons.bolt_rounded, Colors.amber, '犧ｪ犧｡犧ｭ犧�'),
+                      ),
+                      // Skin / Teeth
+                      Align(
+                        alignment: const Alignment(0.18, -0.45),
+                        child: _buildGlowingIndicator(Icons.face_retouching_natural_rounded, Colors.teal, '犧憫ｸｴ犧ｧ犧樅ｸ｣犧｣犧�/犧游ｸｱ犧�'),
+                      ),
+                      // Heart
+                      Align(
+                        alignment: const Alignment(-0.16, -0.22),
+                        child: _buildGlowingIndicator(Icons.favorite_rounded, Colors.redAccent, '犧ｫ犧ｱ犧ｧ犹�ｸ�'),
+                      ),
+                      // Lungs
+                      Align(
+                        alignment: const Alignment(0.0, -0.15),
+                        child: _buildGlowingIndicator(Icons.air_rounded, Colors.orangeAccent, '犧巵ｸｭ犧�'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                flex: 5,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildOrganNode(Icons.psychology_rounded, '犧ｪ犧｡犧ｭ犧�'),
+                    _buildOrganNode(Icons.favorite_rounded, '犧ｫ犧ｱ犧ｧ犹�ｸ�'),
+                    _buildOrganNode(Icons.air_rounded, '犧巵ｸｭ犧�'),
+                    _buildOrganNode(Icons.face_retouching_natural_rounded, '犧憫ｸｴ犧ｧ犧樅ｸ｣犧｣犧�/犧游ｸｱ犧�'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.redAccent.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('犧�ｸｧ犧ｲ犧｡犹犧ｪ犧ｵ犧｢犧ｫ犧ｲ犧｢犧もｸｭ犧� $_selectedOrgan:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5 * widget.fontScale, color: Colors.redAccent, fontFamily: 'Prompt')),
+                const SizedBox(height: 4),
+                Text(
+                  _getOrganDamageDesc(_selectedOrgan),
+                  style: TextStyle(fontSize: 11 * widget.fontScale, fontFamily: 'Prompt', height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrganNode(IconData icon, String name) {
+    final active = _selectedOrgan == name;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedOrgan = name),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: active ? Colors.redAccent.withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: active ? Colors.redAccent : Colors.grey),
+            const SizedBox(width: 6),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                color: active ? Colors.redAccent : (widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85)),
+                fontFamily: 'Prompt',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getOrganDamageDesc(String organ) {
+    switch (organ) {
+      case '犧ｪ犧｡犧ｭ犧�':
+        return '犧ｪ犧ｲ犧｣犧樅ｸｴ犧ｩ犧伶ｸｳ犧･犧ｲ犧｢犧｣犧ｰ犧壟ｸ壟ｹ犧金ｸ･犧･犹呉ｸ巵ｸ｣犧ｰ犧ｪ犧ｲ犧伶ｹもｸ扉ｸ｢犧歩ｸ｣犧� 犧ｪ犹謂ｸ�ｸ憫ｸ･犹�ｸｫ犹霞ｹ犧吭ｸｷ犹霞ｸｭ犧ｪ犧｡犧ｭ犧�ｸｪ犹謂ｸｧ犧吭ｸｫ犧吭ｹ霞ｸｲ犧杳ｹ謂ｸｭ犧歩ｸｱ犧ｧ犧籾ｸｲ犧ｧ犧｣ 犧もｸｱ犧扉ｸもｸｧ犧ｲ犧�ｸ�ｸｧ犧ｲ犧｡犧ｪ犧ｲ犧｡犧ｲ犧｣犧籾ｹ�ｸ吭ｸ≒ｸｲ犧｣犹犧｣犧ｵ犧｢犧吭ｸ｣犧ｹ犹霞ｹ≒ｸ･犧ｰ犧�ｸｧ犧ｲ犧｡犧伶ｸ｣犧�ｸ謂ｸｳ犹犧ｪ犧ｷ犹謂ｸｭ犧｡';
+      case '犧ｫ犧ｱ犧ｧ犹�ｸ�':
+        return '犧≒ｸ｣犧ｰ犧歩ｸｸ犹霞ｸ吭ｹ�ｸｫ犹霞ｸ≒ｸ･犹霞ｸｲ犧｡犹犧吭ｸｷ犹霞ｸｭ犧ｫ犧ｱ犧ｧ犹�ｸ謂ｸ壟ｸｵ犧壟ｸ歩ｸｱ犧ｧ犧｣犧ｸ犧吭ｹ≒ｸ｣犧�ｹ犧≒ｸｴ犧吭ｸ謂ｸ｣犧ｴ犧� 犹犹犧歩ｹ謂ｸ吭ｸｲ犧吭ｹ�ｸ巵ｸｫ犧ｱ犧ｧ犹�ｸ謂ｹもｸ� 犧憫ｸｴ犧扉ｸ謂ｸｱ犧�ｸｫ犧ｧ犧ｰ 犹犧ｪ犧ｵ犹謂ｸ｢犧�ｸｪ犧�犧ｲ犧ｧ犧ｰ犧ｫ犧ｱ犧ｧ犹�ｸ謂ｸ･犹霞ｸ｡犹犧ｫ犧･犧ｧ犹犧霞ｸｵ犧｢犧壟ｸ樅ｸ･犧ｱ犧吭ｹ犧ｪ犧ｵ犧｢犧癌ｸｵ犧ｧ犧ｴ犧歩ｸ伶ｸｱ犧吭ｸ伶ｸｵ';
+      case '犧巵ｸｭ犧�':
+        return '犧吭ｸｴ犹もｸ�ｸ歩ｸｴ犧吭ｹ犧ｫ犧･犧ｧ犹≒ｸ･犧ｰ犧ｪ犧ｲ犧｣犧｣犧ｰ犹犧ｫ犧｢犹犧憫ｸｲ犧伶ｸｳ犧･犧ｲ犧｢犹犧吭ｸｷ犹霞ｸｭ犹犧｢犧ｷ犹謂ｸｭ犧籾ｸｸ犧�ｸ･犧｡犧巵ｸｭ犧� 犧≒ｹ謂ｸｭ犧≒ｸｲ犧｣犧ｭ犧ｱ犧≒ｹ犧ｪ犧壟ｹ犧｣犧ｷ犹霞ｸｭ犧｣犧ｱ犧� 犧吭ｸｳ犹�ｸ巵ｸｪ犧ｹ犹謂ｹもｸ｣犧�ｸ｡犧ｰ犹犧｣犹�ｸ�ｸ巵ｸｭ犧扉ｹ≒ｸ･犧ｰ犹もｸ｣犧�ｸ籾ｸｸ犧�ｸ･犧｡犹もｸ巵ｹ謂ｸ�ｸ樅ｸｭ犧�';
+      case '犧憫ｸｴ犧ｧ犧樅ｸ｣犧｣犧�/犧游ｸｱ犧�':
+        return '犧ｪ犧ｲ犧｣犹犧�ｸ｡犧ｵ犧ｪ犧ｰ犧ｪ犧｡犧伶ｸｳ犹�ｸｫ犹霞ｹ犧ｪ犹霞ｸ吭ｹ犧･犧ｷ犧ｭ犧扉ｸ杳ｸｭ犧｢犧歩ｸｵ犧壟ｸ歩ｸｱ犧� 犧憫ｸｴ犧ｧ犧樅ｸ｣犧｣犧内ｸｪ犧ｹ犧財ｹ犧ｪ犧ｵ犧｢犧�ｸｧ犧ｲ犧｡犧癌ｸｷ犹霞ｸ吭ｸｫ犧｡犧ｭ犧�ｸ�ｸ･犹霞ｸｳ 犧游ｸｱ犧吭ｸ憫ｸｸ犧≒ｸ｣犹謂ｸｭ犧吭ｹ犧｣犹�ｸｧ 犹≒ｸ･犧ｰ犧≒ｸ･犧ｴ犹謂ｸ吭ｸ歩ｸｱ犧ｧ犹犧ｫ犧｡犹�ｸ吭ｸ｣犧ｸ犧吭ｹ≒ｸ｣犧�';
+      default:
+        return '';
+    }
+  }
+}
+
+// ============================================================================
+// WIDGET 3.2: FuturePathGpaVisual (Future Path GPA drop)
+// ============================================================================
+class FuturePathGpaVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const FuturePathGpaVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<FuturePathGpaVisual> createState() => _FuturePathGpaVisualState();
+}
+
+class _FuturePathGpaVisualState extends State<FuturePathGpaVisual> {
+  double _involvement = 0.0; // 0.0 to 1.0
+
+  @override
+  Widget build(BuildContext context) {
+    String gpaText = '4.00';
+    String futureText = '犧ｭ犧吭ｸｲ犧�ｸ歩ｸｪ犧扉ｹ�ｸｪ犧｡犧ｲ犧� 犹もｸｭ犧≒ｸｲ犧ｪ犧癌ｸｴ犧�ｸ伶ｸｸ犧� 犹犧｣犧ｵ犧｢犧吭ｸ歩ｹ謂ｸｭ犧�ｸ内ｸｰ犹�ｸ吭ｸ杳ｸｱ犧� 犧ｪ犧ｳ犹犧｣犹�ｸ謂ｸ≒ｸｲ犧｣犧ｨ犧ｶ犧≒ｸｩ犧ｲ犧扉ｸｵ犹犧･犧ｴ犧ｨ';
+    IconData futureIcon = Icons.school_rounded;
+    Color themeColor = AppColors.success;
+
+    if (_involvement > 0.7) {
+      gpaText = '0.00 / F';
+      futureText = '犧籾ｸｹ犧≒ｹ犧樅ｸｴ犧≒ｸ籾ｸｭ犧吭ｸ癌ｸｷ犹謂ｸｭ犧謂ｸｲ犧≒ｸｪ犧籾ｸｲ犧壟ｸｱ犧� 犹犧ｪ犧ｵ犧｢犹もｸｭ犧≒ｸｲ犧ｪ犧癌ｸｴ犧�ｸｭ犧ｲ犧癌ｸｵ犧� 犧巵ｸ｣犧ｰ犧ｧ犧ｱ犧歩ｸｴ犹犧ｪ犧ｵ犧｢犧歩ｸｴ犧扉ｸｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧扉ｸ籾ｸｲ犧ｧ犧｣';
+      futureIcon = Icons.lock_rounded;
+      themeColor = Colors.redAccent;
+    } else if (_involvement > 0.3) {
+      gpaText = '2.10 (犧巵ｸｲ犧吭ｸ≒ｸ･犧ｲ犧�ｸ�ｹ謂ｸｭ犧吭ｸもｹ霞ｸｲ犧�ｸ歩ｹ謂ｸｳ)';
+      futureText = '犧憫ｸ･犧≒ｸｲ犧｣犹犧｣犧ｵ犧｢犧吭ｸ伶ｸ｣犧ｸ犧扉ｸｮ犧ｧ犧� 犧もｸｲ犧扉ｸｪ犧｡犧ｲ犧倨ｸｴ 犹犧｣犧ｴ犹謂ｸ｡犧ｫ犧吭ｸｵ犹犧｣犧ｵ犧｢犧吭ｸ壟ｹ謂ｸｭ犧｢犧�ｸ｣犧ｱ犹霞ｸ� 犹もｸｭ犧≒ｸｲ犧ｪ犧籾ｸｹ犧≒ｸ伶ｸｱ犧内ｸ隊ｹ呉ｸ壟ｸ吭ｸｪ犧ｹ犧�';
+      futureIcon = Icons.warning_rounded;
+      themeColor = Colors.amber;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('犧｣犧ｰ犧扉ｸｱ犧壟ｸ≒ｸｲ犧｣犹犧≒ｸｵ犹謂ｸ｢犧ｧ犧扉ｸｭ犧�ｸｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧�:', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+              Text('${(_involvement * 100).toInt()}%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: themeColor, fontFamily: 'Prompt')),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Slider(
+            value: _involvement,
+            onChanged: (v) => setState(() => _involvement = v),
+            min: 0.0,
+            max: 1.0,
+            activeColor: themeColor,
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: themeColor.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: themeColor.withOpacity(0.3), width: 1.5),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(futureIcon, color: themeColor, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '犹犧≒ｸ｣犧扉ｹ犧霞ｸ･犧ｵ犹謂ｸ｢犧謂ｸｳ犧･犧ｭ犧�: $gpaText',
+                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14 * widget.fontScale, color: themeColor, fontFamily: 'Prompt'),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        futureText,
+                        style: TextStyle(fontSize: 11 * widget.fontScale, height: 1.4, fontFamily: 'Prompt'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// WIDGET 3.3: BrokenFamilyNetwork (Broken Family Network)
+// ============================================================================
+class BrokenFamilyNetwork extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const BrokenFamilyNetwork({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<BrokenFamilyNetwork> createState() => _BrokenFamilyNetworkState();
+}
+
+class _BrokenFamilyNetworkState extends State<BrokenFamilyNetwork> {
+  bool _useDrugs = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('犧ｪ犧籾ｸｲ犧吭ｸ≒ｸｲ犧｣犧内ｹ呉ｹ�ｸ吭ｸ癌ｸｵ犧ｧ犧ｴ犧歩ｸ�ｸｸ犧�:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+              Switch(
+                value: _useDrugs,
+                onChanged: (v) => setState(() => _useDrugs = v),
+                activeColor: Colors.redAccent,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 180,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: FamilyNetworkPainter(useDrugs: _useDrugs, isDark: widget.isDark),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _useDrugs
+                ? '犧�ｸｧ犧ｲ犧｡犧ｪ犧ｱ犧｡犧樅ｸｱ犧吭ｸ倨ｹ呉ｸ｣犹霞ｸｲ犧ｧ犧霞ｸｲ犧� 犧樅ｹ謂ｸｭ犹≒ｸ｡犹謂ｹ犧ｪ犧ｵ犧｢犧吭ｹ霞ｸｳ犧歩ｸｲ 犹犧樅ｸｷ犹謂ｸｭ犧吭ｹ� 犹≒ｸ･犧ｰ犧�ｸ｣犧ｹ犹�ｸ｡犹謂ｸｪ犧ｲ犧｡犧ｲ犧｣犧籾ｹ�ｸｫ犹霞ｸ�ｸｧ犧ｲ犧｡犹�ｸｧ犹霞ｸｧ犧ｲ犧�ｹ�ｸ謂ｹ�ｸ扉ｹ�'
+                : '犧ｪ犧ｲ犧｢犧ｪ犧ｱ犧｡犧樅ｸｱ犧吭ｸ倨ｹ呉ｹ犧ｫ犧吭ｸｵ犧｢犧ｧ犹≒ｸ吭ｹ謂ｸ� 犧伶ｸｸ犧≒ｸ�ｸ吭ｸ樅ｸ｣犹霞ｸｭ犧｡犹犧�ｸｲ犧｣犧� 犧癌ｹ謂ｸｧ犧｢犹犧ｫ犧･犧ｷ犧ｭ 犹≒ｸ･犧ｰ犧歩ｹ霞ｸｭ犧吭ｸ｣犧ｱ犧壟ｸ�ｸｸ犧内ｸ扉ｹ霞ｸｧ犧｢犧�ｸｧ犧ｲ犧｡犧｣犧ｱ犧≒ｸ�ｸｧ犧ｲ犧｡犧ｭ犧壟ｸｭ犧ｸ犹謂ｸ�',
+            style: TextStyle(
+              fontSize: 11 * widget.fontScale,
+              fontWeight: FontWeight.bold,
+              color: _useDrugs ? Colors.redAccent : AppColors.success,
+              fontFamily: 'Prompt',
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class FamilyNetworkPainter extends CustomPainter {
+  final bool useDrugs;
+  final bool isDark;
+
+  FamilyNetworkPainter({required this.useDrugs, required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double cx = size.width / 2;
+    final double cy = size.height / 2;
+
+    // Node locations 窶� spread well apart proportionally
+    final self = Offset(cx, cy);
+    final parent = Offset(cx - size.width * 0.28, cy - size.height * 0.3);
+    final teacher = Offset(cx + size.width * 0.28, cy - size.height * 0.3);
+    final friend = Offset(cx, cy + size.height * 0.33);
+
+    // Draw connection lines
+    final linePaint = Paint()
+      ..color = useDrugs ? Colors.redAccent.withOpacity(0.4) : AppColors.success.withOpacity(0.4)
+      ..strokeWidth = 2.0;
+
+    if (useDrugs) {
+      // Draw cracked/jagged lines instead of straight lines
+      _drawCrackedLine(canvas, self, parent, linePaint);
+      _drawCrackedLine(canvas, self, teacher, linePaint);
+      _drawCrackedLine(canvas, self, friend, linePaint);
+    } else {
+      canvas.drawLine(self, parent, linePaint);
+      canvas.drawLine(self, teacher, linePaint);
+      canvas.drawLine(self, friend, linePaint);
+    }
+
+    // Draw node circles
+    final nodePaint = Paint()..style = PaintingStyle.fill;
+
+    nodePaint.color = Colors.blueAccent;
+    canvas.drawCircle(self, 14, nodePaint);
+
+    nodePaint.color = Colors.amber;
+    canvas.drawCircle(parent, 12, nodePaint);
+
+    nodePaint.color = Colors.purpleAccent;
+    canvas.drawCircle(teacher, 12, nodePaint);
+
+    nodePaint.color = Colors.teal;
+    canvas.drawCircle(friend, 12, nodePaint);
+
+    // Labels
+    _drawLabel(canvas, '犧歩ｸｱ犧ｧ犧�ｸｸ犧�', self);
+    _drawLabel(canvas, useDrugs ? '犧樅ｹ謂ｸｭ犹≒ｸ｡犹�' : '犧樅ｹ謂ｸｭ犹≒ｸ｡犹�', parent);
+    _drawLabel(canvas, '犧�ｸ｣犧ｹ', teacher);
+    _drawLabel(canvas, useDrugs ? '犹犧樅ｸｷ犹謂ｸｭ犧吭ｸ�ｸ�' : '犹犧樅ｸｷ犹謂ｸｭ犧�', friend);
+  }
+
+  void _drawCrackedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
+    final mid = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
+    final jitter = Offset(5, -5);
+    canvas.drawLine(start, mid + jitter, paint);
+    canvas.drawLine(mid + jitter, end, paint);
+  }
+
+  void _drawLabel(Canvas canvas, String label, Offset pt) {
+    final p = TextPainter(
+      text: TextSpan(text: label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'Prompt', color: Colors.grey)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    p.paint(canvas, Offset(pt.dx - p.width / 2, pt.dy - p.height - 12));
+  }
+
+  @override
+  bool shouldRepaint(covariant FamilyNetworkPainter oldDelegate) {
+    return oldDelegate.useDrugs != useDrugs || oldDelegate.isDark != isDark;
+  }
+}
+
+// ============================================================================
+// WIDGET 4.0: RefusalChatSimulator (Chat Refusal Simulator)
+// ============================================================================
+class RefusalChatSimulator extends StatefulWidget {
+  final bool isDark;
+  const RefusalChatSimulator({super.key, required this.isDark});
+
+  @override
+  State<RefusalChatSimulator> createState() => _RefusalChatSimulatorState();
+}
+
+class _RefusalChatSimulatorState extends State<RefusalChatSimulator> {
+  int _selectedOption = -1;
+
+  @override
+  Widget build(BuildContext context) {
+    final bubbleColor = widget.isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
+    final userBubbleColor = _selectedOption == 2
+        ? AppColors.success.withOpacity(0.2)
+        : (_selectedOption == -1 ? Colors.transparent : Colors.redAccent.withOpacity(0.2));
+
+    String feedbackText = '犧≒ｸ｣犧ｸ犧内ｸｲ犹犧･犧ｷ犧ｭ犧≒ｸ伶ｸｱ犧≒ｸｩ犧ｰ犧≒ｸｲ犧｣犧巵ｸ鐘ｸｴ犹犧ｪ犧倨ｸもｸｭ犧�ｸ歩ｸｱ犧ｧ犧�ｸｸ犧内ｸ扉ｹ霞ｸｲ犧吭ｸ･犹謂ｸｲ犧�:';
+    Color feedbackColor = Colors.grey;
+
+    if (_selectedOption == 0) {
+      feedbackText = '(犹犧≒ｸ｣犧� F): 犧�ｸｸ犧内ｹもｸｭ犧吭ｸｭ犹謂ｸｭ犧吭ｸ歩ｸｲ犧｡犹≒ｸ｣犧�ｸ≒ｸ扉ｸ扉ｸｱ犧� 犧｡犧ｵ犹もｸｭ犧≒ｸｲ犧ｪ犧≒ｹ霞ｸｲ犧ｧ犹犧もｹ霞ｸｲ犧ｪ犧ｹ犹謂ｸ｢犧ｲ犹犧ｪ犧樅ｸ歩ｸｴ犧扉ｹ�ｸ扉ｹ霞ｸ�ｹ謂ｸｲ犧｢';
+      feedbackColor = Colors.redAccent;
+    } else if (_selectedOption == 1) {
+      feedbackText = '(犹犧≒ｸ｣犧� C): 犧≒ｸｲ犧｣犧≒ｹ霞ｸｲ犧ｧ犧｣犹霞ｸｲ犧ｧ犧扉ｹ謂ｸｲ犧伶ｸｭ犧≒ｸ･犧ｱ犧壟ｸｭ犧ｲ犧謂ｸ癌ｸｱ犧≒ｸ吭ｸｳ犧�ｸｧ犧ｲ犧｡犧｣犧ｸ犧吭ｹ≒ｸ｣犧�ｸｫ犧｣犧ｷ犧ｭ犧｡犧ｵ犧巵ｸｲ犧≒ｹ犧ｪ犧ｵ犧｢犧�ｸ壟ｸｲ犧吭ｸ巵ｸ･犧ｲ犧｢';
+      feedbackColor = Colors.orangeAccent;
+    } else if (_selectedOption == 2) {
+      feedbackText = '(犹犧≒ｸ｣犧� A+): 犧｢犧ｭ犧扉ｹ犧｢犧ｵ犹謂ｸ｢犧｡! 犧ｫ犧吭ｸｱ犧≒ｹ≒ｸ吭ｹ謂ｸ� 犧ｪ犧ｸ犧�犧ｲ犧� 犧｣犧ｰ犧壟ｸｸ犹犧ｫ犧歩ｸｸ犧憫ｸ･ 犹≒ｸ･犧ｰ犹犧扉ｸｴ犧吭ｸｭ犧ｭ犧≒ｸ謂ｸｲ犧≒ｸ謂ｸｸ犧扉ｹ犧ｪ犧ｵ犹謂ｸ｢犧�ｸ伶ｸｱ犧吭ｸ伶ｸｵ';
+      feedbackColor = AppColors.success;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: Colors.blueGrey.shade200,
+                child: const Icon(Icons.person_rounded, size: 20, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: bubbleColor,
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    '犹犧ｮ犹霞ｸ｢ 犧･犧ｭ犧�ｸｪ犧ｹ犧壟ｸｭ犧ｱ犧吭ｸ吭ｸｵ犹霞ｸｫ犧吭ｹ謂ｸｭ犧｢犧扉ｸｴ 犧樅ｸｭ犧歩ｸ吭ｸｳ犹犧もｹ霞ｸｲ犧≒ｸ･犧ｴ犹謂ｸ吭ｹもｸ�ｸ･犹謂ｸｲ犹もｸ�ｸ歩ｸ｣犹もｸ≒ｹ� 犹�ｸ｡犹謂ｸ｡犧ｵ犹�ｸ�ｸ｣犧｣犧ｹ犹霞ｸｫ犧｣犧ｭ犧� 犧･犧ｭ犧�ｸｪ犧ｱ犧≒ｸ伶ｸｵ犹犧ｫ犧ｭ犧ｰ犹犧樅ｸｷ犹謂ｸｭ犧�!',
+                    style: TextStyle(fontSize: 11, height: 1.4, fontFamily: 'Prompt'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          if (_selectedOption != -1) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: userBubbleColor,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        bottomLeft: Radius.circular(16),
+                        bottomRight: Radius.circular(16),
+                      ),
+                      border: Border.all(
+                        color: _selectedOption == 2 ? AppColors.success : Colors.redAccent,
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Text(
+                      _selectedOption == 0
+                          ? '犹犧ｭ犧ｭ... 犧≒ｹ�ｹ�ｸ扉ｹ霞ｸ吭ｸｰ 犧もｸｭ犧･犧ｭ犧�ｸ�ｸｳ犧吭ｸｶ犧�ｸ扉ｸｴ 犧吭ｹ謂ｸｲ犧謂ｸｰ犧游ｸｴ犧吭ｸ扉ｸｵ'
+                          : (_selectedOption == 1
+                              ? '犹≒ｸ≒ｸ｡犧ｱ犧吭ｸ｡犧ｵ犧吭ｸｴ犧ｪ犧ｱ犧｢犹�ｸ｡犹謂ｸ扉ｸｵ! 犧｢犧ｸ犹謂ｸ�ｸ≒ｸｱ犧壟ｸ樅ｸｧ犧≒ｸ｢犧ｲ犹犧ｪ犧樅ｸ歩ｸｴ犧� 犹�ｸ巵ｸｫ犹謂ｸｲ犧�ｹ� 犧霞ｸｱ犧吭ｹ犧･犧｢!'
+                              : '犹�ｸ｡犹謂ｸ･犹謂ｸｰ 犧もｸｭ犧壟ｹ�ｸ� 犧樅ｸｭ犧扉ｸｵ犧霞ｸｱ犧吭ｸ≒ｸｱ犧�ｸｧ犧･犹犧｣犧ｷ犹謂ｸｭ犧�ｸ巵ｸｭ犧扉ｸｭ犧ｱ犧≒ｹ犧ｪ犧� 犹≒ｸ･犧ｰ犧歩ｹ霞ｸｭ犧�ｸ｣犧ｵ犧壟ｸ≒ｸ･犧ｱ犧壟ｸ壟ｹ霞ｸｲ犧吭ｸ扉ｹ霞ｸｧ犧｢'),
+                      style: const TextStyle(fontSize: 11, height: 1.4, fontFamily: 'Prompt'),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Colors.pinkAccent.shade100,
+                  child: const Icon(Icons.person_rounded, size: 20, color: Colors.white),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+
+          Center(
+            child: Text(
+              feedbackText,
+              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: feedbackColor, fontFamily: 'Prompt'),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          if (_selectedOption == -1) ...[
+            Column(
+              children: [
+                _buildRefusalOption(0, '1. 犧｢犧ｭ犧｡犧｣犧ｱ犧壟ｸもｹ霞ｸｭ犹犧ｪ犧吭ｸｭ (犧もｸｭ犧･犧ｭ犧�ｸｪ犧ｱ犧≒ｸｫ犧吭ｹ謂ｸｭ犧｢)', Colors.redAccent),
+                _buildRefusalOption(1, '2. 犧巵ｸ鐘ｸｴ犹犧ｪ犧倨ｸ≒ｹ霞ｸｲ犧ｧ犧｣犹霞ｸｲ犧ｧ (犧扉ｹ謂ｸｲ犧ｧ犹謂ｸｲ犹犧樅ｸｷ犹謂ｸｭ犧吭ｸ≒ｸ･犧ｱ犧壟ｹ犧ｪ犧ｵ犧｢犧�ｹ≒ｸもｹ�ｸ�)', Colors.orangeAccent),
+                _buildRefusalOption(2, '3. 犧巵ｸ鐘ｸｴ犹犧ｪ犧倨ｸｫ犧吭ｸｱ犧≒ｹ≒ｸ吭ｹ謂ｸ吭ｸｪ犧ｸ犧�犧ｲ犧� (犧ｭ犹霞ｸｲ犧�ｹ犧ｫ犧歩ｸｸ犧憫ｸ･犧�ｸｧ犧ｲ犧｡犧巵ｸ･犧ｭ犧扉ｸ�犧ｱ犧｢)', AppColors.success),
+              ],
+            ),
+          ] else ...[
+            Center(
+              child: TextButton.icon(
+                onPressed: () => setState(() => _selectedOption = -1),
+                icon: const Icon(Icons.replay_rounded, size: 16),
+                label: const Text('犧伶ｸ扉ｸ･犧ｭ犧�ｹ犧･犧ｷ犧ｭ犧≒ｸ歩ｸｭ犧壟ｹ�ｸｫ犧｡犹�', style: TextStyle(fontFamily: 'Prompt', fontSize: 12)),
+                style: TextButton.styleFrom(
+                  foregroundColor: widget.isDark ? AppColors.success : AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRefusalOption(int index, String label, Color color) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 6),
+      child: OutlinedButton(
+        onPressed: () => setState(() => _selectedOption = index),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: color,
+          side: BorderSide(color: color.withOpacity(0.5)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt'),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// WIDGET 4.1: FriendFilterVisual (Friend Filter Game)
+// ============================================================================
+class FriendFilterVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const FriendFilterVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<FriendFilterVisual> createState() => _FriendFilterVisualState();
+}
+
+class _FriendFilterVisualState extends State<FriendFilterVisual> {
+  final List<String> _friendList = [];
+  int _safetyPoints = 50;
+
+  void _toggleFriend(String name, bool isPositive) {
+    setState(() {
+      if (_friendList.contains(name)) {
+        _friendList.remove(name);
+        _safetyPoints -= isPositive ? 25 : -25;
+      } else {
+        _friendList.add(name);
+        _safetyPoints += isPositive ? 25 : -25;
+      }
+      _safetyPoints = _safetyPoints.clamp(0, 100);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('犧�ｸｰ犹≒ｸ吭ｸ吭ｸ�ｸｧ犧ｲ犧｡犧巵ｸ･犧ｭ犧扉ｸ�犧ｱ犧｢犧≒ｸ･犧ｸ犹謂ｸ｡犹犧樅ｸｷ犹謂ｸｭ犧�:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+              Text('$_safetyPoints%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _safetyPoints > 60 ? AppColors.success : Colors.redAccent, fontFamily: 'Prompt')),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: _safetyPoints / 100,
+              minHeight: 8,
+              backgroundColor: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.black12,
+              valueColor: AlwaysStoppedAnimation<Color>(_safetyPoints > 60 ? AppColors.success : Colors.redAccent),
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text('犹≒ｸ歩ｸｰ犧�ｸｱ犧扉ｸ≒ｸ｣犧ｭ犧�ｹ犧樅ｸｷ犹謂ｸｭ犧吭ｹ犧もｹ霞ｸｲ犧ｪ犧ｹ犹� "犧≒ｸ･犧ｸ犹謂ｸ｡犧ｪ犧吭ｸｴ犧伶ｸ巵ｸ･犧ｭ犧扉ｸ�犧ｱ犧｢":', style: TextStyle(fontSize: 10, color: Colors.grey, fontFamily: 'Prompt')),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildFriendCard(Icons.sports_basketball_rounded, '犹犧壟ｸ� (犧金ｹ霞ｸｭ犧｡犧壟ｸｲ犧ｪ犧壟ｹ謂ｸｭ犧｢)', true),
+              _buildFriendCard(Icons.smoking_rooms_rounded, '犧吭ｸ吭ｸ伶ｹ� (犧ｪ犧ｹ犧壟ｸ樅ｸｭ犧扉ｹ≒ｸｭ犧壟ｹ�)', false),
+              _buildFriendCard(Icons.menu_book_rounded, '犧≒ｸｴ犹癌ｸ� (犧癌ｹ謂ｸｧ犧｢犧歩ｸｴ犧ｧ犹犧･犧�)', true),
+              _buildFriendCard(Icons.science_rounded, '犹犧歩ｹ� (犧≒ｸｴ犧吭ｸ吭ｹ霞ｸｳ犧≒ｸ｣犧ｰ犧伶ｹ謂ｸｭ犧｡)', false),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFriendCard(IconData icon, String name, bool isPositive) {
+    final active = _friendList.contains(name);
+    final activeBg = isPositive ? AppColors.success.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12);
+    final activeBorder = isPositive ? AppColors.success : Colors.redAccent;
+
+    return GestureDetector(
+      onTap: () => _toggleFriend(name, isPositive),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: active ? activeBg : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.white),
+          border: Border.all(color: active ? activeBorder : Colors.grey.withOpacity(0.3), width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: active ? activeBorder : Colors.grey),
+            const SizedBox(width: 6),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                color: active ? activeBorder : (widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85)),
+                fontFamily: 'Prompt',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// WIDGET 4.2: StressBusterVisual (Stress Buster Clicker)
+// ============================================================================
+class StressBusterVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const StressBusterVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<StressBusterVisual> createState() => _StressBusterVisualState();
+}
+
+class _StressBusterVisualState extends State<StressBusterVisual> {
+  double _stressVal = 0.9;
+  String _act = '犧�ｸｧ犧ｲ犧｡犧歩ｸｶ犧�ｹ犧�ｸ｣犧ｵ犧｢犧扉ｸｪ犧ｰ犧ｪ犧｡';
+
+  void _relieve(String action, double val) {
+    setState(() {
+      _act = action;
+      if (action.contains('犧ｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧�')) {
+        // Substance drop then spikes
+        _stressVal = 0.2;
+        Timer(const Duration(milliseconds: 600), () {
+          if (mounted) {
+            setState(() {
+              _stressVal = 1.0;
+              _act = '犧､犧伶ｸ倨ｸｴ犹呉ｹ犧ｪ犧樅ｸ歩ｸｴ犧扉ｸｫ犧｡犧� -> 犹犧�ｸ｣犧ｵ犧｢犧扉ｸｫ犧吭ｸｱ犧≒ｸ≒ｸｧ犹謂ｸｲ犹犧扉ｸｴ犧｡!';
+            });
+          }
+        });
+      } else {
+        _stressVal = (_stressVal - val).clamp(0.0, 1.0);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Color gaugeColor = _stressVal > 0.7 ? Colors.redAccent : (_stressVal > 0.4 ? Colors.amber : AppColors.success);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('犧｣犧ｰ犧扉ｸｱ犧壟ｸ�ｸｧ犧ｲ犧｡犹犧�ｸ｣犧ｵ犧｢犧扉ｸ癌ｸｵ犧ｧ犧ｴ犧�:', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+              Text('${(_stressVal * 100).toInt()}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: gaugeColor, fontFamily: 'Prompt')),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: _stressVal,
+              minHeight: 10,
+              backgroundColor: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.black12,
+              valueColor: AlwaysStoppedAnimation<Color>(gaugeColor),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (_act.contains('犧ｫ犧｡犧�') || _act.contains('犧ｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧�'))
+                const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 14)
+              else if (_act != '犧�ｸｧ犧ｲ犧｡犧歩ｸｶ犧�ｹ犧�ｸ｣犧ｵ犧｢犧扉ｸｪ犧ｰ犧ｪ犧｡')
+                const Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 14),
+              if (_act != '犧�ｸｧ犧ｲ犧｡犧歩ｸｶ犧�ｹ犧�ｸ｣犧ｵ犧｢犧扉ｸｪ犧ｰ犧ｪ犧｡') const SizedBox(width: 6),
+              Text(
+                '犧≒ｸｴ犧謂ｸ≒ｸ｣犧｣犧｡犧･犹謂ｸｲ犧ｪ犧ｸ犧�: $_act',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85), fontFamily: 'Prompt'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _buildStressBtn(Icons.sports_basketball_rounded, '犧≒ｸｵ犧ｬ犧ｲ', 0.3),
+              const SizedBox(width: 6),
+              _buildStressBtn(Icons.music_note_rounded, '犧扉ｸ吭ｸ歩ｸ｣犧ｵ', 0.3),
+              const SizedBox(width: 6),
+              _buildStressBtn(Icons.forum_rounded, '犧�ｸｸ犧｢犧憫ｸｹ犹霞ｹ�ｸｫ犧財ｹ�', 0.4),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _relieve('犧｢犧ｸ犹謂ｸ�ｸ≒ｸｱ犧壟ｸｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧� (犧ｪ犧ｸ犧もｸ･犧ｧ犧�)', 0.7),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
+              icon: const Icon(Icons.warning_amber_rounded, size: 16),
+              label: const Text('犧樅ｸｶ犹謂ｸ�ｸｪ犧ｲ犧｣犹犧ｪ犧樅ｸ歩ｸｴ犧扉ｹ犧樅ｸｷ犹謂ｸｭ犹≒ｸ≒ｹ霞ｹ犧�ｸ｣犧ｵ犧｢犧�', style: TextStyle(fontSize: 11, fontFamily: 'Prompt', fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStressBtn(IconData icon, String name, double factor) {
+    return Expanded(
+      child: ElevatedButton.icon(
+        onPressed: () => _relieve(name, factor),
+        icon: Icon(icon, size: 12),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.white,
+          foregroundColor: widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey.withOpacity(0.3)),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+        ),
+        label: Text(name, style: const TextStyle(fontSize: 9.5, fontFamily: 'Prompt', fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// WIDGET 5.0: LawDecisionPathways (Pathways of Law)
+// ============================================================================
+class LawDecisionPathways extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const LawDecisionPathways({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<LawDecisionPathways> createState() => _LawDecisionPathwaysState();
+}
+
+class _LawDecisionPathwaysState extends State<LawDecisionPathways> {
+  int _path = -1; // 0 for rehabilitation, 1 for crime
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildPathButton('A: 犧ｪ犧｡犧ｱ犧�ｸ｣犹�ｸ謂ｸ｣犧ｱ犧壟ｸ≒ｸｲ犧｣犧壟ｸｳ犧壟ｸｱ犧�', 0, AppColors.success),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPathButton('B: 犧ｫ犧･犧壟ｸｫ犧吭ｸｵ犹�ｸ｡犹謂ｸ｣犧ｱ犧壟ｸ壟ｸｳ犧壟ｸｱ犧�', 1, Colors.redAccent),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_path == -1)
+            const Text(
+              '犹犧･犧ｷ犧ｭ犧≒ｹ犧ｪ犹霞ｸ吭ｸ伶ｸｲ犧�ｸ扉ｹ霞ｸｲ犧吭ｸ壟ｸ吭ｹ犧樅ｸｷ犹謂ｸｭ犧ｨ犧ｶ犧≒ｸｩ犧ｲ犧憫ｸ･犧･犧ｱ犧樅ｸ倨ｹ呉ｸ伶ｸｲ犧�ｸ≒ｸ錫ｸｫ犧｡犧ｲ犧｢',
+              style: TextStyle(fontSize: 10.5, color: Colors.grey, fontFamily: 'Prompt'),
+              textAlign: TextAlign.center,
+            )
+          else
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _path == 0 ? AppColors.success.withOpacity(0.06) : Colors.redAccent.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _path == 0 ? AppColors.success : Colors.redAccent, width: 1.5),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: _path == 0
+                    ? [
+                        _buildResultStep(Icons.local_hospital_rounded, AppColors.success, '犧≒ｸ錫ｸｫ犧｡犧ｲ犧｢犧巵ｸ｣犧ｰ犹犧｡犧ｴ犧吭ｹ犧巵ｹ�ｸ吭ｸ憫ｸｹ犹霞ｸ巵ｹ謂ｸｧ犧｢', '犹犧もｹ霞ｸｲ犧｣犧ｱ犧壟ｸ壟ｸｳ犧壟ｸｱ犧扉ｸ游ｸｷ犹霞ｸ吭ｸ游ｸｹ犧伶ｸｲ犧�ｸ≒ｸｲ犧｣犹≒ｸ樅ｸ伶ｸ｢犹呉ｹもｸ扉ｸ｢犹�ｸ｡犹謂ｹ犧ｪ犧ｵ犧｢犧巵ｸ｣犧ｰ犧ｧ犧ｱ犧歩ｸｴ'),
+                        const SizedBox(height: 10),
+                        _buildResultStep(Icons.verified_rounded, AppColors.success, '犧巵ｸ｣犧ｰ犧ｧ犧ｱ犧歩ｸｴ犹�ｸｪ犧ｪ犧ｰ犧ｭ犧ｲ犧扉ｹ≒ｸ･犧ｰ犧巵ｸ･犧ｭ犧扉ｸ�犧ｱ犧｢', '犹�ｸ｡犹謂ｸ｡犧ｵ犧巵ｸ｣犧ｰ犧ｧ犧ｱ犧歩ｸｴ犧�ｸ扉ｸｵ犧ｭ犧ｲ犧財ｸｲ犧歩ｸｴ犧扉ｸ歩ｸｱ犧ｧ犧ｫ犧･犧ｱ犧�ｸ｣犧ｱ犧壟ｸ≒ｸｲ犧｣犧壟ｸｳ犧壟ｸｱ犧扉ｸｪ犧ｳ犹犧｣犹�ｸ�'),
+                        const SizedBox(height: 10),
+                        _buildResultStep(Icons.school_rounded, AppColors.success, '犹�ｸ扉ｹ霞ｸ｣犧ｱ犧壟ｹもｸｭ犧≒ｸｲ犧ｪ犹�ｸ吭ｸ癌ｸｵ犧ｧ犧ｴ犧歩ｹ犧歩ｹ�ｸ｡犧｣犹霞ｸｭ犧｢', '犹犧｣犧ｵ犧｢犧吭ｸ歩ｹ謂ｸｭ 犧伶ｸｳ犧�ｸｲ犧� 犧ｪ犧｡犧ｱ犧�ｸ｣犹犧もｹ霞ｸｲ犹犧｣犧ｵ犧｢犧吭ｸ歩ｹ謂ｸｲ犧�ｸ巵ｸ｣犧ｰ犹犧伶ｸｨ犹�ｸ扉ｹ霞ｸｭ犧｢犹謂ｸｲ犧�ｸ｡犧ｱ犹謂ｸ吭ｹ�ｸ�'),
+                      ]
+                    : [
+                        _buildResultStep(Icons.gavel_rounded, Colors.redAccent, '犹犧もｹ霞ｸｲ犧ｪ犧ｹ犹謂ｸ≒ｸ｣犧ｰ犧壟ｸｧ犧吭ｸ≒ｸｲ犧｣犧�ｸ扉ｸｵ犧ｭ犧ｲ犧財ｸｲ', '犹犧謂ｹ霞ｸｲ犧ｫ犧吭ｹ霞ｸｲ犧伶ｸｵ犹謂ｸ扉ｸｳ犹犧吭ｸｴ犧吭ｸ�ｸ扉ｸｵ犧游ｹ霞ｸｭ犧�ｸｨ犧ｲ犧･犧歩ｸｲ犧｡犧もｹ霞ｸｭ犧ｫ犧ｲ犧�ｸｧ犧ｲ犧｡犧憫ｸｴ犧�'),
+                        const SizedBox(height: 10),
+                        _buildResultStep(Icons.history_edu_rounded, Colors.redAccent, '犧｡犧ｵ犧巵ｸ｣犧ｰ犧ｧ犧ｱ犧歩ｸｴ犧ｭ犧ｲ犧癌ｸ財ｸｲ犧≒ｸ｣犧｣犧｡犧籾ｸｲ犧ｧ犧｣', '犧壟ｸｱ犧吭ｸ伶ｸｶ犧≒ｸ巵ｸ｣犧ｰ犧ｧ犧ｱ犧歩ｸｴ犧･犧ｱ犧≒ｸ･犧ｭ犧�/犧�ｸ扉ｸｵ犧｢犧ｲ犹犧ｪ犧樅ｸ歩ｸｴ犧扉ｸ歩ｸｴ犧扉ｸ歩ｸｱ犧ｧ犹�ｸ巵ｸ歩ｸ･犧ｭ犧扉ｸ癌ｸｵ犧ｧ犧ｴ犧�'),
+                        const SizedBox(height: 10),
+                        _buildResultStep(Icons.lock_rounded, Colors.redAccent, '犧謂ｸｳ犧≒ｸｱ犧扉ｸｭ犧吭ｸｲ犧�ｸ歩ｹ≒ｸ･犧ｰ犹もｸｭ犧≒ｸｲ犧ｪ犧≒ｸｲ犧｣犧伶ｸｳ犧�ｸｲ犧�', '犧籾ｸｹ犧≒ｸ歩ｸｱ犧扉ｸｪ犧ｴ犧伶ｸ倨ｸｴ犹呉ｸｧ犧ｴ犧癌ｸｲ犧癌ｸｵ犧樅ｸｪ犧ｳ犧�ｸｱ犧� 犹≒ｸ･犧ｰ犧籾ｸｹ犧≒ｸ巵ｸ鐘ｸｴ犹犧ｪ犧倨ｸｧ犧ｵ犧金ｹ謂ｸｲ犧歩ｹ謂ｸｲ犧�ｹ≒ｸ扉ｸ�'),
+                      ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultStep(IconData icon, Color color, String title, String desc) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.12),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 14),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 11 * widget.fontScale,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                  fontFamily: 'Prompt',
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                desc,
+                style: TextStyle(
+                  fontSize: 10 * widget.fontScale,
+                  color: widget.isDark ? Colors.white70 : Colors.black54,
+                  fontFamily: 'Prompt',
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPathButton(String name, int val, Color activeColor) {
+    final active = _path == val;
+    return ElevatedButton(
+      onPressed: () => setState(() => _path = val),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: active ? activeColor : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]),
+        foregroundColor: active ? Colors.white : (widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85)),
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Text(name, style: const TextStyle(fontSize: 10, fontFamily: 'Prompt', fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+// ============================================================================
+// WIDGET 5.1: ScalesOfJusticeVisual (Scales of Justice Balancer)
+// ============================================================================
+class ScalesOfJusticeVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const ScalesOfJusticeVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<ScalesOfJusticeVisual> createState() => _ScalesOfJusticeVisualState();
+}
+
+class _ScalesOfJusticeVisualState extends State<ScalesOfJusticeVisual> {
+  bool _sellerRole = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              const Text('犹犧･犧ｷ犧ｭ犧≒ｸ扉ｸｹ犧説ｸｲ犧吭ｸ�ｸｧ犧ｲ犧｡犧憫ｸｴ犧扉ｸ≒ｸ錫ｸｫ犧｡犧ｲ犧｢:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  const Text('犧憫ｸｹ犹霞ｹ犧ｪ犧�', style: TextStyle(fontSize: 11, fontFamily: 'Prompt')),
+                  Switch(
+                    value: _sellerRole,
+                    onChanged: (v) => setState(() => _sellerRole = v),
+                    activeColor: Colors.redAccent,
+                  ),
+                  const Text('犧憫ｸｹ犹霞ｸもｸｲ犧｢/犧憫ｸｹ犹霞ｸ憫ｸ･犧ｴ犧�', style: TextStyle(fontSize: 11, fontFamily: 'Prompt', fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            height: 90,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: CustomPaint(
+              painter: LawScalePainter(tilted: _sellerRole, isDark: widget.isDark),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: _sellerRole ? Colors.redAccent.withOpacity(0.08) : AppColors.success.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _sellerRole ? Colors.redAccent.withOpacity(0.3) : AppColors.success.withOpacity(0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  _sellerRole ? Icons.gavel_rounded : Icons.local_hospital_rounded,
+                  color: _sellerRole ? Colors.redAccent : AppColors.success,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _sellerRole
+                        ? '犹もｸ伶ｸｩ犧伶ｸｲ犧�ｸｭ犧ｲ犧財ｸｲ犧｣犹霞ｸｲ犧｢犹≒ｸ｣犧�ｸ伶ｸｵ犹謂ｸｪ犧ｸ犧�! 犹�ｸ｡犹謂ｸ｡犧ｵ犧ｪ犧ｴ犧伶ｸ倨ｸｴ犹呉ｸｪ犹謂ｸ�ｸ壟ｸｳ犧壟ｸｱ犧� 犹もｸ伶ｸｩ犧謂ｸｳ犧�ｸｸ犧≒ｸｪ犧ｹ犧�ｸｪ犧ｸ犧扉ｸ歩ｸ･犧ｭ犧扉ｸ癌ｸｵ犧ｧ犧ｴ犧� 犧ｫ犧｣犧ｷ犧ｭ犧巵ｸ｣犧ｰ犧ｫ犧ｲ犧｣犧癌ｸｵ犧ｧ犧ｴ犧� 犧樅ｸ｣犹霞ｸｭ犧｡犧｢犧ｶ犧扉ｸ伶ｸ｣犧ｱ犧樅ｸ｢犹呉ｸｪ犧ｴ犧吭ｸ伶ｸｱ犹霞ｸ�ｸｫ犧｡犧扉ｸ伶ｸｵ犹謂ｹ犧≒ｸｵ犹謂ｸ｢犧ｧ犧もｹ霞ｸｭ犧�!'
+                        : '犧ｪ犧ｴ犧伶ｸ倨ｸｴ犧壟ｸｳ犧壟ｸｱ犧扉ｸ｣犧ｱ犧≒ｸｩ犧ｲ犧樅ｸ｢犧ｲ犧壟ｸｲ犧･! 犧≒ｸ錫ｸｫ犧｡犧ｲ犧｢犧籾ｸｷ犧ｭ犧ｧ犹謂ｸｲ犧憫ｸｹ犹霞ｹ犧ｪ犧樅ｹ犧巵ｹ�ｸ吭ｹ犧ｫ犧｢犧ｷ犹謂ｸｭ犧憫ｸｹ犹霞ｸ巵ｹ謂ｸｧ犧｢ 犧ｫ犧ｲ犧≒ｸ｢犧ｴ犧吭ｸ｢犧ｭ犧｡犧｣犧ｱ犧壟ｸ≒ｸｲ犧｣犧｣犧ｱ犧≒ｸｩ犧ｲ犧≒ｹ�ｸ謂ｸｰ犹�ｸ扉ｹ霞ｸ｣犧ｱ犧壟ｸ≒ｸｲ犧｣犧･犧ｰ犹犧ｧ犹霞ｸ吭ｸ≒ｸｲ犧｣犧謂ｸ扉ｸ壟ｸｱ犧吭ｸ伶ｸｶ犧≒ｸｭ犧ｲ犧癌ｸ財ｸｲ犧≒ｸ｣犧｣犧｡',
+                    style: TextStyle(
+                      fontSize: 11 * widget.fontScale,
+                      fontWeight: FontWeight.bold,
+                      color: _sellerRole ? Colors.redAccent : AppColors.success,
+                      fontFamily: 'Prompt',
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class LawScalePainter extends CustomPainter {
+  final bool tilted;
+  final bool isDark;
+
+  LawScalePainter({required this.tilted, required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double cx = size.width / 2;
+    final double cy = size.height / 2;
+
+    // Draw main pillar of scale
+    final p = Paint()
+      ..color = isDark ? Colors.white30 : Colors.black26
+      ..strokeWidth = 4.0;
+    canvas.drawLine(Offset(cx, cy - 20), Offset(cx, cy + 30), p);
+    canvas.drawLine(Offset(cx - 15, cy + 30), Offset(cx + 15, cy + 30), p);
+
+    // Beam tilting
+    final double tiltY = tilted ? 14 : 0;
+    final beamPaint = Paint()
+      ..color = Colors.amber
+      ..strokeWidth = 3.0;
+    canvas.drawLine(Offset(cx - 40, cy - 10 + tiltY), Offset(cx + 40, cy - 10 - tiltY), beamPaint);
+
+    // Draw weights
+    final weightPaint = Paint()..color = tilted ? Colors.redAccent : AppColors.success;
+    canvas.drawCircle(Offset(cx - 40, cy + 10 + tiltY), 8, weightPaint);
+    canvas.drawCircle(Offset(cx + 40, cy + 10 - tiltY), 8, weightPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant LawScalePainter oldDelegate) {
+    return oldDelegate.tilted != tilted || oldDelegate.isDark != isDark;
+  }
+}
+
+// ============================================================================
+// WIDGET 5.2: CareerPassportStamps (Career Passport Stamps)
+// ============================================================================
+class CareerPassportStamps extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const CareerPassportStamps({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<CareerPassportStamps> createState() => _CareerPassportStampsState();
+}
+
+class _CareerPassportStampsState extends State<CareerPassportStamps> {
+  bool _hasRecord = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              const Text('犧巵ｸ｣犧ｰ犧ｧ犧ｱ犧歩ｸｴ犧�ｸ扉ｸｵ犧ｭ犧ｲ犧財ｸｲ犧｢犧ｲ犹犧ｪ犧樅ｸ歩ｸｴ犧�:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  const Text('犧ｪ犧ｰ犧ｭ犧ｲ犧�', style: TextStyle(fontSize: 11, fontFamily: 'Prompt')),
+                  Switch(
+                    value: _hasRecord,
+                    onChanged: (v) => setState(() => _hasRecord = v),
+                    activeColor: Colors.redAccent,
+                  ),
+                  const Text('犧｡犧ｵ犧巵ｸ｣犧ｰ犧ｧ犧ｱ犧歩ｸｴ犧�ｸ扉ｸｵ', style: TextStyle(fontSize: 11, fontFamily: 'Prompt', color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 16,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildStampItem(Icons.flight_takeoff_rounded, '犧ｧ犧ｵ犧金ｹ謂ｸｲ犹犧｣犧ｵ犧｢犧吭ｸ歩ｹ謂ｸｭ', !_hasRecord),
+              _buildStampItem(Icons.business_rounded, '犧もｹ霞ｸｲ犧｣犧ｲ犧癌ｸ≒ｸｲ犧｣', !_hasRecord),
+              _buildStampItem(Icons.work_rounded, '犧壟ｸ｣犧ｴ犧ｩ犧ｱ犧伶ｹ犧ｭ犧≒ｸ癌ｸ�', !_hasRecord),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: _hasRecord ? Colors.redAccent.withOpacity(0.08) : AppColors.success.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _hasRecord ? Colors.redAccent.withOpacity(0.3) : AppColors.success.withOpacity(0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  _hasRecord ? Icons.lock_rounded : Icons.school_rounded,
+                  color: _hasRecord ? Colors.redAccent : AppColors.success,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _hasRecord
+                        ? '犧籾ｸｹ犧≒ｸ巵ｸ鐘ｸｴ犹犧ｪ犧�! 犧もｸｲ犧扉ｸ�ｸｸ犧内ｸｪ犧｡犧壟ｸｱ犧歩ｸｴ犧謂ｸｱ犧扉ｸ伶ｸｳ犧ｭ犧ｲ犧癌ｸｵ犧樅ｸ｡犧ｱ犹謂ｸ吭ｸ�ｸ� 犹≒ｸ･犧ｰ犹犧ｪ犧ｵ犹謂ｸ｢犧�ｸ籾ｸｹ犧≒ｹ≒ｸ壟ｸ吭ｸ謂ｸｲ犧≒ｸｧ犧ｵ犧金ｹ謂ｸｲ犧歩ｹ謂ｸｲ犧�ｸ巵ｸ｣犧ｰ犹犧伶ｸｨ犧籾ｸｲ犧ｧ犧｣'
+                        : '犧ｭ犧吭ｸｸ犧｡犧ｱ犧歩ｸｴ犧憫ｹ謂ｸｲ犧吭ｸ霞ｸ･犧ｸ犧｢! 犧�ｸｸ犧内ｸ｡犧ｵ犹もｸｭ犧≒ｸｲ犧ｪ犹犧･犧ｷ犧ｭ犧≒ｸｨ犧ｶ犧≒ｸｩ犧ｲ犧歩ｹ謂ｸｭ 犧ｪ犧｡犧ｱ犧�ｸ｣犧�ｸｲ犧� 犧ｫ犧｣犧ｷ犧ｭ犧伶ｹ謂ｸｭ犧�ｹ犧伶ｸｵ犹謂ｸ｢犧ｧ犧歩ｹ謂ｸｲ犧�ｹ≒ｸ扉ｸ吭ｹ�ｸ扉ｹ霞ｹ犧ｪ犧｣犧ｵ',
+                    style: TextStyle(
+                      fontSize: 11 * widget.fontScale,
+                      fontWeight: FontWeight.bold,
+                      color: _hasRecord ? Colors.redAccent : AppColors.success,
+                      fontFamily: 'Prompt',
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStampItem(IconData icon, String title, bool approved) {
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: widget.isDark ? Colors.white70 : Colors.black87),
+            const SizedBox(width: 4),
+            Text(title, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: approved ? AppColors.success.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: approved ? AppColors.success : Colors.redAccent, width: 1.2),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(approved ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 10, color: approved ? AppColors.success : Colors.redAccent),
+              const SizedBox(width: 4),
+              Text(
+                approved ? 'APPROVED' : 'DENIED',
+                style: TextStyle(
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.bold,
+                  color: approved ? AppColors.success : Colors.redAccent,
+                  fontFamily: 'Prompt',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
