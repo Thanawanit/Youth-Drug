@@ -3,6 +3,7 @@ import 'state/app_state.dart';
 import 'widgets/main_navigation_screen.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_text.dart';
+import 'widgets/phone_simulator.dart';
 
 /// Global state notifier accessible throughout the application.
 /// Since we are avoiding third-party packages to guarantee zero-dependency
@@ -71,12 +72,25 @@ class YouthShieldApp extends StatelessWidget {
             ),
           ),
           builder: (context, widget) {
-            // Apply text scaling globally based on fontScale state
+            final mediaQuery = MediaQuery.of(context);
+            final bool isWide = mediaQuery.size.width > 480.0;
+            final double appWidth = isWide ? 430.0 : mediaQuery.size.width;
+
+            // Globally override MediaQueryData parameters inside the phone boundary
+            final modifiedMediaQuery = mediaQuery.copyWith(
+              size: Size(appWidth, mediaQuery.size.height),
+              padding: isWide
+                  ? const EdgeInsets.only(top: 48, bottom: 24) // Simulated notched screen padding
+                  : mediaQuery.padding,
+              textScaler: TextScaler.linear(state.fontScale),
+            );
+
             return MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: TextScaler.linear(state.fontScale),
+              data: modifiedMediaQuery,
+              child: PhoneSimulator(
+                isDarkMode: state.isDarkMode,
+                child: widget!,
               ),
-              child: widget!,
             );
           },
           home: const MainNavigationScreen(),

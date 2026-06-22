@@ -112,34 +112,18 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
 
                         return SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: cardBg,
-                              borderRadius: BorderRadius.circular(28),
-                              border: Border.all(color: borderColor, width: 1.5),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(isDark ? 0.25 : 0.03),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: _buildCustomSlideLayout(
-                              widget.topicType,
-                              index,
-                              sec,
-                              secColor,
-                              isDark,
-                              state.fontScale,
-                              textColor,
-                              cardBg,
-                              borderColor,
-                              total,
-                            ),
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                          child: _buildCustomSlideLayout(
+                            widget.topicType,
+                            index,
+                            sec,
+                            secColor,
+                            isDark,
+                            state.fontScale,
+                            textColor,
+                            cardBg,
+                            borderColor,
+                            total,
                           ),
                         );
                       },
