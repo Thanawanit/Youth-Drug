@@ -1,6 +1,8 @@
 class AppText {
   static const String appTitle = 'YouthShield';
   static const String appSubtitle = 'พลังของนักเรียนที่ช่วยเป็นเกราะป้องกันภัยยาเสพติด';
+  static const String appSubtitleSupporting =
+      'ค่อยๆ เรียนรู้ สังเกต และปกป้องตัวเองกับคนรอบข้างได้ในจังหวะที่สบายใจ';
   static const String startButton = 'เริ่มกิจกรรม';
   static const String nextButton = 'ถัดไป';
   static const String submitButton = 'ส่งคำตอบ';
@@ -20,8 +22,8 @@ class AppText {
   static const String mission4 = 'กฎหมาย';
   static const String mission4Desc = 'ทำความเข้าใจความสำคัญทางกฎหมายและโอกาสในอนาคต';
   
-  static const String mission5 = 'Quiz';
-  static const String mission5Desc = 'ทดสอบความรู้ความเข้าใจ 10 ข้อเพื่อประเมินตนเอง';
+  static const String mission5 = 'ทบทวนความเข้าใจ';
+  static const String mission5Desc = 'ลองคิดตามจากคำถามสั้นๆ เพื่อทบทวนสิ่งที่ได้เรียนรู้';
   
   // Disclaimer
   static const String lawDisclaimer = 'หมายเหตุ: กฎหมายอาจมีการปรับปรุง ควรตรวจสอบข้อมูลล่าสุดจากหน่วยงานภาครัฐ';
