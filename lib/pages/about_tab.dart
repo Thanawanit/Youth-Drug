@@ -101,7 +101,7 @@ class AboutTab extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             const Text(
-                              'แหล่งอ้างอิงข้อมูลข้อมูล',
+                              'แหล่งอ้างอิงข้อมูล',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
