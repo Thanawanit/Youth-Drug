@@ -83,7 +83,7 @@ class _QuizPageState extends State<QuizPage> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             title: const Text(
-              'แบบทดสอบประเมินตนเอง',
+              'ทบทวนความเข้าใจ',
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
@@ -124,14 +124,14 @@ class _QuizPageState extends State<QuizPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'ข้อที่ ${_currentIndex + 1}/${_selectedQuestions.length}',
+              'ช่วงที่ ${_currentIndex + 1} จาก ${_selectedQuestions.length}',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
             ),
             Text(
-              'ทดสอบความเข้าใจ',
+              'ลองคิดและเรียนรู้ไปทีละข้อ',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -145,9 +145,11 @@ class _QuizPageState extends State<QuizPage> {
           borderRadius: BorderRadius.circular(10),
           child: LinearProgressIndicator(
             value: (_currentIndex + 1) / _selectedQuestions.length,
-            minHeight: 6,
+            minHeight: 4,
             backgroundColor: isDark ? const Color(0xFF334155) : AppColors.border,
-            valueColor: AlwaysStoppedAnimation<Color>(isDark ? AppColors.success : AppColors.primary),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              (isDark ? AppColors.success : AppColors.primary).withValues(alpha: 0.65),
+            ),
           ),
         ),
         const SizedBox(height: 24),
@@ -187,7 +189,7 @@ class _QuizPageState extends State<QuizPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      _currentIndex == _selectedQuestions.length - 1 ? 'ดูข้อสรุป' : 'ข้อถัดไป',
+                      _currentIndex == _selectedQuestions.length - 1 ? 'ดูสิ่งที่ได้ทบทวน' : 'ไปต่อ',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -220,7 +222,7 @@ class _QuizPageState extends State<QuizPage> {
           border: Border.all(color: borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.15 : 0.02),
+              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -232,7 +234,7 @@ class _QuizPageState extends State<QuizPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.12),
+                color: AppColors.success.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -243,7 +245,7 @@ class _QuizPageState extends State<QuizPage> {
             ),
             const SizedBox(height: 20),
             const Text(
-              'ขอบคุณที่สำรวจเนื้อหา',
+              'ขอบคุณที่ค่อยๆ ทบทวนไปด้วยกัน',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -251,7 +253,7 @@ class _QuizPageState extends State<QuizPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'แบบทดสอบนี้มีไว้ช่วยทบทวนความเข้าใจ\nคุณสามารถกลับไปอ่านเพิ่มเติมได้ทุกเมื่อ',
+              'คุณสามารถย้อนกลับไปอ่านหัวข้อเดิม หรือสุ่มเรียนรู้ต่อได้ทุกเมื่อ',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -274,7 +276,7 @@ class _QuizPageState extends State<QuizPage> {
                   ),
                 ),
                 child: const Text(
-                  'ทำแบบทดสอบอีกครั้ง',
+                  'ทบทวนความเข้าใจอีกครั้ง',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,

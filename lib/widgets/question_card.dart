@@ -60,15 +60,15 @@ class QuestionCard extends StatelessWidget {
                 color: isDark
                     ? const Color(0xFF1E293B)
                     : (selectedIndex == correctIndex
-                        ? AppColors.success.withOpacity(0.04)
-                        : AppColors.error.withOpacity(0.04)),
+                        ? AppColors.success.withValues(alpha: 0.035)
+                        : AppColors.primary.withValues(alpha: 0.035)),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isDark
                       ? const Color(0xFF334155)
                       : (selectedIndex == correctIndex
-                          ? AppColors.success.withOpacity(0.2)
-                          : AppColors.error.withOpacity(0.2)),
+                          ? AppColors.success.withValues(alpha: 0.2)
+                          : AppColors.primary.withValues(alpha: 0.2)),
                   width: 1.5,
                 ),
               ),
@@ -79,18 +79,18 @@ class QuestionCard extends StatelessWidget {
                     children: [
                       Icon(
                         selectedIndex == correctIndex
-                            ? Icons.check_circle_rounded
-                            : Icons.cancel_rounded,
-                        color: selectedIndex == correctIndex ? AppColors.success : AppColors.error,
+                            ? Icons.lightbulb_rounded
+                            : Icons.info_outline_rounded,
+                        color: selectedIndex == correctIndex ? AppColors.success : AppColors.primary,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        selectedIndex == correctIndex ? 'ถูกต้อง!' : 'คำตอบไม่ถูกต้อง',
+                        selectedIndex == correctIndex ? 'เข้าใจตรงกันแล้ว' : 'มาดูคำอธิบายเพิ่ม',
                         style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w700,
-                          color: selectedIndex == correctIndex ? AppColors.success : AppColors.error,
+                          color: selectedIndex == correctIndex ? AppColors.success : AppColors.primary,
                           fontFamily: 'Prompt',
                         ),
                       ),
@@ -99,11 +99,11 @@ class QuestionCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   if (selectedIndex != correctIndex) ...[
                     Text(
-                      'คำตอบที่ถูกต้องคือ: ${options[correctIndex]}',
+                      'คำตอบที่ช่วยอธิบายได้ชัดคือ: ${options[correctIndex]}',
                       style: const TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.success,
+                        color: AppColors.primary,
                         fontFamily: 'Prompt',
                       ),
                     ),
@@ -119,7 +119,7 @@ class QuestionCard extends StatelessWidget {
                       ),
                       children: [
                         TextSpan(
-                          text: selectedIndex == correctIndex ? 'คำอธิบาย: ' : 'เหตุผล: ',
+                          text: selectedIndex == correctIndex ? 'สรุปสั้นๆ: ' : 'คำอธิบาย: ',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         TextSpan(text: explanation),
@@ -257,20 +257,22 @@ class _BubbleChoiceButtonState extends State<BubbleChoiceButton> with TickerProv
           textColor = Colors.white;
           trailingIcon = Icons.check_circle_rounded;
         } else {
-          cardBorderColor = AppColors.error;
-          cardBgColor = AppColors.error;
-          textColor = Colors.white;
-          trailingIcon = Icons.cancel_rounded;
+          cardBorderColor = AppColors.primary.withValues(alpha: 0.45);
+          cardBgColor = isDark
+              ? const Color(0xFF243244)
+              : AppColors.primary.withValues(alpha: 0.08);
+          textColor = isDark ? Colors.white : AppColors.textDark;
+          trailingIcon = Icons.info_outline_rounded;
         }
       } else if (isCorrect) {
         cardBorderColor = AppColors.success;
-        cardBgColor = AppColors.success.withOpacity(0.12);
+        cardBgColor = AppColors.success.withValues(alpha: 0.12);
         textColor = AppColors.success;
         trailingIcon = Icons.check_circle_outline_rounded;
       } else {
         textColor = isDark ? Colors.white30 : AppColors.textLight;
-        cardBgColor = isDark ? const Color(0xFF0F172A).withOpacity(0.3) : AppColors.background.withOpacity(0.5);
-        cardBorderColor = isDark ? const Color(0xFF1E293B).withOpacity(0.5) : AppColors.border.withOpacity(0.4);
+        cardBgColor = isDark ? const Color(0xFF0F172A).withValues(alpha: 0.3) : AppColors.background.withValues(alpha: 0.5);
+        cardBorderColor = isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : AppColors.border.withValues(alpha: 0.4);
       }
     }
 
@@ -313,7 +315,7 @@ class _BubbleChoiceButtonState extends State<BubbleChoiceButton> with TickerProv
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -331,7 +333,7 @@ class _BubbleChoiceButtonState extends State<BubbleChoiceButton> with TickerProv
                           ? Colors.white
                           : (hasAnswered && isCorrect
                               ? AppColors.success
-                              : (isDark ? const Color(0xFF334155) : AppColors.primary.withOpacity(0.08))),
+                              : (isDark ? const Color(0xFF334155) : AppColors.primary.withValues(alpha: 0.08))),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -341,7 +343,7 @@ class _BubbleChoiceButtonState extends State<BubbleChoiceButton> with TickerProv
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
                           color: isSelected
-                              ? (isCorrect ? AppColors.success : AppColors.error)
+                              ? (isCorrect ? AppColors.success : AppColors.primary)
                               : (hasAnswered && isCorrect
                                   ? Colors.white
                                   : (isDark ? Colors.white : AppColors.primary)),
