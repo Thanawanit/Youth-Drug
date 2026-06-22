@@ -591,7 +591,7 @@ class _LearningPortalPageState extends State<LearningPortalPage> with TickerProv
                         state: state,
                       ),
                       _buildStorySlideItem(
-                        title: '2. เลือกคบเพื่อนสร้างสรรค์',
+                        title: '2. เลือกคบเพื่อน',
                         desc: 'เพื่อนที่ดีจะชวนกันไปเรียน เล่นกีฬา หรือทำกิจกรรมดนตรี หากรู้สึกว่าเริ่มไม่ปลอดภัย ให้รีบจำกัดระยะความสัมพันธ์',
                         stepNum: 'Ⅱ',
                         color: Colors.amber,

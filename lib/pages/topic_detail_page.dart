@@ -662,7 +662,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               tips: 'การปฏิเสธอย่างชัดเจนช่วยกรองเพื่อนที่เคารพความคิดเห็นของเราจริงๆ',
             ),
             TopicSection(
-              title: '2. การคบเพื่อนสร้างสรรค์',
+              title: '2. การคบเพื่อน',
               summary: 'พาตนเองไปอยู่ในกลุ่มเพื่อนที่มีทัศนคติเชิงบวก',
               bullets: [
                 'กลุ่มเพื่อนมีอิทธิพลต่อความประพฤติและการตัดสินใจ',
@@ -1023,32 +1023,32 @@ class _BrainDopamineVisualState extends State<BrainDopamineVisual> with SingleTi
   @override
   Widget build(BuildContext context) {
     String brainStatus = 'สมองปกติ (สารโดปามีนสมดุล)';
-    String brainDesc = 'สารสื่อประสาทหมุนเวียนอยู่ในระบบรางวัลตามปกติ เช่น เมื่อได้รับคำชม กินอาหาร หรือออกกำลังกาย';
+    String brainDesc = 'สมองทำงานเป็นปกติ มีความสุขจากการทำกิจกรรมดีๆ ในชีวิตประจำวัน เช่น เล่นกีฬา หรือทำงานอดิเรก';
     Color brainColor = AppColors.success;
     double dopamineLevel = 0.45;
 
-    String detailFeeling = 'ความรู้สึกปกติสมดุล มีความสุขจากกิจกรรมในชีวิตประจำวัน';
-    String detailMechanism = 'สมองหลั่งสารโดปามีนผ่านระบบรางวัลตามธรรมชาติ เพื่อให้รู้สึกดีและกระตุ้นให้ทำซ้ำ';
-    String detailEffect = 'รักษาระดับความสุข สมาธิ ความคิดสร้างสรรค์ และการวางแผนระยะยาว';
+    String detailFeeling = 'มีความสุขแบบปกติและยั่งยืน';
+    String detailMechanism = 'สมองหลั่งโดปามีนในระดับที่สมดุลตามธรรมชาติ';
+    String detailEffect = 'มีสมาธิ อารมณ์ดี และพร้อมเรียนรู้สิ่งใหม่ๆ';
 
     if (_currentStep == 1) {
-      brainStatus = 'ถูกโจมตีด้วยสาร (โดปามีนพุ่งสูงเกิน)';
-      brainDesc = 'สารเสพติดเข้าขัดขวางกลไกดูดกลับโดปามีน ทำให้โดปามีนท่วมระบบและกระตุ้นตัวรับสัญญาณมากเกินปกติ';
+      brainStatus = 'รับสารเคมี (โดปามีนพุ่งสูงเกิน)';
+      brainDesc = 'สารเสพติดกระตุ้นการหลั่งโดปามีนอย่างรุนแรง ทำให้สมองตื่นตัวและมีความสุขชั่วคราวแบบไม่เป็นธรรมชาติ';
       brainColor = Colors.redAccent;
       dopamineLevel = 1.0;
 
-      detailFeeling = 'รู้สึกดีอย่างรุนแรง ตื่นเต้น มีพลังงานสูงมาก แต่หลังหมดฤทธิ์จะตกต่ำมาก';
-      detailMechanism = 'สารเสพติดบล็อกตัวดูดกลับโดปามีน ทำให้โดปามีนค้างอยู่ในช่องว่างและกระตุ้นตัวรับสัญญาณไม่หยุด';
-      detailEffect = 'สมองเริ่มปรับตัวลดจำนวนตัวรับโดปามีน ทำให้ต้องการปริมาณมากขึ้นเพื่อให้รู้สึกดีเท่าเดิม';
+      detailFeeling = 'ตื่นเต้นและมีความสุขสูงมากผิดปกติชั่วคราว';
+      detailMechanism = 'สารเคมีท่วมระบบสมองส่วนควบคุมความสุข';
+      detailEffect = 'สมองเริ่มดื้อยา ต้องการสารเสพติดเพิ่มขึ้น';
     } else if (_currentStep == 2) {
       brainStatus = 'หลังหมดฤทธิ์/ตกต่ำ (สารขาดแคลน)';
-      brainDesc = 'สมองปรับตัวลดการผลิตโดปามีนเพราะเคยถูกกระตุ้นมากเกิน ทำให้รู้สึกเศร้า หงุดหงิด และอยากสารเสพติดอีก';
+      brainDesc = 'เมื่อฤทธิ์ยาหมดลง สมองจะผลิตโดปามีนได้น้อยลงมาก ทำให้รู้สึกหดหู่และทรมาน';
       brainColor = Colors.grey;
       dopamineLevel = 0.08;
 
-      detailFeeling = 'เหนื่อย เบื่อ ซึมเศร้า หงุดหงิดง่าย ไม่อยากทำสิ่งที่เคยสนุก';
-      detailMechanism = 'ตัวรับโดปามีนถูกลดจำนวนลง (Downregulation) ทำให้สารตามธรรมชาติไม่เพียงพออีกต่อไป';
-      detailEffect = 'เกิดภาวะทนยา (Tolerance) ต้องการปริมาณสารเสพติดมากขึ้นเพื่อให้รู้สึกดีแบบเดิม นำไปสู่การติด';
+      detailFeeling = 'ซึมเศร้า อ่อนเพลีย และหงุดหงิดง่าย';
+      detailMechanism = 'ตัวรับความสุขในสมองเสียหายชั่วคราวหรือถาวร';
+      detailEffect = 'ขาดความสุขในชีวิตปกติ และนำไปสู่อาการติดยาเสพติด';
     }
 
     return Container(
@@ -1939,7 +1939,7 @@ class _RealityDistorterVisualState extends State<RealityDistorterVisual> with Si
           const SizedBox(height: 12),
           // Simulation Display Box
           Container(
-            height: 120,
+            constraints: const BoxConstraints(minHeight: 120),
             width: double.infinity,
             decoration: BoxDecoration(
               color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -2384,29 +2384,32 @@ class _HumanBodyScannerState extends State<HumanBodyScanner> {
   Widget _buildGlowingIndicator(IconData icon, Color color, String organName) {
     final isSelected = _selectedOrgan == organName;
     return AnimatedOpacity(
-      opacity: isSelected ? 1.0 : 0.22,
+      opacity: isSelected ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 200),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected ? color : color.withOpacity(0.4),
-            width: isSelected ? 2.0 : 1.2,
+      child: IgnorePointer(
+        ignoring: !isSelected,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: isSelected ? color.withValues(alpha: 0.2) : Colors.transparent,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isSelected ? color : color.withValues(alpha: 0.4),
+              width: isSelected ? 2.0 : 1.2,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.5),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : [],
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withOpacity(0.5),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ]
-              : [],
+          child: Icon(icon, color: isSelected ? color : (widget.isDark ? Colors.white54 : Colors.black45), size: 14),
         ),
-        child: Icon(icon, color: isSelected ? color : (widget.isDark ? Colors.white54 : Colors.black45), size: 14),
       ),
     );
   }
@@ -2430,7 +2433,7 @@ class _HumanBodyScannerState extends State<HumanBodyScanner> {
                   decoration: BoxDecoration(
                     color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.redAccent.withOpacity(0.25), width: 1.5),
+                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.25), width: 1.5),
                   ),
                   child: Stack(
                     alignment: Alignment.center,
@@ -2441,27 +2444,27 @@ class _HumanBodyScannerState extends State<HumanBodyScanner> {
                         child: Icon(
                           Icons.accessibility_new_rounded,
                           size: 110,
-                          color: widget.isDark ? Colors.white12 : Colors.black.withOpacity(0.08),
+                          color: widget.isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.08),
                         ),
                       ),
                       // Brain
                       Align(
-                        alignment: const Alignment(0.0, -0.65),
+                        alignment: const Alignment(0.0, -0.82),
                         child: _buildGlowingIndicator(Icons.bolt_rounded, Colors.amber, 'สมอง'),
                       ),
                       // Skin / Teeth
                       Align(
-                        alignment: const Alignment(0.18, -0.45),
+                        alignment: const Alignment(0.0, -0.55),
                         child: _buildGlowingIndicator(Icons.face_retouching_natural_rounded, Colors.teal, 'ผิวหนัง/ฟัน'),
                       ),
                       // Heart
                       Align(
-                        alignment: const Alignment(-0.16, -0.22),
+                        alignment: const Alignment(-0.25, -0.2),
                         child: _buildGlowingIndicator(Icons.favorite_rounded, Colors.redAccent, 'หัวใจ'),
                       ),
                       // Lungs
                       Align(
-                        alignment: const Alignment(0.0, -0.15),
+                        alignment: const Alignment(0.0, -0.2),
                         child: _buildGlowingIndicator(Icons.air_rounded, Colors.orangeAccent, 'ปอด'),
                       ),
                     ],
@@ -2488,9 +2491,9 @@ class _HumanBodyScannerState extends State<HumanBodyScanner> {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.redAccent.withOpacity(0.06),
+              color: Colors.redAccent.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
+              border: Border.all(color: Colors.redAccent.withValues(alpha: 0.2)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2517,7 +2520,7 @@ class _HumanBodyScannerState extends State<HumanBodyScanner> {
         margin: const EdgeInsets.only(bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: active ? Colors.redAccent.withOpacity(0.15) : Colors.transparent,
+          color: active ? Colors.redAccent.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -2530,7 +2533,7 @@ class _HumanBodyScannerState extends State<HumanBodyScanner> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                color: active ? Colors.redAccent : (widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85)),
+                color: active ? Colors.redAccent : (widget.isDark ? Colors.white70 : Colors.black.withValues(alpha: 0.85)),
                 fontFamily: 'Prompt',
               ),
             ),
@@ -2738,8 +2741,8 @@ class FamilyNetworkPainter extends CustomPainter {
 
     // Draw connection lines
     final linePaint = Paint()
-      ..color = useDrugs ? Colors.redAccent.withOpacity(0.4) : AppColors.success.withOpacity(0.4)
-      ..strokeWidth = 2.0;
+      ..color = useDrugs ? Colors.redAccent.withValues(alpha: 0.95) : AppColors.success.withValues(alpha: 0.5)
+      ..strokeWidth = useDrugs ? 3.5 : 2.0;
 
     if (useDrugs) {
       // Draw cracked/jagged lines instead of straight lines
@@ -2775,10 +2778,26 @@ class FamilyNetworkPainter extends CustomPainter {
   }
 
   void _drawCrackedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
-    final mid = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
-    final jitter = Offset(5, -5);
-    canvas.drawLine(start, mid + jitter, paint);
-    canvas.drawLine(mid + jitter, end, paint);
+    final vector = end - start;
+    final length = vector.distance;
+    final normal = Offset(-vector.dy / length, vector.dx / length); // perpendicular vector
+    
+    // Divide the line into segments with alternating zigs and zags
+    final p1 = start + vector * 0.22 + normal * 11;
+    final p2 = start + vector * 0.42 - normal * 11;
+    
+    final p3 = start + vector * 0.58 + normal * 9;
+    final p4 = start + vector * 0.78 - normal * 9;
+    
+    // Draw first portion of the crack
+    canvas.drawLine(start, p1, paint);
+    canvas.drawLine(p1, p2, paint);
+    
+    // Leave a physical gap/fracture between p2 and p3 (representing the broken bond)
+    
+    // Draw second portion of the crack
+    canvas.drawLine(p3, p4, paint);
+    canvas.drawLine(p4, end, paint);
   }
 
   void _drawLabel(Canvas canvas, String label, Offset pt) {
@@ -2861,7 +2880,7 @@ class _RefusalChatSimulatorState extends State<RefusalChatSimulator> {
                     ),
                   ),
                   child: const Text(
-                    'เฮ้ ลองมาด้วยกันนะ สนุกมากเลย ไม่ต้องกลัว ครั้งแรกไม่เป็นไร มาเลย!',
+                    'เฮ้ ลองยาแปลกๆ ตัวนี้ดูสิ สนุกมากเลยนะ ไม่ต้องกลัว ครั้งแรกไม่เป็นไร มาเลย!',
                     style: TextStyle(fontSize: 11, height: 1.4, fontFamily: 'Prompt'),
                   ),
                 ),
@@ -3033,7 +3052,7 @@ class _FriendFilterVisualState extends State<FriendFilterVisual> {
               _buildFriendCard(Icons.sports_basketball_rounded, 'นักกีฬา (ชอบออกกำลัง)', true),
               _buildFriendCard(Icons.smoking_rooms_rounded, 'นักสูบ (ชักชวนลอง)', false),
               _buildFriendCard(Icons.menu_book_rounded, 'นักเรียนเก่ง (ชวนติว)', true),
-              _buildFriendCard(Icons.science_rounded, 'นักทดลอง (ลองสารเคมี)', false),
+              _buildFriendCard(Icons.warning_amber_rounded, 'นักลอง (ชวนลองสารเสพติด)', false),
             ],
           ),
         ],

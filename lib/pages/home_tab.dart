@@ -228,8 +228,8 @@ class _HomeTabState extends State<HomeTab> {
                           children: [
                             Expanded(
                               child: _buildEditorialLinkCard(
-                                title: 'บทเรียนเรียนรู้',
-                                desc: 'เริ่มจากพื้นฐานและค่อยๆ เข้าใจผลกระทบ',
+                                title: 'บทเรียนศึกษา',
+                                desc: 'เริ่มต้นเรียนรู้พื้นฐานและทำความเข้าใจผลกระทบ',
                                 icon: Icons.local_library_rounded,
                                 color: isDark ? AppColors.success : AppColors.primary,
                                 cardBg: cardBg,
@@ -247,7 +247,7 @@ class _HomeTabState extends State<HomeTab> {
                             Expanded(
                               child: _buildEditorialLinkCard(
                                 title: 'กฎหมายน่ารู้',
-                                desc: 'เข้าใจสิทธิ์และข้อกฎหมายฉบับเด็ก',
+                                desc: 'ทำความเข้าใจสิทธิและข้อกฎหมายสำหรับเยาวชน',
                                 icon: Icons.balance_rounded,
                                 color: Colors.blueAccent,
                                 cardBg: cardBg,
@@ -280,7 +280,7 @@ class _HomeTabState extends State<HomeTab> {
                             Expanded(
                               child: _buildEditorialLinkCard(
                                 title: 'สุ่มการ์ดความรู้',
-                                desc: 'หยิบเกร็ดสั้นๆ มาอ่านได้ทุกเมื่อ',
+                                desc: 'อ่านเกร็ดความรู้สั้นๆ เพื่อการเรียนรู้ที่รวดเร็ว',
                                 icon: Icons.casino_rounded,
                                 color: Colors.amber,
                                 cardBg: cardBg,
@@ -298,7 +298,7 @@ class _HomeTabState extends State<HomeTab> {
                             Expanded(
                               child: _buildEditorialLinkCard(
                                 title: 'ทบทวนความเข้าใจ',
-                                desc: 'ลองตอบคำถามสั้นๆ เพื่อเช็กสิ่งที่เพิ่งเรียนรู้',
+                                desc: 'ตอบคำถามสั้นๆ เพื่อทบทวนความรู้ที่ได้ศึกษา',
                                 icon: Icons.assignment_turned_in_rounded,
                                 color: Colors.teal,
                                 cardBg: cardBg,

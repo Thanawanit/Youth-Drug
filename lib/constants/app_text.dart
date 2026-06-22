@@ -1,8 +1,8 @@
 class AppText {
   static const String appTitle = 'YouthShield';
-  static const String appSubtitle = 'พลังของนักเรียนที่ช่วยเป็นเกราะป้องกันภัยยาเสพติด';
+  static const String appSubtitle = 'พลังของเยาวชนในการร่วมมือกันป้องกันภัยจากยาเสพติด';
   static const String appSubtitleSupporting =
-      'ค่อยๆ เรียนรู้ สังเกต และปกป้องตัวเองกับคนรอบข้างได้ในจังหวะที่สบายใจ';
+      'ร่วมเรียนรู้ สังเกต และรู้วิธีปกป้องตนเองรวมถึงคนรอบข้างให้ปลอดภัย';
   static const String startButton = 'เริ่มกิจกรรม';
   static const String nextButton = 'ถัดไป';
   static const String submitButton = 'ส่งคำตอบ';
