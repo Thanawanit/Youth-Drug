@@ -4342,7 +4342,7 @@ class _StressBusterVisualState extends State<StressBusterVisual> {
       if (action.contains('ยาเสพติด')) {
         // Substance drop then spikes
         _stressVal = 0.2;
-        Timer(const Duration(milliseconds: 600), () {
+        Timer(const Duration(seconds: 4), () {
           if (mounted) {
             setState(() {
               _stressVal = 1.0;
