@@ -2513,102 +2513,165 @@ class _MoodCrackedMirrorState extends State<MoodCrackedMirror> {
   bool _useDrugs = false;
   String _symptom = 'ปกติ';
 
+  void _onSymptomChanged(String newSymptom) {
+    setState(() {
+      _symptom = newSymptom;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final greenColor = const Color(0xFF10B981);
     final purpleColor = const Color(0xFF8B5CF6);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+        ),
       ),
       child: Column(
         children: [
+          // Selectors
           Row(
             children: [
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () => setState(() {
-                    _useDrugs = false;
-                    _symptom = 'ปกติ';
-                  }),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _useDrugs = false;
+                      _symptom = 'ปกติ';
+                    });
+                  },
+                  icon: const Icon(Icons.favorite_rounded, size: 14),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: !_useDrugs ? greenColor : Colors.grey[300],
-                    foregroundColor: Colors.white,
+                    backgroundColor: !_useDrugs ? greenColor : (widget.isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.shade200),
+                    foregroundColor: !_useDrugs ? Colors.white : (widget.isDark ? Colors.white70 : Colors.black87),
                     elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('ชีวิตปกติ', style: TextStyle(fontFamily: 'Prompt', fontSize: 11)),
+                  label: const Text('ชีวิตปกติ', style: TextStyle(fontFamily: 'Prompt', fontSize: 11, fontWeight: FontWeight.bold)),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () => setState(() {
-                    _useDrugs = true;
-                    _symptom = 'หวาดระแวง';
-                  }),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _useDrugs = true;
+                      _symptom = 'หวาดระแวง';
+                    });
+                  },
+                  icon: const Icon(Icons.warning_rounded, size: 14),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _useDrugs ? purpleColor : Colors.grey[300],
-                    foregroundColor: Colors.white,
+                    backgroundColor: _useDrugs ? purpleColor : (widget.isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.shade200),
+                    foregroundColor: _useDrugs ? Colors.white : (widget.isDark ? Colors.white70 : Colors.black87),
                     elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('ใช้สารเสพติด', style: TextStyle(fontFamily: 'Prompt', fontSize: 11)),
+                  label: const Text('ใช้สารเสพติด', style: TextStyle(fontFamily: 'Prompt', fontSize: 11, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
+
+          // Mirror custom paint with physical shake
+          TweenAnimationBuilder<double>(
+            key: ValueKey(_symptom),
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutCubic,
+            builder: (context, progress, child) {
+              // Physical mirror shake effect when cracking
+              final double shake = _symptom != 'ปกติ'
+                  ? sin(progress * pi * 8) * (1.0 - progress) * 6.0
+                  : 0.0;
+
+              return Transform.translate(
+                offset: Offset(shake, 0),
+                child: Container(
+                  height: 160,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _useDrugs ? purpleColor.withValues(alpha: 0.2) : greenColor.withValues(alpha: 0.2),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: CustomPaint(
+                    painter: PsychologicalMirrorPainter(
+                      symptom: _symptom,
+                      progress: progress,
+                      isDark: widget.isDark,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Symptom selector chips (Only visible when drug involvement is true)
+          if (_useDrugs) ...[
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                _buildSymptomChip('หวาดระแวง', Colors.redAccent),
+                _buildSymptomChip('ซึมเศร้า', Colors.blueGrey.shade400),
+                _buildSymptomChip('หุนหันพลันแล่น', Colors.orangeAccent),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Description Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              color: _useDrugs ? purpleColor.withValues(alpha: 0.06) : greenColor.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: _useDrugs ? purpleColor.withOpacity(0.4) : greenColor.withOpacity(0.4),
-                width: 1.5,
+                color: _useDrugs ? purpleColor.withValues(alpha: 0.2) : greenColor.withValues(alpha: 0.2),
               ),
             ),
             child: Column(
-              children: !_useDrugs
-                  ? [
-                      Icon(Icons.sentiment_satisfied_alt_rounded, size: 36, color: greenColor),
-                      const SizedBox(height: 6),
-                      Text('ชีวิตสดใส สมองแจ่มใส', style: TextStyle(fontWeight: FontWeight.bold, color: greenColor, fontFamily: 'Prompt', fontSize: 13)),
-                      const SizedBox(height: 4),
-                      const Text('สามารถจดจำ ตัดสินใจ และวางแผนอนาคตได้อย่างมีประสิทธิภาพ', style: TextStyle(fontSize: 11, fontFamily: 'Prompt'), textAlign: TextAlign.center),
-                    ]
-                  : [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.heart_broken_rounded, size: 28, color: Colors.redAccent),
-                          SizedBox(width: 6),
-                          Icon(Icons.sentiment_very_dissatisfied_rounded, size: 28, color: Colors.orangeAccent),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      const Text('อารมณ์แปรปรวน สมองเสียหาย', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent, fontFamily: 'Prompt', fontSize: 13)),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          _buildSymptomChip('หวาดระแวง'),
-                          _buildSymptomChip('ซึมเศร้า'),
-                          _buildSymptomChip('หุนหันพลันแล่น'),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        _getSymptomDesc(_symptom),
-                        style: const TextStyle(fontSize: 11, height: 1.4, fontFamily: 'Prompt'),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _useDrugs ? 'ผลกระทบต่อจิตใจ ($_symptom):' : 'สภาพจิตใจปกติ:',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 11.5 * widget.fontScale,
+                    fontWeight: FontWeight.bold,
+                    color: _useDrugs ? purpleColor : greenColor,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _useDrugs ? _getSymptomDesc(_symptom) : 'สภาพจิตใจและกระบวนการทำงานของสมองเป็นระบบ ความคิดแจ่มใส ความจำดีเยี่ยม และมีความมั่นคงทางอารมณ์สูง',
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 10.5 * widget.fontScale,
+                    color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -2616,23 +2679,27 @@ class _MoodCrackedMirrorState extends State<MoodCrackedMirror> {
     );
   }
 
-  Widget _buildSymptomChip(String name) {
+  Widget _buildSymptomChip(String name, Color color) {
     final active = _symptom == name;
     return GestureDetector(
-      onTap: () => setState(() => _symptom = name),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      onTap: () => _onSymptomChanged(name),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: active ? Colors.redAccent.withOpacity(0.12) : Colors.transparent,
-          border: Border.all(color: active ? Colors.redAccent : Colors.grey.withOpacity(0.5)),
+          color: active ? color.withValues(alpha: 0.12) : Colors.transparent,
+          border: Border.all(
+            color: active ? color : (widget.isDark ? Colors.white.withValues(alpha: 0.15) : Colors.grey.shade400),
+            width: active ? 1.8 : 1.0,
+          ),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           name,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 10.5 * widget.fontScale,
             fontWeight: FontWeight.bold,
-            color: active ? Colors.redAccent : (widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85)),
+            color: active ? color : (widget.isDark ? Colors.white70 : Colors.black87),
             fontFamily: 'Prompt',
           ),
         ),
@@ -2643,14 +2710,171 @@ class _MoodCrackedMirrorState extends State<MoodCrackedMirror> {
   String _getSymptomDesc(String sym) {
     switch (sym) {
       case 'หวาดระแวง':
-        return 'หวาดระแวงผู้คนรอบข้าง ไม่ไว้ใจใคร ตัดสินใจจากความกลัวมากกว่าเหตุผล จนสูญเสียความสัมพันธ์';
+        return 'ระแวงผู้คนรอบข้าง ไม่ไว้ใจใคร กลัวการปองร้าย สูญเสียการใช้ชีวิตร่วมกับครอบครัวและสังคมอย่างสงบสุข';
       case 'ซึมเศร้า':
-        return 'สารเสพติดทำให้สมองหมด สูญเสียความสุขในชีวิต เบื่อหน่าย ไม่อยากทำสิ่งที่เคยชอบ จนส่งผลต่อการดำรงชีวิต';
+        return 'สมองส่วนความสุขเสียหายอย่างถาวร นำไปสู่สภาวะซึมเศร้าเรื้อรัง อารมณ์ดิ่งจม และรู้สึกว่างเปล่าในทุกกิจกรรม';
       case 'หุนหันพลันแล่น':
-        return 'หุนหันพลันแล่น ตัดสินใจผิดพลาดโดยไม่คิด อาจก่อให้เกิดปัญหาในครอบครัว โรงเรียน หรือชีวิตประจำวัน';
+        return 'การยับยั้งชั่งใจล้มเหลว ตัดสินใจด้วยความก้าวร้าวรุนแรงเฉียบพลัน นำไปสู่พฤติกรรมเสี่ยงอันตรายร้ายแรงต่อชีวิต';
       default:
         return '';
     }
+  }
+}
+
+class PsychologicalMirrorPainter extends CustomPainter {
+  final String symptom;
+  final double progress;
+  final bool isDark;
+
+  PsychologicalMirrorPainter({required this.symptom, required this.progress, required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double cx = size.width / 2;
+    final double cy = size.height / 2;
+
+    // Draw Mirror Frame
+    final framePaint = Paint()
+      ..shader = LinearGradient(
+        colors: isDark 
+            ? [const Color(0xFF64748B), const Color(0xFF334155), const Color(0xFF1E293B)] 
+            : [const Color(0xFFCBD5E1), const Color(0xFF94A3B8), const Color(0xFF64748B)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromLTRB(cx - 50, cy - 60, 100, 120))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6;
+      
+    final mirrorPath = Path()
+      ..addOval(Rect.fromCenter(center: Offset(cx, cy - 10), width: 90, height: 110));
+    canvas.drawPath(mirrorPath, framePaint);
+
+    // Draw handle for mirror
+    final handlePaint = Paint()
+      ..color = isDark ? const Color(0xFF334155) : const Color(0xFF94A3B8)
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(cx, cy + 45), Offset(cx, cy + 85), handlePaint);
+
+    // Clip inside the mirror glass
+    canvas.save();
+    canvas.clipPath(mirrorPath);
+
+    // Glass Background Gradient
+    Color g1, g2;
+    if (symptom == 'ปกติ') {
+      g1 = isDark ? const Color(0xFF0F172A) : const Color(0xFFE0F2FE);
+      g2 = isDark ? const Color(0xFF1E3A8A) : const Color(0xFFBAE6FD);
+    } else if (symptom == 'หวาดระแวง') {
+      g1 = const Color(0xFF2A0808);
+      g2 = const Color(0xFF7F1D1D); // paranoia dark red
+    } else if (symptom == 'ซึมเศร้า') {
+      g1 = const Color(0xFF0F172A);
+      g2 = const Color(0xFF334155); // depression dark grey
+    } else {
+      g1 = const Color(0xFF2E1065);
+      g2 = const Color(0xFF701A75); // impulsivity neon purple
+    }
+
+    final glassPaint = Paint()
+      ..shader = RadialGradient(colors: [g1, g2]).createShader(Rect.fromCenter(center: Offset(cx, cy), width: 90, height: 110));
+    canvas.drawPaint(glassPaint);
+
+    // Reflections (diagonal light streak)
+    final reflectionPaint = Paint()
+      ..color = Colors.white.withValues(alpha: symptom == 'ปกติ' ? 0.15 : 0.05)
+      ..strokeWidth = 12;
+    canvas.drawLine(Offset(cx - 60, cy - 80), Offset(cx + 60, cy + 40), reflectionPaint);
+
+    // Draw Face/Emotion inside mirror
+    String emoji = '😊';
+    if (symptom == 'หวาดระแวง') emoji = '😰';
+    else if (symptom == 'ซึมเศร้า') emoji = '😢';
+    else if (symptom == 'หุนหันพลันแล่น') emoji = '😡';
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: emoji,
+        style: TextStyle(fontSize: 32, shadows: [
+          Shadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))
+        ]),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(cx - textPainter.width / 2, cy - 10 - textPainter.height / 2));
+
+    // Draw Cracks based on symptom
+    if (symptom != 'ปกติ') {
+      final crackPaint = Paint()
+        ..color = isDark ? Colors.white.withValues(alpha: 0.8) : Colors.black.withValues(alpha: 0.7)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8;
+
+      List<List<Offset>> crackPaths = [];
+      if (symptom == 'หวาดระแวง') {
+        crackPaint.color = Colors.redAccent.withValues(alpha: 0.9);
+        crackPaths = [
+          [Offset(cx, cy), Offset(cx - 15, cy - 20), Offset(cx - 30, cy - 25), Offset(cx - 45, cy - 35)],
+          [Offset(cx, cy), Offset(cx + 20, cy - 10), Offset(cx + 35, cy - 25), Offset(cx + 45, cy - 30)],
+          [Offset(cx, cy), Offset(cx - 10, cy + 25), Offset(cx - 15, cy + 45), Offset(cx - 20, cy + 55)],
+        ];
+      } else if (symptom == 'ซึมเศร้า') {
+        crackPaint.strokeWidth = 1.0;
+        crackPaint.color = Colors.blueGrey.shade300.withValues(alpha: 0.75);
+        crackPaths = [
+          [Offset(cx, cy), Offset(cx - 10, cy - 10), Offset(cx - 25, cy - 20), Offset(cx - 35, cy - 40)],
+          [Offset(cx, cy), Offset(cx + 12, cy - 8), Offset(cx + 22, cy - 22), Offset(cx + 38, cy - 30)],
+          [Offset(cx, cy), Offset(cx - 5, cy + 15), Offset(cx - 12, cy + 30), Offset(cx - 25, cy + 45)],
+          [Offset(cx, cy), Offset(cx + 10, cy + 12), Offset(cx + 25, cy + 25), Offset(cx + 35, cy + 38)],
+          // Web connectors
+          [Offset(cx - 10, cy - 10), Offset(cx + 12, cy - 8)],
+          [Offset(cx + 12, cy - 8), Offset(cx + 10, cy + 12)],
+          [Offset(cx + 10, cy + 12), Offset(cx - 5, cy + 15)],
+          [Offset(cx - 5, cy + 15), Offset(cx - 10, cy - 10)],
+        ];
+      } else if (symptom == 'หุนหันพลันแล่น') {
+        crackPaint.strokeWidth = 2.2;
+        crackPaint.color = Colors.orangeAccent.withValues(alpha: 0.9);
+        crackPaths = [
+          [Offset(cx, cy), Offset(cx - 25, cy - 5), Offset(cx - 45, cy - 10)],
+          [Offset(cx, cy), Offset(cx + 25, cy + 5), Offset(cx + 45, cy + 10)],
+          [Offset(cx, cy), Offset(cx - 5, cy - 25), Offset(cx - 10, cy - 50)],
+          [Offset(cx, cy), Offset(cx + 5, cy + 25), Offset(cx + 10, cy + 50)],
+          // diagonal shards
+          [Offset(cx - 25, cy - 5), Offset(cx - 5, cy - 25)],
+          [Offset(cx - 5, cy - 25), Offset(cx + 25, cy + 5)],
+          [Offset(cx + 25, cy + 5), Offset(cx + 5, cy + 25)],
+          [Offset(cx + 5, cy + 25), Offset(cx - 25, cy - 5)],
+        ];
+      }
+
+      for (var path in crackPaths) {
+        if (path.isEmpty) continue;
+        final Path p = Path()..moveTo(path[0].dx, path[0].dy);
+        double drawLimit = progress * (path.length - 1);
+        int segmentsToDraw = drawLimit.floor();
+        double remainingFraction = drawLimit - segmentsToDraw;
+
+        for (int j = 0; j < segmentsToDraw; j++) {
+          p.lineTo(path[j+1].dx, path[j+1].dy);
+        }
+        if (segmentsToDraw < path.length - 1) {
+          final Offset startPoint = path[segmentsToDraw];
+          final Offset endPoint = path[segmentsToDraw + 1];
+          final Offset currentPoint = startPoint + (endPoint - startPoint) * remainingFraction;
+          p.lineTo(currentPoint.dx, currentPoint.dy);
+        }
+        canvas.drawPath(p, crackPaint);
+      }
+    }
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant PsychologicalMirrorPainter oldDelegate) {
+    return oldDelegate.symptom != symptom || oldDelegate.progress != progress || oldDelegate.isDark != isDark;
   }
 }
 
@@ -2865,80 +3089,312 @@ class _FuturePathGpaVisualState extends State<FuturePathGpaVisual> {
   @override
   Widget build(BuildContext context) {
     String gpaText = '4.00';
-    String futureText = 'โอกาสเต็มเปี่ยม ทุนการศึกษา เรียนต่อต่างประเทศ เส้นทางสดใส';
+    String futureTitle = 'เส้นทางสดใส & โอกาสเต็มเปี่ยม';
+    String futureText = 'เกรดเฉลี่ยดีเลิศ มีสิทธิ์ได้รับทุนการศึกษา โอกาสเรียนต่อต่างประเทศ และอาชีพในฝันรออยู่';
     IconData futureIcon = Icons.school_rounded;
     Color themeColor = AppColors.success;
 
-    if (_involvement > 0.7) {
-      gpaText = '0.00 / F';
-      futureText = 'ถูกพักการเรียน โอกาสทุนหายหมด เส้นทางอาชีพถูกปิดกั้น';
-      futureIcon = Icons.lock_rounded;
+    if (_involvement > 0.8) {
+      gpaText = '0.00 / พ้นสภาพ';
+      futureTitle = 'สูญสิ้นโอกาส & ไร้อนาคต';
+      futureText = 'ถูกไล่ออก/พ้นสภาพนักศึกษา ประวัติเสีย ไม่สามารถเข้าศึกษาต่อหรือสมัครงานในบริษัทที่มั่นคงได้';
+      futureIcon = Icons.cancel_rounded;
       themeColor = Colors.redAccent;
-    } else if (_involvement > 0.3) {
-      gpaText = '2.10 (ใกล้จะถูกพักการเรียน)';
-      futureText = 'โอกาสทุนลดลงมาก ต้องเริ่มซ่อม วิชาต้องเรียนซ้ำ โอกาสทำงานดีๆ น้อยลง';
+    } else if (_involvement > 0.5) {
+      gpaText = '1.50 / คาดทัณฑ์';
+      futureTitle = 'วิกฤตการเรียน & โดนทัณฑ์บน';
+      futureText = 'ติดโปรต่ำ เสี่ยงถูกรีไทร์ หมดสิทธิ์รับทุนวิจัยหรือการสนับสนุน และโอกาสหางานลดลงอย่างรุนแรง';
+      futureIcon = Icons.lock_rounded;
+      themeColor = Colors.orangeAccent;
+    } else if (_involvement > 0.2) {
+      gpaText = '2.30 / ต่ำกว่ามาตรฐาน';
+      futureTitle = 'เกรดตกต่ำ & สูญเสียโอกาส';
+      futureText = 'เกรดลดฮวบ ต้องลงทะเบียนเรียนซ้ำ โอกาสได้เกียรตินิยมและทุนการศึกษาต่าง ๆ หมดไป';
       futureIcon = Icons.warning_rounded;
       themeColor = Colors.amber;
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: widget.isDark ? 0.3 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            '🎮 แบบจำลองบันไดอนาคตและผลการเรียน',
+            style: TextStyle(
+              fontSize: 14 * widget.fontScale,
+              fontWeight: FontWeight.bold,
+              color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+              fontFamily: 'Prompt',
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'เลื่อนสไลเดอร์เพื่อดูผลกระทบของการยุ่งเกี่ยวกับยาเสพติดที่มีต่อเกรดเฉลี่ยและความมั่นคงในอนาคต',
+            style: TextStyle(
+              fontSize: 11 * widget.fontScale,
+              color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+              fontFamily: 'Prompt',
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('ระดับการยุ่งเกี่ยวกับยาเสพติด:', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
-              Text('${(_involvement * 100).toInt()}%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: themeColor, fontFamily: 'Prompt')),
+              // Ladder representation (Left)
+              SizedBox(
+                width: 70,
+                height: 160,
+                child: CustomPaint(
+                  painter: CareerLadderPainter(involvement: _involvement, isDark: widget.isDark),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Career Info Card (Right)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: themeColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: themeColor.withValues(alpha: 0.3), width: 1.5),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(futureIcon, color: themeColor, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'เกรดเฉลี่ย: $gpaText',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 13 * widget.fontScale,
+                                    color: themeColor,
+                                    fontFamily: 'Prompt',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 12, thickness: 0.5),
+                          Text(
+                            futureTitle,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12 * widget.fontScale,
+                              color: themeColor,
+                              fontFamily: 'Prompt',
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            futureText,
+                            style: TextStyle(
+                              fontSize: 10.5 * widget.fontScale,
+                              color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                              height: 1.4,
+                              fontFamily: 'Prompt',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'ระดับความเสี่ยง:',
+                          style: TextStyle(
+                            fontSize: 10 * widget.fontScale,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Prompt',
+                            color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                          ),
+                        ),
+                        Text(
+                          '${(_involvement * 100).toInt()}%',
+                          style: TextStyle(
+                            fontSize: 11 * widget.fontScale,
+                            fontWeight: FontWeight.bold,
+                            color: themeColor,
+                            fontFamily: 'Prompt',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 6),
-          Slider(
-            value: _involvement,
-            onChanged: (v) => setState(() => _involvement = v),
-            min: 0.0,
-            max: 1.0,
-            activeColor: themeColor,
-          ),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: themeColor.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: themeColor.withOpacity(0.3), width: 1.5),
+          const SizedBox(height: 12),
+          SliderTheme(
+            data: SliderThemeData(
+              trackHeight: 6,
+              activeTrackColor: themeColor,
+              inactiveTrackColor: widget.isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+              thumbColor: themeColor,
+              overlayColor: themeColor.withValues(alpha: 0.2),
+              valueIndicatorColor: themeColor,
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(futureIcon, color: themeColor, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '📊 เกรดเฉลี่ย: $gpaText',
-                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14 * widget.fontScale, color: themeColor, fontFamily: 'Prompt'),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        futureText,
-                        style: TextStyle(fontSize: 11 * widget.fontScale, height: 1.4, fontFamily: 'Prompt'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            child: Slider(
+              value: _involvement,
+              onChanged: (v) => setState(() => _involvement = v),
+              min: 0.0,
+              max: 1.0,
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+class CareerLadderPainter extends CustomPainter {
+  final double involvement;
+  final bool isDark;
+
+  CareerLadderPainter({required this.involvement, required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double w = size.width;
+    final double h = size.height;
+    final double leftRail = w * 0.25;
+    final double rightRail = w * 0.75;
+    
+    // Draw Rails with dynamic Gradient representing future health
+    final railPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          const Color(0xFF10B981), // Green at the top
+          const Color(0xFFF59E0B), // Yellow/Orange in middle
+          const Color(0xFFEF4444), // Red at the bottom
+        ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTRB(leftRail, 10, rightRail, h - 10))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round;
+
+    // Draw rails
+    canvas.drawLine(Offset(leftRail, 10), Offset(leftRail, h - 10), railPaint);
+    canvas.drawLine(Offset(rightRail, 10), Offset(rightRail, h - 10), railPaint);
+
+    // Rung configurations: Y-ratio, involvement threshold to break
+    final List<Map<String, double>> rungs = [
+      {'y': 0.15, 'threshold': 0.85},
+      {'y': 0.30, 'threshold': 0.65},
+      {'y': 0.45, 'threshold': 0.45},
+      {'y': 0.60, 'threshold': 0.25},
+      {'y': 0.75, 'threshold': 0.10},
+      {'y': 0.90, 'threshold': 0.02},
+    ];
+
+    for (var rung in rungs) {
+      final double y = rung['y']! * h;
+      final double threshold = rung['threshold']!;
+      final bool isBroken = involvement >= threshold;
+
+      if (!isBroken) {
+        // Draw normal rung
+        final rungPaint = Paint()
+          ..color = isDark ? Colors.white.withValues(alpha: 0.8) : Colors.grey.shade600.withValues(alpha: 0.9)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4.5
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(Offset(leftRail + 3, y), Offset(rightRail - 3, y), rungPaint);
+      } else {
+        // Draw broken rung hanging down
+        final brokenPaint = Paint()
+          ..color = Colors.redAccent.withValues(alpha: 0.7)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4.5
+          ..strokeCap = StrokeCap.round;
+
+        final double midX = (leftRail + rightRail) / 2;
+        // Left half slants down
+        canvas.drawLine(Offset(leftRail + 3, y), Offset(midX - 4, y + 14), brokenPaint);
+        // Right half slants down
+        canvas.drawLine(Offset(rightRail - 3, y), Offset(midX + 4, y + 14), brokenPaint);
+
+        // Draw crack debris
+        final sparkPaint = Paint()
+          ..color = Colors.redAccent.withValues(alpha: 0.9)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(Offset(midX, y + 4), 2, sparkPaint);
+      }
+    }
+
+    // Calculate Avatar position
+    // Lerp from top rung to bottom
+    final double startY = 0.15 * h;
+    final double endY = h - 20;
+    
+    // Smooth interpolation
+    final double avatarY = startY + (endY - startY) * involvement;
+    final double avatarX = w / 2;
+
+    // Determine avatar emoji based on involvement
+    String emoji = '🎓';
+    if (involvement > 0.8) {
+      emoji = '💥';
+    } else if (involvement > 0.5) {
+      emoji = '⚠️';
+    } else if (involvement > 0.2) {
+      emoji = '🎒';
+    }
+
+    // Paint Avatar text
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: emoji,
+        style: TextStyle(
+          fontSize: 26,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: 0.4),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            )
+          ]
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(avatarX - textPainter.width / 2, avatarY - textPainter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CareerLadderPainter oldDelegate) {
+    return oldDelegate.involvement != involvement || oldDelegate.isDark != isDark;
   }
 }
 
