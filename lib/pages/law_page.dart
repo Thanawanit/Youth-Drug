@@ -26,37 +26,37 @@ class _LawPageState extends State<LawPage> {
         final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
         final borderColor = isDark ? const Color(0xFF334155) : AppColors.border;
 
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
+        return BackgroundWrapper(
+          child: Scaffold(
             backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'หน้าหลัก > กฎหมายน่ารู้',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white.withValues(alpha: 0.5) : AppColors.textGrey,
-                    fontFamily: 'Prompt',
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'หน้าหลัก > กฎหมายน่ารู้',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white.withValues(alpha: 0.5) : AppColors.textGrey,
+                      fontFamily: 'Prompt',
+                    ),
                   ),
-                ),
-                Text(
-                  'กฎหมายน่ารู้',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18 * state.fontScale,
-                    color: textColor,
-                    fontFamily: 'Prompt',
+                  Text(
+                    'กฎหมายน่ารู้',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18 * state.fontScale,
+                      color: textColor,
+                      fontFamily: 'Prompt',
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          body: BackgroundWrapper(
-            child: SafeArea(
+            body: SafeArea(
               child: Column(
                 children: [
                   // 1. Topic Intro Card

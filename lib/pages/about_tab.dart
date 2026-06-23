@@ -20,21 +20,21 @@ class AboutTab extends StatelessWidget {
         final subTextColor = isDark ? Colors.white70 : AppColors.textGrey;
         final borderColor = isDark ? const Color(0xFF334155) : AppColors.border;
 
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
+        return BackgroundWrapper(
+          child: Scaffold(
             backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: const Text(
-              'เกี่ยวกับโครงการ',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 20,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: const Text(
+                'เกี่ยวกับโครงการ',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20,
+                ),
               ),
             ),
-          ),
-          body: BackgroundWrapper(
-            child: SafeArea(
+            body: SafeArea(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),

@@ -286,37 +286,37 @@ class _QuizPageState extends State<QuizPage> {
         final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
         final borderColor = isDark ? const Color(0xFF334155) : AppColors.border;
 
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
+        return BackgroundWrapper(
+          child: Scaffold(
             backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'หน้าหลัก > แบบทดสอบ',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white.withValues(alpha: 0.5) : AppColors.textGrey,
-                    fontFamily: 'Prompt',
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'หน้าหลัก > แบบทดสอบ',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white.withValues(alpha: 0.5) : AppColors.textGrey,
+                      fontFamily: 'Prompt',
+                    ),
                   ),
-                ),
-                Text(
-                  'ทบทวนความเข้าใจ',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18 * state.fontScale,
-                    color: isDark ? Colors.white : AppColors.textDark,
-                    fontFamily: 'Prompt',
+                  Text(
+                    'ทบทวนความเข้าใจ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18 * state.fontScale,
+                      color: isDark ? Colors.white : AppColors.textDark,
+                      fontFamily: 'Prompt',
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          body: BackgroundWrapper(
-            child: SafeArea(
+            body: SafeArea(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                   20.0,

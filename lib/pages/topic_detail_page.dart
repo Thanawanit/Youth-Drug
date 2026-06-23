@@ -55,30 +55,30 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
         final info = _getTopicInfo(widget.topicType);
         final total = info.sections.length;
 
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
+        return BackgroundWrapper(
+          child: Scaffold(
             backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: textColor,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: textColor,
+                ),
+                onPressed: () => Navigator.pop(context),
               ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              info.title,
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                color: textColor,
-                fontSize: 18 * state.fontScale,
-                fontFamily: 'Prompt',
+              title: Text(
+                info.title,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                  fontSize: 18 * state.fontScale,
+                  fontFamily: 'Prompt',
+                ),
               ),
             ),
-          ),
-          body: BackgroundWrapper(
-            child: SafeArea(
+            body: SafeArea(
               child: Column(
                 children: [
                   // 1. Top progress indicator

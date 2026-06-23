@@ -216,49 +216,49 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
           }
         }
 
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
+        return BackgroundWrapper(
+          customGradient: dynamicGradient,
+          customBlobColors: dynamicBlobs,
+          child: Scaffold(
             backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
-              tooltip: 'ย้อนกลับ',
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              'เกร็ดความรู้แบบสุ่ม',
-              style: TextStyle(fontWeight: FontWeight.w700, color: textColor),
-            ),
-            actions: [
-              // Auto-play Toggle Icon
-              IconButton(
-                icon: Icon(
-                  _isAutoPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
-                  color: _isAutoPlaying ? AppColors.success : null,
-                ),
-                tooltip: _isAutoPlaying
-                    ? 'หยุดการเปลี่ยนข้อความอัตโนมัติ'
-                    : 'เปลี่ยนข้อความอัตโนมัติทุก 8 วินาที',
-                onPressed: _toggleAutoPlay,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
+                tooltip: 'ย้อนกลับ',
+                onPressed: () => Navigator.pop(context),
               ),
-              // Reading Mode toggle button
-              IconButton(
-                icon: Icon(
-                  isReading ? Icons.chrome_reader_mode_rounded : Icons.chrome_reader_mode_outlined,
-                  color: isReading ? AppColors.success : null,
-                ),
-                tooltip: 'โหมดการอ่าน',
-                onPressed: () {
-                  appStateNotifier.toggleReadingMode();
-                },
+              title: Text(
+                'เกร็ดความรู้แบบสุ่ม',
+                style: TextStyle(fontWeight: FontWeight.w700, color: textColor),
               ),
-            ],
-          ),
-          body: BackgroundWrapper(
-            customGradient: dynamicGradient,
-            customBlobColors: dynamicBlobs,
-            child: SafeArea(
+              actions: [
+                // Auto-play Toggle Icon
+                IconButton(
+                  icon: Icon(
+                    _isAutoPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
+                    color: _isAutoPlaying ? AppColors.success : null,
+                  ),
+                  tooltip: _isAutoPlaying
+                      ? 'หยุดการเปลี่ยนข้อความอัตโนมัติ'
+                      : 'เปลี่ยนข้อความอัตโนมัติทุก 8 วินาที',
+                  onPressed: _toggleAutoPlay,
+                ),
+                // Reading Mode toggle button
+                IconButton(
+                  icon: Icon(
+                    isReading ? Icons.chrome_reader_mode_rounded : Icons.chrome_reader_mode_outlined,
+                    color: isReading ? AppColors.success : null,
+                  ),
+                  tooltip: 'โหมดการอ่าน',
+                  onPressed: () {
+                    appStateNotifier.toggleReadingMode();
+                  },
+                ),
+              ],
+            ),
+            body: SafeArea(
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(

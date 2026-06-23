@@ -60,40 +60,40 @@ class _LearningPortalPageState extends State<LearningPortalPage> with TickerProv
         final isDark = state.isDarkMode;
         final textColor = isDark ? Colors.white : AppColors.textDark;
 
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
+        return BackgroundWrapper(
+          child: Scaffold(
             backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              'บทเรียนศึกษา',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: textColor,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: Text(
+                'บทเรียนศึกษา',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+              ),
+              bottom: TabBar(
+                controller: _tabController,
+                indicatorColor: isDark ? AppColors.success : AppColors.primary,
+                labelColor: isDark ? AppColors.success : AppColors.primary,
+                unselectedLabelColor: isDark ? Colors.white60 : AppColors.textGrey,
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontFamily: 'Prompt',
+                  fontSize: 14,
+                ),
+                tabs: const [
+                  Tab(text: 'บทนำ'),
+                  Tab(text: 'ผลกระทบ & ป้องกัน'),
+                ],
               ),
             ),
-            bottom: TabBar(
-              controller: _tabController,
-              indicatorColor: isDark ? AppColors.success : AppColors.primary,
-              labelColor: isDark ? AppColors.success : AppColors.primary,
-              unselectedLabelColor: isDark ? Colors.white60 : AppColors.textGrey,
-              labelStyle: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontFamily: 'Prompt',
-                fontSize: 14,
-              ),
-              tabs: const [
-                Tab(text: 'บทนำ'),
-                Tab(text: 'ผลกระทบ & ป้องกัน'),
-              ],
-            ),
-          ),
-          body: BackgroundWrapper(
-            child: TabBarView(
+            body: TabBarView(
               controller: _tabController,
               physics: const BouncingScrollPhysics(),
               children: [
