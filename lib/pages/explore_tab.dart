@@ -746,127 +746,158 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
             child: child,
           );
         },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. Symbol & Category Display
-                    Row(
+        child: LayoutBuilder(
+          builder: (context, cardConstraints) {
+            final double cardHeight = cardConstraints.maxHeight;
+            // Hide header if the container height is too small
+            final bool showHeader = cardHeight > 340;
+            final bool compactSpacing = cardHeight <= 420;
+
+            final double verticalPadding = compactSpacing ? 12.0 : 24.0;
+            final double horizontalPadding = compactSpacing ? 16.0 : 24.0;
+            final double innerSpacing = compactSpacing ? 8.0 : 16.0;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      verticalPadding,
+                      horizontalPadding,
+                      compactSpacing ? 8.0 : 16.0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: stripeColor.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            categoryIcon,
-                            color: stripeColor,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              fact.category,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: stripeColor,
-                                fontFamily: 'Prompt',
+                        // 1. Symbol & Category Display
+                        if (showHeader) ...[
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: stripeColor.withValues(alpha: 0.12),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  categoryIcon,
+                                  color: stripeColor,
+                                  size: 24,
+                                ),
                               ),
-                            ),
-                            const Text(
-                              'การ์ดความรู้เสพติด',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: AppColors.textGrey,
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    fact.category,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: stripeColor,
+                                      fontFamily: 'Prompt',
+                                    ),
+                                  ),
+                                  const Text(
+                                    'การ์ดความรู้เสพติด',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: AppColors.textGrey,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(height: 1),
-                    const SizedBox(height: 16),
-  
-                    // 2. Fact Title
-                    Text(
-                      fact.title,
-                      style: TextStyle(
-                        fontSize: (isReading ? 21.0 : 18.0) * fontScale,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : AppColors.textDark,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-  
-                    // 3. Fact Message Body
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Text(
-                          fact.message,
+                            ],
+                          ),
+                          SizedBox(height: innerSpacing),
+                          const Divider(height: 1),
+                          SizedBox(height: innerSpacing),
+                        ],
+
+                        // 2. Fact Title
+                        Text(
+                          fact.title,
                           style: TextStyle(
-                            fontSize: (isReading ? 15.5 : 13.5) * fontScale,
-                            color: isDark ? Colors.white70 : AppColors.textGrey,
-                            height: isReading ? 1.7 : 1.5,
+                            fontSize: (isReading ? 21.0 : (compactSpacing ? 15.5 : 18.0)) * fontScale,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : AppColors.textDark,
+                            height: 1.3,
+                          ),
+                          maxLines: showHeader ? 2 : 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: compactSpacing ? 6.0 : 10.0),
+
+                        // 3. Fact Message Body
+                        Expanded(
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            child: Text(
+                              fact.message,
+                              style: TextStyle(
+                                fontSize: (isReading ? 15.5 : (compactSpacing ? 12.0 : 13.5)) * fontScale,
+                                color: isDark ? Colors.white70 : AppColors.textGrey,
+                                height: isReading ? 1.7 : 1.5,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-  
-                    // 4. Action Row: ♡ บันทึก / ⟳ สุ่ม / 📚 อ่านต่อ (Inside the card)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // Bookmark toggle (Animated)
-                        AnimatedBookmarkButton(
-                          isBookmarked: isBookmarked,
-                          onTap: () {
-                            appStateNotifier.toggleBookmark(fact.id);
-                            setState(() {
-                              _hasSwiped = true;
-                            });
-                          },
-                          activeLabel: 'เก็บไว้แล้ว',
-                          inactiveLabel: 'เก็บไว้อ่าน',
-                          activeColor: Colors.redAccent,
-                          inactiveColor: isDark ? Colors.white70 : AppColors.textGrey,
-                        ),
-                        // Shuffle Card
-                        _buildInlineActionButton(
-                          icon: Icons.casino_rounded,
-                          label: 'สุ่มอีกใบ',
-                          color: isDark ? AppColors.success : AppColors.primary,
-                          onPressed: () => _shuffleToRandomPage(filteredCount),
-                        ),
-                        // Read related
-                        _buildInlineActionButton(
-                          icon: Icons.library_books_rounded,
-                          label: 'อ่านแบบเต็ม',
-                          color: Colors.blueAccent,
-                          onPressed: () {
-                            _showRelatedFactsBottomSheet(context, fact, state);
-                          },
+                        SizedBox(height: compactSpacing ? 8.0 : 12.0),
+
+                        // 4. Action Row: ♡ บันทึก / ⟳ สุ่ม / 📚 อ่านต่อ (Inside the card)
+                        SizedBox(
+                          width: double.infinity,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                // Bookmark toggle (Animated)
+                                AnimatedBookmarkButton(
+                                  isBookmarked: isBookmarked,
+                                  onTap: () {
+                                    appStateNotifier.toggleBookmark(fact.id);
+                                    setState(() {
+                                      _hasSwiped = true;
+                                    });
+                                  },
+                                  activeLabel: compactSpacing ? 'เก็บแล้ว' : 'เก็บไว้แล้ว',
+                                  inactiveLabel: compactSpacing ? 'เก็บไว้อ่าน' : 'เก็บไว้อ่าน',
+                                  activeColor: Colors.redAccent,
+                                  inactiveColor: isDark ? Colors.white70 : AppColors.textGrey,
+                                ),
+                                const SizedBox(width: 8),
+                                // Shuffle Card
+                                _buildInlineActionButton(
+                                  icon: Icons.casino_rounded,
+                                  label: 'สุ่มอีกใบ',
+                                  color: isDark ? AppColors.success : AppColors.primary,
+                                  onPressed: () => _shuffleToRandomPage(filteredCount),
+                                ),
+                                const SizedBox(width: 8),
+                                // Read related
+                                _buildInlineActionButton(
+                                  icon: Icons.library_books_rounded,
+                                  label: 'อ่านแบบเต็ม',
+                                  color: Colors.blueAccent,
+                                  onPressed: () {
+                                    _showRelatedFactsBottomSheet(context, fact, state);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
