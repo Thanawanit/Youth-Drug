@@ -18,7 +18,7 @@ class AppColors {
   
   // Text Colors
   static const Color textDark = Color(0xFF0F172A); // Slate 900
-  static const Color textGrey = Color(0xFF64748B); // Slate 500
+  static const Color textGrey = Color(0xFF475569); // Slate 600
   static const Color textLight = Color(0xFF94A3B8); // Slate 400
   
   // Category specific coloring for fact cards

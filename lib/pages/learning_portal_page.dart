@@ -4,6 +4,7 @@ import '../main.dart';
 import '../state/app_state.dart';
 import '../constants/app_colors.dart';
 import '../widgets/app_background.dart';
+import '../utils/animations.dart';
 import 'topic_detail_page.dart';
 
 class LearningPortalPage extends StatefulWidget {
@@ -301,8 +302,8 @@ class _LearningPortalPageState extends State<LearningPortalPage> with TickerProv
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => TopicDetailPage(topicType: topicType),
+                  FadeScalePageRoute(
+                    page: TopicDetailPage(topicType: topicType),
                   ),
                 );
               },
@@ -727,41 +728,57 @@ class _LearningPortalPageState extends State<LearningPortalPage> with TickerProv
     return Positioned(
       top: top,
       left: left,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color.withOpacity(0.18),
-              ),
-            ),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color,
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withOpacity(0.5),
-                    blurRadius: 8,
-                    spreadRadius: 1,
+      child: Tooltip(
+        message: 'ผลกระทบด้าน $tooltip',
+        textStyle: const TextStyle(
+          fontFamily: 'Prompt',
+          fontSize: 12,
+          color: Colors.white,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF334155) : AppColors.primary,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Semantics(
+          label: 'จุดวิเคราะห์ผลกระทบด้าน $tooltip',
+          button: true,
+          child: GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color.withOpacity(0.18),
                   ),
-                ],
-              ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 18,
-              ),
+                ),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color,
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.5),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

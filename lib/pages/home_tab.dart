@@ -1,8 +1,13 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../state/app_state.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text.dart';
+import '../utils/animations.dart';
+import '../data/facts.dart';
+import '../models/fact_model.dart';
 import 'learning_portal_page.dart';
 import 'random_fact_page.dart';
 import 'about_tab.dart';
@@ -20,6 +25,42 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  late Fact _featuredFact;
+  Timer? _factRotationTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectRandomFact();
+    _factRotationTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (mounted) {
+        setState(() {
+          _selectRandomFact();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _factRotationTimer?.cancel();
+    super.dispose();
+  }
+
+  void _selectRandomFact() {
+    final random = Random();
+    if (factsDataset.isNotEmpty) {
+      _featuredFact = factsDataset[random.nextInt(factsDataset.length)];
+    } else {
+      _featuredFact = const Fact(
+        id: 'default',
+        title: 'หัวข้อหลัก',
+        message: 'สมองของวัยรุ่นและเด็กยังเติบโตไม่เต็มที่ การได้รับสารเสพติดแม้เพียงเล็กน้อย ก็สามารถส่งผลทำลายทักษะการคิดวิเคราะห์ ความทรงจำ และสมาธิในระยะยาวได้อย่างรวดเร็ว',
+        category: 'รู้ไหม',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<AppState>(
@@ -72,7 +113,7 @@ class _HomeTabState extends State<HomeTab> {
                   if (value == 'about') {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AboutTab()),
+                      FadeScalePageRoute(page: const AboutTab()),
                     );
                   } else if (value == 'font') {
                     _showFontScaleDialog(context, state.fontScale);
@@ -148,19 +189,34 @@ class _HomeTabState extends State<HomeTab> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 1. Editorial Hero Banner
+                      // 1. Editorial Hero Banner (Redesigned with Soft Light Blue-to-White Gradient)
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(22),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          gradient: isDark
+                              ? const LinearGradient(
+                                  colors: [Color(0xFF0C4A6E), Color(0xFF0F172A)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )
+                              : const LinearGradient(
+                                  colors: [Color(0xFFD6EFFE), Colors.white],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
                           borderRadius: BorderRadius.circular(28),
-                          border: Border.all(color: borderColor, width: 1.5),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                            width: 1.5,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.015),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
+                              color: isDark
+                                  ? Colors.black.withValues(alpha: 0.3)
+                                  : Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
                             ),
                           ],
                         ),
@@ -174,9 +230,9 @@ class _HomeTabState extends State<HomeTab> {
                                   child: Text(
                                     'เรียนรู้เพื่อป้องกัน\nเข้าใจเพื่อเลือก',
                                     style: TextStyle(
-                                      fontSize: 22 * state.fontScale,
+                                      fontSize: 24 * state.fontScale,
                                       fontWeight: FontWeight.w900,
-                                      color: textColor,
+                                      color: isDark ? Colors.white : AppColors.textDark,
                                       height: 1.25,
                                     ),
                                   ),
@@ -184,17 +240,17 @@ class _HomeTabState extends State<HomeTab> {
                                 const SizedBox(width: 12),
                                 Image.asset(
                                   'assets/images/logo.png',
-                                  height: 52,
+                                  height: 64,
                                   errorBuilder: (context, error, stackTrace) => const SizedBox(),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 14),
                             Text(
                               AppText.appSubtitle,
                               style: TextStyle(
-                                fontSize: 13 * state.fontScale,
-                                color: subTextColor,
+                                fontSize: 13.5 * state.fontScale,
+                                color: isDark ? Colors.white70 : AppColors.textGrey,
                                 height: 1.5,
                               ),
                             ),
@@ -203,18 +259,45 @@ class _HomeTabState extends State<HomeTab> {
                               AppText.appSubtitleSupporting,
                               style: TextStyle(
                                 fontSize: 12.5 * state.fontScale,
-                                color: subTextColor.withValues(alpha: 0.92),
+                                color: isDark ? Colors.white60 : const Color(0xFF64748B),
                                 height: 1.6,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32), // Increased Spacing
 
-                      // 2. Quick Access (บทเรียน & กฎหมาย)
+                      // 2. Primary Access Card (Full-width, Highlighted)
                       Text(
-                        'เริ่มต้นจากหัวข้อสำคัญ',
+                        'แหล่งเรียนรู้หลัก',
+                        style: TextStyle(
+                          fontSize: 16 * state.fontScale,
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildPrimaryLinkCard(
+                        title: 'บทเรียนศึกษา',
+                        desc: 'เริ่มต้นเรียนรู้พื้นฐานและทำความเข้าใจผลกระทบหลักด้านต่าง ๆ ของสารเสพติด',
+                        icon: Icons.local_library_rounded,
+                        color: isDark ? AppColors.success : AppColors.primary,
+                        cardBg: cardBg,
+                        borderColor: borderColor,
+                        fontScale: state.fontScale,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            FadeScalePageRoute(page: const LearningPortalPage()),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 32), // Increased Spacing
+
+                      // 3. Recommended Activities (Secondary Cards)
+                      Text(
+                        'ฝึกฝนและทบทวนความเข้าใจ',
                         style: TextStyle(
                           fontSize: 16 * state.fontScale,
                           fontWeight: FontWeight.w800,
@@ -227,25 +310,7 @@ class _HomeTabState extends State<HomeTab> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Expanded(
-                              child: _buildEditorialLinkCard(
-                                title: 'บทเรียนศึกษา',
-                                desc: 'เริ่มต้นเรียนรู้พื้นฐานและทำความเข้าใจผลกระทบ',
-                                icon: Icons.local_library_rounded,
-                                color: isDark ? AppColors.success : AppColors.primary,
-                                cardBg: cardBg,
-                                borderColor: borderColor,
-                                fontScale: state.fontScale,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const LearningPortalPage()),
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildEditorialLinkCard(
+                              child: _buildSecondaryLinkCard(
                                 title: 'กฎหมายน่ารู้',
                                 desc: 'ทำความเข้าใจสิทธิและข้อกฎหมายสำหรับเยาวชน',
                                 icon: Icons.balance_rounded,
@@ -258,47 +323,11 @@ class _HomeTabState extends State<HomeTab> {
                                 },
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // 3. Interactive Reflection (สุ่มคำถาม & ทำแบบทดสอบ)
-                      Text(
-                        'ลองเรียนรู้และทบทวนแบบสบายๆ',
-                        style: TextStyle(
-                          fontSize: 16 * state.fontScale,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: _buildEditorialLinkCard(
-                                title: 'สุ่มการ์ดความรู้',
-                                desc: 'อ่านเกร็ดความรู้สั้นๆ เพื่อการเรียนรู้ที่รวดเร็ว',
-                                icon: Icons.casino_rounded,
-                                color: Colors.amber,
-                                cardBg: cardBg,
-                                borderColor: borderColor,
-                                fontScale: state.fontScale,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const RandomFactPage()),
-                                  );
-                                },
-                              ),
-                            ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: _buildEditorialLinkCard(
+                              child: _buildSecondaryLinkCard(
                                 title: 'ทบทวนความเข้าใจ',
-                                desc: 'ตอบคำถามสั้นๆ เพื่อทบทวนความรู้ที่ได้ศึกษา',
+                                desc: 'ทำแบบทดสอบเพื่อทบทวนสิ่งที่ศึกษา',
                                 icon: Icons.assignment_turned_in_rounded,
                                 color: Colors.teal,
                                 cardBg: cardBg,
@@ -312,11 +341,28 @@ class _HomeTabState extends State<HomeTab> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
+                      // Interactive Card Game / Random Fact
+                      _buildPrimaryLinkCard(
+                        title: 'สุ่มการ์ดความรู้',
+                        desc: 'อ่านเกร็ดความรู้สั้น ๆ เพื่อการเรียนรู้ทบทวนที่รวดเร็วและท้าทาย',
+                        icon: Icons.casino_rounded,
+                        color: Colors.amber,
+                        cardBg: cardBg,
+                        borderColor: borderColor,
+                        fontScale: state.fontScale,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            FadeScalePageRoute(page: const RandomFactPage()),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 32), // Increased Spacing
 
-                      // 4. Featured Fact Section (รู้หรือไม่?) - Moved to the bottom
+                      // 4. Featured Fact Section (รู้หรือไม่?) - Dynamic Rotating Banner with Fade Transition
                       Text(
-                        'สำรวจต่อในแบบที่คุณสนใจ',
+                        'รู้หรือไม่วันนี้?',
                         style: TextStyle(
                           fontSize: 16 * state.fontScale,
                           fontWeight: FontWeight.w800,
@@ -332,58 +378,65 @@ class _HomeTabState extends State<HomeTab> {
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: borderColor, width: 1.5),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.lightbulb_outline_rounded, color: Colors.amber, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'รู้หรือไม่?',
-                                  style: TextStyle(
-                                    fontSize: 13.5 * state.fontScale,
-                                    fontWeight: FontWeight.w800,
-                                    color: isDark ? Colors.amberAccent : AppColors.textDark,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'สมองของวัยรุ่นและเด็กยังเติบโตไม่เต็มที่ การได้รับสารเสพติดแม้เพียงเล็กน้อย ก็สามารถส่งผลทำลายทักษะการคิดวิเคราะห์ ความทรงจำ และสมาธิในระยะยาวได้อย่างรวดเร็วกว่าสมองของผู้ใหญ่หลายเท่า!',
-                              style: TextStyle(
-                                fontSize: 12.5 * state.fontScale,
-                                color: subTextColor,
-                                height: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            InkWell(
-                              onTap: () {
-                                widget.onNavigateToTab?.call(1); // Go to Explore Tab
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 500),
+                          child: Column(
+                            key: ValueKey<String>(_featuredFact.id),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
+                                  const Icon(Icons.lightbulb_outline_rounded, color: Colors.amber, size: 20),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    'สำรวจความรู้เพิ่มเติม',
+                                    'รู้หรือไม่? — ${_featuredFact.title}',
                                     style: TextStyle(
-                                      fontSize: 12 * state.fontScale,
+                                      fontSize: 13.5 * state.fontScale,
                                       fontWeight: FontWeight.w800,
-                                      color: isDark ? AppColors.success : AppColors.primary,
+                                      color: isDark ? Colors.amberAccent : AppColors.textDark,
+                                      fontFamily: 'Prompt',
                                     ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.arrow_forward_rounded,
-                                    size: 14,
-                                    color: isDark ? AppColors.success : AppColors.primary,
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 10),
+                              Text(
+                                _featuredFact.message,
+                                style: TextStyle(
+                                  fontSize: 12.5 * state.fontScale,
+                                  color: subTextColor,
+                                  height: 1.5,
+                                  fontFamily: 'Prompt',
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              InkWell(
+                                onTap: () {
+                                  widget.onNavigateToTab?.call(1); // Go to Explore Tab
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'สำรวจความรู้เพิ่มเติม',
+                                      style: TextStyle(
+                                        fontSize: 12 * state.fontScale,
+                                        fontWeight: FontWeight.w800,
+                                        color: isDark ? AppColors.success : AppColors.primary,
+                                        fontFamily: 'Prompt',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 14,
+                                      color: isDark ? AppColors.success : AppColors.primary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -398,7 +451,91 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  Widget _buildEditorialLinkCard({
+  Widget _buildPrimaryLinkCard({
+    required String title,
+    required String desc,
+    required IconData icon,
+    required Color color,
+    required Color cardBg,
+    required Color borderColor,
+    required double fontScale,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.01),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Ink(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: borderColor, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 26),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 15.5 * fontScale,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'Prompt',
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        desc,
+                        style: TextStyle(
+                          fontSize: 11 * fontScale,
+                          color: AppColors.textGrey,
+                          height: 1.4,
+                          fontFamily: 'Prompt',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: AppColors.textGrey.withValues(alpha: 0.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSecondaryLinkCard({
     required String title,
     required String desc,
     required IconData icon,
@@ -441,6 +578,7 @@ class _HomeTabState extends State<HomeTab> {
                     style: TextStyle(
                       fontSize: 13.5 * fontScale,
                       fontWeight: FontWeight.w800,
+                      fontFamily: 'Prompt',
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

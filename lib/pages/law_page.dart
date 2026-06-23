@@ -13,6 +13,7 @@ class LawPage extends StatefulWidget {
 
 class _LawPageState extends State<LawPage> {
   int _activeCategoryIndex = 0;
+  String? _expandedScenarioTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +31,28 @@ class _LawPageState extends State<LawPage> {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: const Text(
-              'กฎหมายน่ารู้',
-              style: TextStyle(fontWeight: FontWeight.w800),
+            title: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'หน้าหลัก > กฎหมายน่ารู้',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white.withValues(alpha: 0.5) : AppColors.textGrey,
+                    fontFamily: 'Prompt',
+                  ),
+                ),
+                Text(
+                  'กฎหมายน่ารู้',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18 * state.fontScale,
+                    color: textColor,
+                    fontFamily: 'Prompt',
+                  ),
+                ),
+              ],
             ),
           ),
           body: BackgroundWrapper(
@@ -174,6 +194,7 @@ class _LawPageState extends State<LawPage> {
           if (val) {
             setState(() {
               _activeCategoryIndex = index;
+              _expandedScenarioTitle = null;
             });
           }
         },
@@ -240,6 +261,12 @@ class _LawPageState extends State<LawPage> {
               icon: Icons.backpack_rounded,
               color: Colors.orangeAccent,
               isDark: isDark,
+              isExpanded: _expandedScenarioTitle == 'เพื่อนฝากกระเป๋าปริศนา',
+              onExpansionChanged: (isExpanding) {
+                setState(() {
+                  _expandedScenarioTitle = isExpanding ? 'เพื่อนฝากกระเป๋าปริศนา' : null;
+                });
+              },
             ),
             const SizedBox(height: 8),
             _ExpandableScenarioCard(
@@ -254,6 +281,12 @@ class _LawPageState extends State<LawPage> {
               icon: Icons.error_outline_rounded,
               color: Colors.redAccent,
               isDark: isDark,
+              isExpanded: _expandedScenarioTitle == 'โดนรุ่นพี่ข่มขู่ให้ส่งของ',
+              onExpansionChanged: (isExpanding) {
+                setState(() {
+                  _expandedScenarioTitle = isExpanding ? 'โดนรุ่นพี่ข่มขู่ให้ส่งของ' : null;
+                });
+              },
             ),
           ],
         );
@@ -307,6 +340,12 @@ class _LawPageState extends State<LawPage> {
               icon: Icons.smoke_free_rounded,
               color: Colors.blueAccent,
               isDark: isDark,
+              isExpanded: _expandedScenarioTitle == 'บุหรี่ไฟฟ้าในโรงเรียน',
+              onExpansionChanged: (isExpanding) {
+                setState(() {
+                  _expandedScenarioTitle = isExpanding ? 'บุหรี่ไฟฟ้าในโรงเรียน' : null;
+                });
+              },
             ),
           ],
         );
@@ -379,6 +418,8 @@ class _ExpandableScenarioCard extends StatefulWidget {
   final IconData icon;
   final Color color;
   final bool isDark;
+  final bool isExpanded;
+  final ValueChanged<bool> onExpansionChanged;
 
   const _ExpandableScenarioCard({
     required this.title,
@@ -392,6 +433,8 @@ class _ExpandableScenarioCard extends StatefulWidget {
     required this.icon,
     required this.color,
     required this.isDark,
+    required this.isExpanded,
+    required this.onExpansionChanged,
   });
 
   @override
@@ -399,7 +442,6 @@ class _ExpandableScenarioCard extends StatefulWidget {
 }
 
 class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
-  bool _isExpanded = false;
   int? _selectedChoice; // null = unchosen, 1 = unsafe, 2 = safe
 
   @override
@@ -430,9 +472,7 @@ class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              setState(() {
-                _isExpanded = !_isExpanded;
-              });
+              widget.onExpansionChanged(!widget.isExpanded);
             },
             child: Padding(
               padding: const EdgeInsets.all(18.0),
@@ -476,7 +516,7 @@ class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
                         ),
                       ),
                       Icon(
-                        _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                        widget.isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
                         color: subTextColor,
                       ),
                     ],
@@ -495,7 +535,7 @@ class _ExpandableScenarioCardState extends State<_ExpandableScenarioCard> {
                   AnimatedSize(
                     duration: const Duration(milliseconds: 250),
                     curve: Curves.easeInOut,
-                    child: _isExpanded
+                    child: widget.isExpanded
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

@@ -6,6 +6,7 @@ import '../state/app_state.dart';
 import '../constants/app_colors.dart';
 import '../data/facts.dart';
 import '../models/fact_model.dart';
+import '../widgets/animated_bookmark_button.dart';
 
 class ExploreTab extends StatefulWidget {
   const ExploreTab({super.key});
@@ -20,6 +21,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
   String _searchQuery = '';
   late final Fact _topSuggestedFact;
   int _currentPageIndex = 0;
+  bool _hasSwiped = false;
 
   // Stack deck drag & animation variables
   Offset _dragOffset = Offset.zero;
@@ -400,6 +402,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                                             if (_isAnimating) return;
                                             setState(() {
                                               _dragOffset += details.delta;
+                                              _hasSwiped = true;
                                             });
                                           },
                                           onPanEnd: (details) {
@@ -449,6 +452,49 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                                           ),
                                         ),
                                       ),
+                                      // First-time swipe hint overlay (Dismissed instantly once swiped)
+                                      if (_currentPageIndex == 0 && !_hasSwiped)
+                                        Positioned(
+                                          bottom: 70,
+                                          left: 0,
+                                          right: 0,
+                                          child: IgnorePointer(
+                                            child: Center(
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black.withOpacity(0.75),
+                                                  borderRadius: BorderRadius.circular(30),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                      color: Colors.black26,
+                                                      blurRadius: 8,
+                                                      offset: Offset(0, 4),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 18),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      'ปัดเพื่อเปลี่ยนการ์ด',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12 * fontScale,
+                                                        fontWeight: FontWeight.w700,
+                                                        fontFamily: 'Prompt',
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 18),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                     ],
                                   );
                                 },
@@ -473,6 +519,20 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
   }
 
   Widget _buildEmptyState(bool isDark, Color subTextColor) {
+    String titleText = 'ยังไม่มีการ์ดที่บันทึกไว้';
+    String descText = 'หากเจอการ์ดที่อยากกลับมาอ่านอีกครั้ง สามารถแตะไอคอนหัวใจเพื่อบันทึกไว้ก่อนได้';
+    IconData emptyIcon = Icons.bookmark_border_rounded;
+
+    if (_searchQuery.isNotEmpty) {
+      titleText = 'ไม่พบข้อมูลที่ค้นหา';
+      descText = 'ขออภัยด้วย ลองค้นหาด้วยคำอื่น เช่น "กัญชา", "บุหรี่", หรือ "สมอง" ดูสิ';
+      emptyIcon = Icons.search_off_rounded;
+    } else if (_selectedCategory != 'ที่บันทึกไว้') {
+      titleText = 'ไม่มีการ์ดในหมวดหมู่นี้';
+      descText = 'ขออภัยด้วย หมวดหมู่นี้ยังไม่มีข้อมูลความรู้ในขณะนี้';
+      emptyIcon = Icons.library_books_rounded;
+    }
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -492,26 +552,28 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                 ],
               ),
               child: Icon(
-                Icons.bookmark_border_rounded,
+                emptyIcon,
                 size: 48,
                 color: isDark ? Colors.white60 : AppColors.textGrey,
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'ยังไม่มีการ์ดที่บันทึกไว้',
-              style: TextStyle(
+            Text(
+              titleText,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
+                fontFamily: 'Prompt',
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'หากเจอการ์ดที่อยากกลับมาอ่านอีกครั้ง สามารถแตะไอคอนบันทึกไว้ก่อนได้',
+              descText,
               style: TextStyle(
                 fontSize: 13,
                 color: subTextColor,
                 height: 1.5,
+                fontFamily: 'Prompt',
               ),
               textAlign: TextAlign.center,
             ),
@@ -574,23 +636,40 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
   Widget _buildDotIndicators(int count, bool isDark) {
     // Show maximum 8 dots to avoid overflow on small screens
     final displayCount = min(count, 8);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(displayCount, (index) {
-        final isActive = index == (_currentPageIndex % displayCount);
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          height: 8,
-          width: isActive ? 18 : 8,
-          decoration: BoxDecoration(
-            color: isActive
-                ? (isDark ? AppColors.success : AppColors.primary)
-                : (isDark ? Colors.white24 : AppColors.border),
-            borderRadius: BorderRadius.circular(4),
+    final displayCurrentPage = count > 0 ? (_currentPageIndex % count) + 1 : 0;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(displayCount, (index) {
+            final isActive = index == (_currentPageIndex % displayCount);
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              height: 8,
+              width: isActive ? 18 : 8,
+              decoration: BoxDecoration(
+                color: isActive
+                    ? (isDark ? AppColors.success : AppColors.primary)
+                    : (isDark ? Colors.white24 : AppColors.border),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '$displayCurrentPage / $count',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: isDark ? Colors.white60 : AppColors.textGrey,
+            fontFamily: 'Prompt',
           ),
-        );
-      }),
+        ),
+      ],
     );
   }
 
@@ -750,14 +829,19 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        // Bookmark toggle
-                        _buildInlineActionButton(
-                          icon: isBookmarked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                          label: isBookmarked ? 'เก็บไว้แล้ว' : 'เก็บไว้อ่าน',
-                          color: isBookmarked ? Colors.redAccent : AppColors.textGrey,
-                          onPressed: () {
+                        // Bookmark toggle (Animated)
+                        AnimatedBookmarkButton(
+                          isBookmarked: isBookmarked,
+                          onTap: () {
                             appStateNotifier.toggleBookmark(fact.id);
+                            setState(() {
+                              _hasSwiped = true;
+                            });
                           },
+                          activeLabel: 'เก็บไว้แล้ว',
+                          inactiveLabel: 'เก็บไว้อ่าน',
+                          activeColor: Colors.redAccent,
+                          inactiveColor: isDark ? Colors.white70 : AppColors.textGrey,
                         ),
                         // Shuffle Card
                         _buildInlineActionButton(

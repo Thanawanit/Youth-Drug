@@ -755,6 +755,13 @@ class TopicSection {
 // ============================================================================
 // WIDGET 1.0: ContrastBattleVisual
 // ============================================================================
+class _SortItem {
+  final String name;
+  final String desc;
+  final bool isMedicine;
+  _SortItem(this.name, this.desc, this.isMedicine);
+}
+
 class ContrastBattleVisual extends StatefulWidget {
   final bool isDark;
   final double fontScale;
@@ -765,129 +772,426 @@ class ContrastBattleVisual extends StatefulWidget {
 }
 
 class _ContrastBattleVisualState extends State<ContrastBattleVisual> {
-  int _selectedIndex = 0; // 0 for medicine, 1 for drugs
+  late List<_SortItem> _items;
+  int _currentIndex = 0;
+  int _score = 0;
+  bool _gameCompleted = false;
+  
+  bool _isHoveringLeft = false;
+  bool _isHoveringRight = false;
+  
+  String? _feedbackText;
+  bool? _lastCorrect;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetGame();
+  }
+
+  void _resetGame() {
+    setState(() {
+      _items = [
+        _SortItem('พาราเซตามอล', 'ยาสามัญประจำบ้านสำหรับลดไข้และบรรเทาอาการปวดทั่วไป ปลอดภัยหากใช้ตามปริมาณที่กำหนด', true),
+        _SortItem('ยาบ้า (เมทแอมเฟตามีน)', 'สารกระตุ้นประสาทรุนแรง ทำลายเซลล์สมอง ก่อให้เกิดอาการระแวง คุ้มคลั่ง และติดง่ายมาก', false),
+        _SortItem('ยาปฏิชีวนะ (ยาฆ่าเชื้อ)', 'ใช้สำหรับยับยั้งและทำลายเชื้อแบคทีเรีย ต้องทานให้ครบตามคำแนะนำของแพทย์เพื่อป้องกันการดื้อยา', true),
+        _SortItem('เฮโรอีน', 'สารเสพติดให้โทษประเภท 1 ออกฤทธิ์กดประสาทรุนแรง เสี่ยงต่อการหยุดหายใจเฉียบพลัน', false),
+        _SortItem('วัคซีนป้องกันโรค', 'สารชีววัตถุที่ใช้กระตุ้นร่างกายให้สร้างภูมิคุ้มกันเพื่อรับมือโรคระบาดร้ายแรงในอนาคต', true),
+        _SortItem('ยาไอซ์', 'เมทแอมเฟตามีนในรูปแบบผลึกคริสตัลบริสุทธิ์ ทำลายสุขภาพจิตอย่างรุนแรงและก่อให้เกิดโรคจิตประสาท', false),
+      ]..shuffle();
+      _currentIndex = 0;
+      _score = 0;
+      _gameCompleted = false;
+      _feedbackText = null;
+      _lastCorrect = null;
+    });
+  }
+
+  void _handleSort(bool choice) {
+    if (_gameCompleted) return;
+    
+    final currentItem = _items[_currentIndex];
+    final isCorrect = currentItem.isMedicine == choice;
+    
+    setState(() {
+      if (isCorrect) {
+        _score++;
+        _lastCorrect = true;
+        _feedbackText = 'ถูกต้อง! "${currentItem.name}" คือ ${choice ? 'ยารักษาโรค' : 'ยาเสพติด'}';
+      } else {
+        _lastCorrect = false;
+        _feedbackText = 'ไม่ถูกต้อง! "${currentItem.name}" คือ ${currentItem.isMedicine ? 'ยารักษาโรค' : 'ยาเสพติด'}';
+      }
+      
+      _currentIndex++;
+      if (_currentIndex >= _items.length) {
+        _gameCompleted = true;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final greenColor = const Color(0xFF10B981);
-    final redColor = const Color(0xFFEF4444);
-
+    if (_gameCompleted) {
+      return _buildCompletionScreen();
+    }
+    
+    final currentItem = _items[_currentIndex];
+    
     return Column(
       children: [
+        // Progress header
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedIndex = 0),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: _selectedIndex == 0
-                        ? greenColor.withOpacity(0.12)
-                        : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: _selectedIndex == 0 ? greenColor : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(Icons.healing_rounded,
-                          color: _selectedIndex == 0 ? greenColor : Colors.grey, size: 28),
-                      const SizedBox(height: 4),
-                      Text(
-                        'ยารักษาโรค',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13 * widget.fontScale,
-                          color: _selectedIndex == 0 ? greenColor : Colors.grey,
-                          fontFamily: 'Prompt',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            Text(
+              'จำแนกประเภท: การ์ดที่ ${_currentIndex + 1}/${_items.length}',
+              style: TextStyle(
+                fontFamily: 'Prompt',
+                fontSize: 12 * widget.fontScale,
+                fontWeight: FontWeight.bold,
+                color: widget.isDark ? Colors.blueGrey.shade300 : Colors.grey.shade600,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedIndex = 1),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: _selectedIndex == 1
-                        ? redColor.withOpacity(0.12)
-                        : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: _selectedIndex == 1 ? redColor : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(Icons.coronavirus_rounded,
-                          color: _selectedIndex == 1 ? redColor : Colors.grey, size: 28),
-                      const SizedBox(height: 4),
-                      Text(
-                        'ยาเสพติด',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13 * widget.fontScale,
-                          color: _selectedIndex == 1 ? redColor : Colors.grey,
-                          fontFamily: 'Prompt',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            Text(
+              'คะแนน: $_score/${_items.length}',
+              style: TextStyle(
+                fontFamily: 'Prompt',
+                fontSize: 12 * widget.fontScale,
+                fontWeight: FontWeight.bold,
+                color: AppColors.success,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+        const SizedBox(height: 10),
+        
+        // Draggable Card Container
+        SizedBox(
+          height: 130,
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _selectedIndex == 0
-                ? greenColor.withOpacity(0.06)
-                : redColor.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: _selectedIndex == 0
-                  ? greenColor.withOpacity(0.2)
-                  : redColor.withOpacity(0.2),
-              width: 1.5,
+          child: Draggable<bool>(
+            data: currentItem.isMedicine,
+            feedback: Material(
+              color: Colors.transparent,
+              child: _buildCardUI(currentItem, isFeedback: true),
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: _selectedIndex == 0
-                ? [
-                    Text('✓ มีวัตถุประสงค์ชัดเจนในการรักษาหรือป้องกันโรค',
-                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
-                    Text('✓ ใช้ภายใต้การดูแลของแพทย์หรือเภสัชกรที่มีใบอนุญาต',
-                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
-                    Text('✓ มีการควบคุมคุณภาพและผ่านการรับรองจากหน่วยงานที่เชื่อถือได้',
-                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
-                  ]
-                : [
-                    Text('✗ ออกฤทธิ์ต่อสมองโดยไม่มีประโยชน์ทางการแพทย์ที่แท้จริง',
-                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5, color: redColor)),
-                    Text('✗ ทำให้ติดได้ง่าย ส่งผลเสียต่อร่างกายและจิตใจในระยะยาว',
-                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
-                    Text('✗ ผิดกฎหมายและอาจนำไปสู่ปัญหาชีวิตที่แก้ไขได้ยาก',
-                        style: TextStyle(fontFamily: 'Prompt', fontSize: 12.5 * widget.fontScale, height: 1.5)),
-                  ],
+            childWhenDragging: Container(
+              decoration: BoxDecoration(
+                color: widget.isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.02),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.08),
+                  width: 1.5,
+                ),
+              ),
+            ),
+            child: _buildCardUI(currentItem, isFeedback: false),
           ),
         ),
+        
+        const SizedBox(height: 16),
+        Text(
+          'ลากการ์ดลงกล่องด้านล่าง หรือแตะกล่องเพื่อแยกหมวดหมู่',
+          style: TextStyle(
+            fontSize: 10.5 * widget.fontScale,
+            fontFamily: 'Prompt',
+            fontWeight: FontWeight.bold,
+            color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        
+        // Drop targets / Buckets
+        Row(
+          children: [
+            // Left target (Medicine)
+            Expanded(
+              child: DragTarget<bool>(
+                onWillAcceptWithDetails: (details) {
+                  setState(() => _isHoveringLeft = true);
+                  return true;
+                },
+                onLeave: (data) {
+                  setState(() => _isHoveringLeft = false);
+                },
+                onAcceptWithDetails: (details) {
+                  setState(() => _isHoveringLeft = false);
+                  _handleSort(true);
+                },
+                builder: (context, candidateData, rejectedData) {
+                  return _buildBucket(
+                    label: 'ยารักษาโรค',
+                    isMedicine: true,
+                    isHovered: _isHoveringLeft,
+                    color: const Color(0xFF10B981),
+                    icon: Icons.healing_rounded,
+                    onTap: () => _handleSort(true),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Right target (Drugs)
+            Expanded(
+              child: DragTarget<bool>(
+                onWillAcceptWithDetails: (details) {
+                  setState(() => _isHoveringRight = true);
+                  return true;
+                },
+                onLeave: (data) {
+                  setState(() => _isHoveringRight = false);
+                },
+                onAcceptWithDetails: (details) {
+                  setState(() => _isHoveringRight = false);
+                  _handleSort(false);
+                },
+                builder: (context, candidateData, rejectedData) {
+                  return _buildBucket(
+                    label: 'ยาเสพติด',
+                    isMedicine: false,
+                    isHovered: _isHoveringRight,
+                    color: const Color(0xFFEF4444),
+                    icon: Icons.coronavirus_rounded,
+                    onTap: () => _handleSort(false),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        
+        // Last Answer Feedback Indicator
+        if (_feedbackText != null) ...[
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: _lastCorrect == true
+                  ? AppColors.success.withValues(alpha: 0.08)
+                  : Colors.redAccent.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _lastCorrect == true ? AppColors.success : Colors.redAccent,
+                width: 1,
+              ),
+            ),
+            child: Text(
+              _feedbackText!,
+              style: TextStyle(
+                fontFamily: 'Prompt',
+                fontSize: 11 * widget.fontScale,
+                fontWeight: FontWeight.bold,
+                color: _lastCorrect == true ? AppColors.success : Colors.redAccent,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ],
+    );
+  }
+
+  Widget _buildCardUI(_SortItem item, {required bool isFeedback}) {
+    final width = isFeedback ? MediaQuery.of(context).size.width * 0.7 : double.infinity;
+    return Container(
+      width: width,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isFeedback ? 0.15 : 0.04),
+            blurRadius: isFeedback ? 16 : 8,
+            offset: Offset(0, isFeedback ? 8 : 4),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.help_outline_rounded,
+              color: widget.isDark ? Colors.blueGrey.shade300 : Colors.grey.shade600,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  item.name,
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 14 * widget.fontScale,
+                    fontWeight: FontWeight.bold,
+                    color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item.desc,
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 10.5 * widget.fontScale,
+                    height: 1.4,
+                    color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBucket({
+    required String label,
+    required bool isMedicine,
+    required bool isHovered,
+    required Color color,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedScale(
+        scale: isHovered ? 1.05 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isHovered
+                ? color.withValues(alpha: 0.15)
+                : (widget.isDark ? const Color(0xFF1E293B) : Colors.white),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isHovered ? color : (widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06)),
+              width: isHovered ? 2.5 : 1.5,
+            ),
+            boxShadow: [
+              if (isHovered)
+                BoxShadow(
+                  color: color.withValues(alpha: 0.25),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                )
+              else
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                )
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 12 * widget.fontScale,
+                  fontWeight: FontWeight.bold,
+                  color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompletionScreen() {
+    final bool perfectScore = _score == _items.length;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: perfectScore 
+              ? AppColors.success.withValues(alpha: 0.5) 
+              : Colors.blueAccent.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            perfectScore ? Icons.stars_rounded : Icons.check_circle_outline_rounded,
+            color: perfectScore ? Colors.amber : AppColors.success,
+            size: 48,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            perfectScore ? 'ยอดเยี่ยมที่สุด!' : 'แยกแยะได้ดีมาก!',
+            style: TextStyle(
+              fontFamily: 'Prompt',
+              fontSize: 16 * widget.fontScale,
+              fontWeight: FontWeight.bold,
+              color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'คุณจำแนกประเภท ยา vs ยาเสพติด ถูกต้อง\n$_score จาก ${_items.length} รายการ',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Prompt',
+              fontSize: 12 * widget.fontScale,
+              color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade600,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _resetGame,
+            icon: const Icon(Icons.replay_rounded),
+            label: const Text(
+              'เล่นใหม่อีกครั้ง',
+              style: TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: perfectScore ? Colors.amber : AppColors.success,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              elevation: 0,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -2814,12 +3118,7 @@ class _RefusalChatSimulatorState extends State<RefusalChatSimulator> {
 
   @override
   Widget build(BuildContext context) {
-    final bubbleColor = widget.isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
-    final userBubbleColor = _selectedOption == 2
-        ? AppColors.success.withOpacity(0.2)
-        : (_selectedOption == -1 ? Colors.transparent : Colors.redAccent.withOpacity(0.2));
-
-    String feedbackText = 'เลือกวิธีตอบสนองต่อการชักชวนด้านล่าง:';
+    String feedbackText = 'กรุณาเลือกคำตอบที่ถูกต้องเพื่อตอบโต้คำชักชวน';
     Color feedbackColor = Colors.grey;
 
     if (_selectedOption == 0) {
@@ -2834,96 +3133,297 @@ class _RefusalChatSimulatorState extends State<RefusalChatSimulator> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: widget.isDark 
+              ? Colors.white.withValues(alpha: 0.08) 
+              : Colors.black.withValues(alpha: 0.05),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Mock Chat Room Header
+          Container(
+            padding: const EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: widget.isDark 
+                      ? Colors.white.withValues(alpha: 0.08) 
+                      : Colors.black.withValues(alpha: 0.05),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                // Avatar with online status indicator
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 18,
+                      backgroundColor: widget.isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      child: Icon(
+                        Icons.people_alt_rounded, 
+                        size: 18, 
+                        color: widget.isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade600
+                      ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 9,
+                        height: 9,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF22C55E), // Online green
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ห้องแชทจำลอง',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Prompt',
+                          color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Container(
+                            width: 5,
+                            height: 5,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF22C55E),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'เพื่อนกำลังออนไลน์',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontFamily: 'Prompt',
+                              color: widget.isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Friend's message bubble (Left side)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: Colors.blueGrey.shade200,
-                child: const Icon(Icons.person_rounded, size: 20, color: Colors.white),
+                backgroundColor: widget.isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                child: Icon(
+                  Icons.face_rounded, 
+                  size: 20, 
+                  color: widget.isDark ? Colors.blueGrey.shade200 : Colors.blueGrey.shade600
+                ),
               ),
               const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: bubbleColor,
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(16),
-                      bottomLeft: Radius.circular(16),
-                      bottomRight: Radius.circular(16),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 2),
+                      child: Text(
+                        'เพื่อน (ผู้ชักชวน)',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Prompt',
+                          color: widget.isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade600,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'เฮ้ ลองยาแปลกๆ ตัวนี้ดูสิ สนุกมากเลยนะ ไม่ต้องกลัว ครั้งแรกไม่เป็นไร มาเลย!',
-                    style: TextStyle(fontSize: 11, height: 1.4, fontFamily: 'Prompt'),
-                  ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: widget.isDark ? const Color(0xFF1E293B) : const Color(0xFFEDF2F7),
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(16),
+                          bottomLeft: Radius.circular(16),
+                          bottomRight: Radius.circular(16),
+                        ),
+                        border: Border.all(
+                          color: widget.isDark 
+                              ? Colors.white.withValues(alpha: 0.05) 
+                              : Colors.black.withValues(alpha: 0.03),
+                        ),
+                      ),
+                      child: Text(
+                        'เฮ้ ลองยาแปลกๆ ตัวนี้ดูสิ สนุกมากเลยนะ ไม่ต้องกลัว ครั้งแรกไม่เป็นไร มาเลย!',
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.4,
+                          fontFamily: 'Prompt',
+                          color: widget.isDark ? Colors.grey.shade100 : Colors.grey.shade800,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
 
+          // User's response bubble (Right side)
           if (_selectedOption != -1) ...[
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: userBubbleColor,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        bottomLeft: Radius.circular(16),
-                        bottomRight: Radius.circular(16),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 4, bottom: 2),
+                        child: Text(
+                          'ตัวเรา',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Prompt',
+                            color: _selectedOption == 2 
+                                ? AppColors.success 
+                                : (_selectedOption == 1 ? Colors.orangeAccent : Colors.redAccent),
+                          ),
+                        ),
                       ),
-                      border: Border.all(
-                        color: _selectedOption == 2 ? AppColors.success : Colors.redAccent,
-                        width: 1.2,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _selectedOption == 2
+                              ? (widget.isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7))
+                              : (_selectedOption == 1
+                                  ? (widget.isDark ? const Color(0xFF7C2D12) : const Color(0xFFFFEDD5))
+                                  : (widget.isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2))),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            bottomLeft: Radius.circular(16),
+                            bottomRight: Radius.circular(16),
+                          ),
+                          border: Border.all(
+                            color: _selectedOption == 2 
+                                ? AppColors.success 
+                                : (_selectedOption == 1 ? Colors.orangeAccent : Colors.redAccent),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Text(
+                          _selectedOption == 0
+                              ? 'โอเค... ลองก็ได้ ครั้งเดียวน่าจะโอเค'
+                              : (_selectedOption == 1
+                                  ? 'เอ่อ...ยังไม่แน่ใจนะ ขอคิดดูก่อน แวะมาหาใหม่!'
+                                  : 'ไม่เป็นไร ขอโทษนะ ผมไม่สนใจเรื่องนี้เลย ขอบคุณมากครับ'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.4,
+                            fontFamily: 'Prompt',
+                            color: _selectedOption == 2
+                                ? (widget.isDark ? const Color(0xFFD1FAE5) : const Color(0xFF14532D))
+                                : (_selectedOption == 1
+                                    ? (widget.isDark ? const Color(0xFFFFEDD5) : const Color(0xFF7C2D12))
+                                    : (widget.isDark ? const Color(0xFFFEE2E2) : const Color(0xFF7F1D1D))),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      _selectedOption == 0
-                          ? 'โอเค... ลองก็ได้ ครั้งเดียวน่าจะโอเค'
-                          : (_selectedOption == 1
-                              ? 'เอ่อ...ยังไม่แน่ใจนะ ขอคิดดูก่อน แวะมาหาใหม่!'
-                              : 'ไม่เป็นไร ขอโทษนะ ผมไม่สนใจเรื่องนี้เลย ขอบคุณมากครับ'),
-                      style: const TextStyle(fontSize: 11, height: 1.4, fontFamily: 'Prompt'),
-                      textAlign: TextAlign.right,
-                    ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 8),
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: Colors.pinkAccent.shade100,
+                  backgroundColor: _selectedOption == 2
+                      ? AppColors.success
+                      : (_selectedOption == 1 ? Colors.orangeAccent : Colors.redAccent),
                   child: const Icon(Icons.person_rounded, size: 20, color: Colors.white),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
           ],
 
-          Center(
-            child: Text(
-              feedbackText,
-              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: feedbackColor, fontFamily: 'Prompt'),
-              textAlign: TextAlign.center,
+          // Feedback card (only visible after selecting an option)
+          if (_selectedOption != -1) ...[
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: widget.isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: feedbackColor.withValues(alpha: 0.3),
+                  width: 1.2,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _selectedOption == 2
+                        ? Icons.check_circle_rounded
+                        : (_selectedOption == 1 
+                            ? Icons.warning_amber_rounded 
+                            : Icons.cancel_rounded),
+                    color: feedbackColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      feedbackText,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: feedbackColor,
+                        fontFamily: 'Prompt',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
+          ],
 
+          const SizedBox(height: 16),
+
+          // User interaction buttons or restart button
           if (_selectedOption == -1) ...[
             Column(
               children: [
@@ -2937,9 +3437,10 @@ class _RefusalChatSimulatorState extends State<RefusalChatSimulator> {
               child: TextButton.icon(
                 onPressed: () => setState(() => _selectedOption = -1),
                 icon: const Icon(Icons.replay_rounded, size: 16),
-                label: const Text('เล่นใหม่อีกครั้ง', style: TextStyle(fontFamily: 'Prompt', fontSize: 12)),
+                label: const Text('ลองใหม่อีกครั้ง', style: TextStyle(fontFamily: 'Prompt', fontSize: 12, fontWeight: FontWeight.bold)),
                 style: TextButton.styleFrom(
                   foregroundColor: widget.isDark ? AppColors.success : AppColors.primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
               ),
             ),
@@ -2957,13 +3458,26 @@ class _RefusalChatSimulatorState extends State<RefusalChatSimulator> {
         onPressed: () => setState(() => _selectedOption = index),
         style: OutlinedButton.styleFrom(
           foregroundColor: color,
-          side: BorderSide(color: color.withOpacity(0.5)),
+          side: BorderSide(color: color.withValues(alpha: 0.4), width: 1.2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          backgroundColor: color.withValues(alpha: 0.05),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt'),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Prompt',
+                ),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded, size: 12, color: color),
+          ],
         ),
       ),
     );
@@ -2982,99 +3496,369 @@ class FriendFilterVisual extends StatefulWidget {
   State<FriendFilterVisual> createState() => _FriendFilterVisualState();
 }
 
-class _FriendFilterVisualState extends State<FriendFilterVisual> {
-  final List<String> _friendList = [];
-  int _safetyPoints = 50;
+class _FriendNode {
+  final String name;
+  final String detail;
+  final bool isPositive;
+  final IconData icon;
+  final double angle; // in radians
+  bool isInside; // True if inside inner circle
 
-  void _toggleFriend(String name, bool isPositive) {
-    setState(() {
-      if (_friendList.contains(name)) {
-        _friendList.remove(name);
-        _safetyPoints -= isPositive ? 25 : -25;
-      } else {
-        _friendList.add(name);
-        _safetyPoints += isPositive ? 25 : -25;
+  _FriendNode({
+    required this.name,
+    required this.detail,
+    required this.isPositive,
+    required this.icon,
+    required this.angle,
+    required this.isInside,
+  });
+}
+
+class _FriendFilterVisualState extends State<FriendFilterVisual> {
+  late List<_FriendNode> _friends;
+
+  @override
+  void initState() {
+    super.initState();
+    _friends = [
+      _FriendNode(
+        name: 'นักกีฬา (ชวนออกกำลัง)',
+        detail: 'รักสุขภาพ ชวนซ้อมกีฬาและใช้เวลาว่างเป็นประโยชน์',
+        isPositive: true,
+        icon: Icons.sports_basketball_rounded,
+        angle: 45 * 3.14159265 / 180,
+        isInside: false,
+      ),
+      _FriendNode(
+        name: 'นักสูบ (ชวนลองพอต)',
+        detail: 'มั่วสุม ชักชวนให้ทดลองบุหรี่ไฟฟ้าและสิ่งเสพติด',
+        isPositive: false,
+        icon: Icons.smoking_rooms_rounded,
+        angle: 135 * 3.14159265 / 180,
+        isInside: true,
+      ),
+      _FriendNode(
+        name: 'นักเรียนเก่ง (ชวนติว)',
+        detail: 'รับผิดชอบ ชวนอ่านหนังสือและเตรียมความพร้อมสอบ',
+        isPositive: true,
+        icon: Icons.menu_book_rounded,
+        angle: 225 * 3.14159265 / 180,
+        isInside: false,
+      ),
+      _FriendNode(
+        name: 'นักลอง (ชวนทดลองยา)',
+        detail: 'อยากรู้อยากลอง แอบพกพาสารเสพติดมาชวนให้ลองเสพ',
+        isPositive: false,
+        icon: Icons.warning_amber_rounded,
+        angle: 315 * 3.14159265 / 180,
+        isInside: true,
+      ),
+    ];
+  }
+
+  int get _safetyPoints {
+    int points = 0;
+    for (var f in _friends) {
+      if ((f.isPositive && f.isInside) || (!f.isPositive && !f.isInside)) {
+        points += 25;
       }
-      _safetyPoints = _safetyPoints.clamp(0, 100);
-    });
+    }
+    return points;
   }
 
   @override
   Widget build(BuildContext context) {
+    final int safety = _safetyPoints;
+    final successColor = AppColors.success;
+    final warningColor = Colors.orangeAccent;
+    final dangerColor = Colors.redAccent;
+    
+    Color gaugeColor = safety > 70 
+        ? successColor 
+        : (safety > 40 ? warningColor : dangerColor);
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+        ),
       ),
       child: Column(
         children: [
+          // Safety Bar Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('ความปลอดภัยในกลุ่มเพื่อน:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
-              Text('$_safetyPoints%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _safetyPoints > 60 ? AppColors.success : Colors.redAccent, fontFamily: 'Prompt')),
+              Text(
+                'ความปลอดภัยในกลุ่มเพื่อนสนิท:',
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 11 * widget.fontScale,
+                  fontWeight: FontWeight.bold,
+                  color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                ),
+              ),
+              Text(
+                '$safety%',
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 12 * widget.fontScale,
+                  fontWeight: FontWeight.w900,
+                  color: gaugeColor,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
-              value: _safetyPoints / 100,
+              value: safety / 100,
               minHeight: 8,
-              backgroundColor: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.black12,
-              valueColor: AlwaysStoppedAnimation<Color>(_safetyPoints > 60 ? AppColors.success : Colors.redAccent),
+              backgroundColor: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black12,
+              valueColor: AlwaysStoppedAnimation<Color>(gaugeColor),
             ),
           ),
-          const SizedBox(height: 10),
-          const Text('แตะเพื่อเลือกเพื่อนที่คิดว่า "ส่งผลดีต่อตนเอง":', style: TextStyle(fontSize: 10, color: Colors.grey, fontFamily: 'Prompt')),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildFriendCard(Icons.sports_basketball_rounded, 'นักกีฬา (ชอบออกกำลัง)', true),
-              _buildFriendCard(Icons.smoking_rooms_rounded, 'นักสูบ (ชักชวนลอง)', false),
-              _buildFriendCard(Icons.menu_book_rounded, 'นักเรียนเก่ง (ชวนติว)', true),
-              _buildFriendCard(Icons.warning_amber_rounded, 'นักลอง (ชวนลองสารเสพติด)', false),
-            ],
+          
+          const SizedBox(height: 12),
+          Text(
+            'แตะที่รูปเพื่อปรับย้ายกลุ่ม (วงใน = สนิท, วงนอก = เฝ้าระวัง)',
+            style: TextStyle(
+              fontSize: 10 * widget.fontScale,
+              fontFamily: 'Prompt',
+              fontWeight: FontWeight.bold,
+              color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+            ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFriendCard(IconData icon, String name, bool isPositive) {
-    final active = _friendList.contains(name);
-    final activeBg = isPositive ? AppColors.success.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12);
-    final activeBorder = isPositive ? AppColors.success : Colors.redAccent;
-
-    return GestureDetector(
-      onTap: () => _toggleFriend(name, isPositive),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: active ? activeBg : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.white),
-          border: Border.all(color: active ? activeBorder : Colors.grey.withOpacity(0.3), width: 1.5),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: active ? activeBorder : Colors.grey),
-            const SizedBox(width: 6),
-            Text(
-              name,
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                color: active ? activeBorder : (widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85)),
-                fontFamily: 'Prompt',
+          
+          // Concentric Radar Stack
+          Container(
+            height: 200,
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: widget.isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.04),
               ),
             ),
-          ],
-        ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double centerX = constraints.maxWidth / 2;
+                final double centerY = 100.0;
+                final double innerRadius = 42.0;
+                final double outerRadius = 80.0;
+
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // Outer orbit guideline
+                    Positioned(
+                      left: centerX - outerRadius,
+                      top: centerY - outerRadius,
+                      child: IgnorePointer(
+                        child: Container(
+                          width: outerRadius * 2,
+                          height: outerRadius * 2,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: widget.isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.03),
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    // Inner orbit guideline
+                    Positioned(
+                      left: centerX - innerRadius,
+                      top: centerY - innerRadius,
+                      child: IgnorePointer(
+                        child: Container(
+                          width: innerRadius * 2,
+                          height: innerRadius * 2,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: widget.isDark ? Colors.white.withValues(alpha: 0.01) : Colors.black.withValues(alpha: 0.01),
+                            border: Border.all(
+                              color: widget.isDark ? Colors.white.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.1),
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    // Center node (Me)
+                    Positioned(
+                      left: centerX - 20,
+                      top: centerY - 20,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: widget.isDark ? const Color(0xFF0F172A) : Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: gaugeColor,
+                            width: 2.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: gaugeColor.withValues(alpha: 0.25),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            )
+                          ],
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.person_rounded,
+                            color: gaugeColor,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Friend nodes
+                    ..._friends.map((friend) {
+                      final double radius = friend.isInside ? innerRadius : outerRadius;
+                      final double left = centerX + radius * cos(friend.angle) - 18;
+                      final double top = centerY + radius * sin(friend.angle) - 18;
+                      
+                      Color nodeColor;
+                      if (friend.isPositive) {
+                        nodeColor = friend.isInside ? successColor : warningColor;
+                      } else {
+                        nodeColor = friend.isInside ? dangerColor : Colors.blueGrey;
+                      }
+
+                      return AnimatedPositioned(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOutBack,
+                        left: left,
+                        top: top,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              friend.isInside = !friend.isInside;
+                            });
+                          },
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: nodeColor,
+                                width: 2.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: nodeColor.withValues(alpha: 0.25),
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                )
+                              ],
+                            ),
+                            child: Icon(
+                              friend.icon,
+                              color: nodeColor,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                );
+              },
+            ),
+          ),
+          
+          // Detailed checklist status
+          const SizedBox(height: 8),
+          Column(
+            children: _friends.map((friend) {
+              final isCorrect = (friend.isPositive && friend.isInside) || (!friend.isPositive && !friend.isInside);
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isCorrect
+                        ? successColor.withValues(alpha: 0.15)
+                        : warningColor.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      friend.icon,
+                      size: 16,
+                      color: friend.isPositive ? successColor : dangerColor,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            friend.name,
+                            style: TextStyle(
+                              fontSize: 11 * widget.fontScale,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Prompt',
+                              color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                            ),
+                          ),
+                          Text(
+                            friend.detail,
+                            style: TextStyle(
+                              fontSize: 9.5 * widget.fontScale,
+                              fontFamily: 'Prompt',
+                              color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isCorrect
+                            ? successColor.withValues(alpha: 0.1)
+                            : warningColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        isCorrect ? 'ปลอดภัย' : 'เฝ้าระวัง',
+                        style: TextStyle(
+                          fontSize: 9.5 * widget.fontScale,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Prompt',
+                          color: isCorrect ? successColor : warningColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -3219,105 +4003,311 @@ class LawDecisionPathways extends StatefulWidget {
 }
 
 class _LawDecisionPathwaysState extends State<LawDecisionPathways> {
-  int _path = -1; // 0 for rehabilitation, 1 for crime
+  int _currentStage = 0; // 0: Choice, 1: Process, 2: Summary
+  int _userChoice = -1;  // 0: Rehab, 1: Crime
+
+  void _resetGame() {
+    setState(() {
+      _currentStage = 0;
+      _userChoice = -1;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+        ),
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildPathButton('A: เข้าบำบัดรักษา', 0, AppColors.success),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildPathButton('B: ค้าขายยาเสพติด', 1, Colors.redAccent),
-              ),
-            ],
+          // Visual Stepper Header
+          _buildStepper(_currentStage),
+          const SizedBox(height: 16),
+
+          // Stage content switch
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _buildStageContent(_currentStage),
           ),
-          const SizedBox(height: 12),
-          if (_path == -1)
-            const Text(
-              'เลือกสถานการณ์เพื่อดูผลลัพธ์ตามกฎหมายไทย',
-              style: TextStyle(fontSize: 10.5, color: Colors.grey, fontFamily: 'Prompt'),
-              textAlign: TextAlign.center,
-            )
-          else
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: _path == 0 ? AppColors.success.withOpacity(0.06) : Colors.redAccent.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _path == 0 ? AppColors.success : Colors.redAccent, width: 1.5),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: _path == 0
-                    ? [
-                        _buildResultStep(Icons.local_hospital_rounded, AppColors.success, 'เข้าโปรแกรมบำบัดฟื้นฟู', 'ได้รับการรักษาแทนโทษจำคุก มีโอกาสกลับตัวและเริ่มต้นใหม่'),
-                        const SizedBox(height: 10),
-                        _buildResultStep(Icons.verified_rounded, AppColors.success, 'ประวัติอาจไม่ถูกบันทึก', 'ปกติประวัติของเยาวชนที่ผ่านการบำบัดครบถ้วนอาจได้รับการพิจารณา'),
-                        const SizedBox(height: 10),
-                        _buildResultStep(Icons.school_rounded, AppColors.success, 'กลับสู่ชีวิตปกติได้', 'เรียน ทำงาน สมัครงาน ท่องเที่ยวต่างประเทศได้ตามปกติ'),
-                      ]
-                    : [
-                        _buildResultStep(Icons.gavel_rounded, Colors.redAccent, 'ถูกดำเนินคดีอาญาทันที', 'โทษหนักทั้งจำคุกและปรับ ขึ้นอยู่กับปริมาณและชนิดสาร'),
-                        const SizedBox(height: 10),
-                        _buildResultStep(Icons.history_edu_rounded, Colors.redAccent, 'มีประวัติอาชญากรรมตลอดชีวิต', 'ถูกบันทึกประวัติ/ข้อมูลยาเสพติดในระบบตลอดชีวิต'),
-                        const SizedBox(height: 10),
-                        _buildResultStep(Icons.lock_rounded, Colors.redAccent, 'ปิดทางชีวิตในอนาคต', 'สมัครงานราชการได้ยาก รวมถึงการสมัครทุนและวีซ่าต่างประเทศ'),
-                      ],
-              ),
-            ),
         ],
       ),
     );
   }
 
-  Widget _buildResultStep(IconData icon, Color color, String title, String desc) {
+  Widget _buildStepper(int currentStage) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildStepDot('1. ทางเลือก', currentStage >= 0, currentStage == 0),
+        _buildStepLine(currentStage >= 1),
+        _buildStepDot('2. ดำเนินการ', currentStage >= 1, currentStage == 1),
+        _buildStepLine(currentStage >= 2),
+        _buildStepDot('3. จุดจบชีวิต', currentStage >= 2, currentStage == 2),
+      ],
+    );
+  }
+
+  Widget _buildStepDot(String label, bool isCompleted, bool isActive) {
+    final Color activeColor = isActive
+        ? AppColors.primary
+        : (isCompleted
+            ? (_userChoice == 0 ? AppColors.success : Colors.redAccent)
+            : Colors.grey);
+            
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: isCompleted ? activeColor : (widget.isDark ? const Color(0xFF1E293B) : Colors.grey.shade200),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: activeColor,
+              width: 2,
+            ),
+          ),
+          child: Center(
+            child: isCompleted && !isActive
+                ? const Icon(Icons.check, size: 10, color: Colors.white)
+                : Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9.5 * widget.fontScale,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            fontFamily: 'Prompt',
+            color: isActive ? activeColor : Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStepLine(bool isCompleted) {
+    final activeColor = _userChoice == 0 ? AppColors.success : Colors.redAccent;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      width: 44,
+      height: 2,
+      margin: const EdgeInsets.only(left: 4, right: 4, bottom: 12),
+      color: isCompleted ? activeColor : (widget.isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade300),
+    );
+  }
+
+  Widget _buildStageContent(int stage) {
+    if (stage == 0) {
+      return _buildChoiceStage();
+    } else if (stage == 1) {
+      return _buildProcessStage();
+    } else {
+      return _buildSummaryStage();
+    }
+  }
+
+  Widget _buildChoiceStage() {
+    return Column(
+      key: const ValueKey('stage0'),
+      children: [
+        Text(
+          'เมื่อตกอยู่ในสถานการณ์ที่เกี่ยวพันกับยาเสพติด คุณจะตัดสินใจเลือกเดินเส้นทางใด?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 12 * widget.fontScale,
+            fontFamily: 'Prompt',
+            fontWeight: FontWeight.bold,
+            color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 14),
+        
+        // Choice A: Rehab
+        _buildChoiceCard(
+          title: 'ทางเลือก A: เข้ารับการบำบัดรักษา',
+          desc: 'รับการบำบัดฟื้นฟูโดยสมัครใจตามกฎหมายผู้เสพคือผู้ป่วยเพื่อคืนสู่สังคม',
+          color: AppColors.success,
+          icon: Icons.local_hospital_rounded,
+          onTap: () {
+            setState(() {
+              _userChoice = 0;
+              _currentStage = 1;
+            });
+          },
+        ),
+        const SizedBox(height: 10),
+        
+        // Choice B: Trafficking
+        _buildChoiceCard(
+          title: 'ทางเลือก B: ยุ่งเกี่ยวกับกระบวนการค้า',
+          desc: 'รับจ้างส่งของ ค้าปลีก หรือครอบครองปริมาณสารเกินกว่าที่กฎหมายกำหนด',
+          color: Colors.redAccent,
+          icon: Icons.gavel_rounded,
+          onTap: () {
+            setState(() {
+              _userChoice = 1;
+              _currentStage = 1;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChoiceCard({
+    required String title,
+    required String desc,
+    required Color color,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: color.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            )
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontFamily: 'Prompt',
+                      fontSize: 12.5 * widget.fontScale,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    desc,
+                    style: TextStyle(
+                      fontFamily: 'Prompt',
+                      fontSize: 10.5 * widget.fontScale,
+                      color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProcessStage() {
+    final bool isRehab = _userChoice == 0;
+    final primaryColor = isRehab ? AppColors.success : Colors.redAccent;
+    
+    return Column(
+      key: const ValueKey('stage1'),
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
-            shape: BoxShape.circle,
+            color: primaryColor.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: primaryColor, width: 1.5),
           ),
-          child: Icon(icon, color: color, size: 14),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                isRehab ? Icons.medical_services_rounded : Icons.lock_person_rounded,
+                color: primaryColor,
+                size: 36,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                isRehab ? 'กระบวนการสมัครใจเข้าบำบัดรักษา' : 'กระบวนการจับกุมดำเนินคดีทางอาญา',
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 13 * widget.fontScale,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                isRehab
+                    ? 'ศาลเล็งเห็นเจตจำนงในการบำบัด ส่งตัวเข้าโปรแกรมฟื้นฟูโดยละเว้นโทษจำคุกชั่วคราว มุ่งเน้นการเยียวยารักษาสุขภาพและจิตใจ'
+                    : 'เจ้าหน้าที่เข้าตรวจค้น พบยาเสพติดปริมาณเกินอัตรากำหนด ดำเนินคดีตามกฎหมายยาเสพติดฉบับใหม่ ส่งตัวเข้าห้องขังรอคำตัดสินศาล',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 11 * widget.fontScale,
+                  color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _currentStage = 2;
+            });
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryColor,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            elevation: 0,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                title,
-                style: TextStyle(
-                  fontSize: 11 * widget.fontScale,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                  fontFamily: 'Prompt',
-                ),
+                isRehab ? 'ดูชะตากรรมและการฟื้นตัว' : 'ดูคำพิพากษาและอนาคต',
+                style: const TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.bold, fontSize: 12),
               ),
-              const SizedBox(height: 2),
-              Text(
-                desc,
-                style: TextStyle(
-                  fontSize: 10 * widget.fontScale,
-                  color: widget.isDark ? Colors.white70 : Colors.black54,
-                  fontFamily: 'Prompt',
-                  height: 1.3,
-                ),
-              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.arrow_forward_rounded, size: 16),
             ],
           ),
         ),
@@ -3325,17 +4315,145 @@ class _LawDecisionPathwaysState extends State<LawDecisionPathways> {
     );
   }
 
-  Widget _buildPathButton(String name, int val, Color activeColor) {
-    final active = _path == val;
-    return ElevatedButton(
-      onPressed: () => setState(() => _path = val),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: active ? activeColor : (widget.isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]),
-        foregroundColor: active ? Colors.white : (widget.isDark ? Colors.white70 : Colors.black.withOpacity(0.85)),
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  Widget _buildSummaryStage() {
+    final bool isRehab = _userChoice == 0;
+    final primaryColor = isRehab ? AppColors.success : Colors.redAccent;
+
+    return Column(
+      key: const ValueKey('stage2'),
+      children: [
+        Text(
+          isRehab ? 'เส้นทางชีวิตที่กลับตัวได้สำเร็จ 🛡' : 'จุดจบชีวิตจากความผิดทางกฎหมาย ✗',
+          style: TextStyle(
+            fontFamily: 'Prompt',
+            fontSize: 14 * widget.fontScale,
+            fontWeight: FontWeight.bold,
+            color: primaryColor,
+          ),
+        ),
+        const SizedBox(height: 12),
+        
+        // Outcome Dashboard
+        Column(
+          children: isRehab
+              ? [
+                  _buildSummaryRow(
+                    icon: Icons.shield_rounded,
+                    color: AppColors.success,
+                    title: 'สถานะประวัติอาชญากรรม',
+                    desc: 'ไม่มีประวัติอาชญากรรม (กฎหมายคุ้มครองสิทธิ์ฟื้นฟู)',
+                  ),
+                  _buildSummaryRow(
+                    icon: Icons.local_hospital_rounded,
+                    color: AppColors.success,
+                    title: 'โทษจำคุก',
+                    desc: 'ละเว้นโทษจำคุกจากการให้ความร่วมมือรับบำบัดรักษาตัวจนครบกำหนด',
+                  ),
+                  _buildSummaryRow(
+                    icon: Icons.flight_takeoff_rounded,
+                    color: AppColors.success,
+                    title: 'การเดินทางและทำงาน',
+                    desc: 'เรียนต่อต่างประเทศ ทำงานเอกชน สมัครทุนรัฐบาลได้ตามปกติ',
+                  ),
+                ]
+              : [
+                  _buildSummaryRow(
+                    icon: Icons.gavel_rounded,
+                    color: Colors.redAccent,
+                    title: 'สถานะประวัติอาชญากรรม',
+                    desc: 'บันทึกประวัติคดีอาญาถาวรในระบบสืบค้นกองทะเบียนประวัติฯ',
+                  ),
+                  _buildSummaryRow(
+                    icon: Icons.lock_clock_rounded,
+                    color: Colors.redAccent,
+                    title: 'โทษจำคุก',
+                    desc: 'โทษหนักขึ้นกับสารเสพติด (โทษสูงสุดจำคุกตลอดชีวิต / ประหารชีวิต)',
+                  ),
+                  _buildSummaryRow(
+                    icon: Icons.no_accounts_rounded,
+                    color: Colors.redAccent,
+                    title: 'การเดินทางและทำงาน',
+                    desc: 'หมดสิทธิ์รับราชการ ขัดเกณฑ์เอกสารเดินทาง ทุนเรียนหาย วีซ่าข้ามแดนถูกแบน',
+                  ),
+                ],
+        ),
+        const SizedBox(height: 16),
+        
+        OutlinedButton.icon(
+          onPressed: _resetGame,
+          icon: const Icon(Icons.refresh_rounded, size: 16),
+          label: const Text(
+            'ย้อนกลับไปจุดเริ่มต้นเพื่อสำรวจเส้นทางอื่น',
+            style: TextStyle(fontFamily: 'Prompt', fontSize: 11, fontWeight: FontWeight.bold),
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+            side: BorderSide(color: widget.isDark ? Colors.grey.shade700 : Colors.grey.shade300),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryRow({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String desc,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: color.withValues(alpha: 0.15),
+          width: 1,
+        ),
       ),
-      child: Text(name, style: const TextStyle(fontSize: 10, fontFamily: 'Prompt', fontWeight: FontWeight.bold)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 16),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 11.5 * widget.fontScale,
+                    fontWeight: FontWeight.bold,
+                    color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  desc,
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 10 * widget.fontScale,
+                    color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -3353,85 +4471,330 @@ class ScalesOfJusticeVisual extends StatefulWidget {
 }
 
 class _ScalesOfJusticeVisualState extends State<ScalesOfJusticeVisual> {
-  bool _sellerRole = false;
+  // Factors definition
+  final List<Map<String, dynamic>> _factors = [
+    {
+      'id': 'possession_use',
+      'label': 'ครอบครองเพื่อเสพ (<15 เม็ด)',
+      'desc': 'ผู้เสพสมัครใจเข้าบำบัดรักษา',
+      'weight': -2, // inclines to rehab
+    },
+    {
+      'id': 'trafficking',
+      'label': 'ครอบครองเพื่อจำหน่าย/ค้า',
+      'desc': 'พบพฤติการณ์จำหน่าย/แบ่งขาย',
+      'weight': 4, // inclines to crime
+    },
+    {
+      'id': 'cooperation',
+      'label': 'รับสารภาพ/ให้ความร่วมมือ',
+      'desc': 'ให้ข้อมูลที่เป็นประโยชน์ในการปราบปราม',
+      'weight': -1, // inclines to rehab/mitigation
+    },
+    {
+      'id': 'escape_destroy',
+      'label': 'พยายามหลบหนี/ทำลายหลักฐาน',
+      'desc': 'ไม่ยอมให้ความร่วมมือ หรือสู้เจ้าหน้าที่',
+      'weight': 2, // inclines to crime
+    },
+  ];
+
+  final Set<String> _selectedIds = {};
+
+  int get _netWeight {
+    int sum = 0;
+    for (var factor in _factors) {
+      if (_selectedIds.contains(factor['id'])) {
+        sum += factor['weight'] as int;
+      }
+    }
+    return sum;
+  }
+
+  void _toggleFactor(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final net = _netWeight;
+    // Normalized tilt value from -1.0 (max left) to 1.0 (max right)
+    final double targetTilt = (net.toDouble() / 4.0).clamp(-1.0, 1.0);
+
+    Color resultColor;
+    String resultTitle;
+    String resultDesc;
+    IconData resultIcon;
+
+    if (net < 0) {
+      resultColor = AppColors.success;
+      resultTitle = 'แนวโน้ม: เข้ารับการบำบัดรักษา 🏥';
+      resultDesc = 'มีน้ำหนักการกระทำความผิดอยู่ในระดับต่ำ และเน้นการฟื้นฟูตามหลัก "ผู้เสพคือผู้ป่วย" หากสมัครใจเข้าบำบัดจะได้รับการยกเว้นโทษจำคุกและไม่มีประวัติอาชญากรรม';
+      resultIcon = Icons.healing_rounded;
+    } else if (net > 0) {
+      resultColor = Colors.redAccent;
+      resultTitle = 'แนวโน้ม: ดำเนินคดีทางอาญา ⚖️';
+      resultDesc = 'มีพฤติการณ์เกี่ยวกับการค้า หรือพยายามหลบหนีบิดเบือนคดีความ ต้องระวางโทษจำคุกตามระดับของปริมาณยาและเจตนา ไม่สามารถใช้กระบวนการบำบัดเพื่อเลี่ยงโทษได้';
+      resultIcon = Icons.gavel_rounded;
+    } else {
+      resultColor = Colors.amber;
+      resultTitle = 'แนวโน้ม: รอการพิจารณา / ดุลพินิจศาล ⚖️';
+      resultDesc = 'น้ำหนักคดีความอยู่ในเกณฑ์ก้ำกึ่ง ศาลและพนักงานอัยการจะพิจารณาจากพฤติการณ์จริง ประวัติย้อนหลัง และความสมัครใจในการบำบัดรักษา';
+      resultIcon = Icons.balance_rounded;
+    }
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+        ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          // Header
+          Row(
             children: [
-              const Text('เลือกบทบาทเพื่อดูผลทางกฎหมาย:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  const Text('ผู้ใช้', style: TextStyle(fontSize: 11, fontFamily: 'Prompt')),
-                  Switch(
-                    value: _sellerRole,
-                    onChanged: (v) => setState(() => _sellerRole = v),
-                    activeColor: Colors.redAccent,
-                  ),
-                  const Text('ผู้ขาย/ผู้จำหน่าย', style: TextStyle(fontSize: 11, fontFamily: 'Prompt', fontWeight: FontWeight.bold)),
-                ],
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.scale_rounded, color: AppColors.primary, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'เครื่องชั่งน้ำหนักข้อกฎหมาย',
+                      style: TextStyle(
+                        fontFamily: 'Prompt',
+                        fontSize: 13.5 * widget.fontScale,
+                        fontWeight: FontWeight.bold,
+                        color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
+                    ),
+                    Text(
+                      'แตะเลือกปัจจัยเพื่อชั่งน้ำหนักการพิจารณาคดีความ',
+                      style: TextStyle(
+                        fontFamily: 'Prompt',
+                        fontSize: 10.5 * widget.fontScale,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Container(
-            height: 90,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: CustomPaint(
-              painter: LawScalePainter(tilted: _sellerRole, isDark: widget.isDark),
+          const SizedBox(height: 16),
+
+          // Interactive Scale
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.0, end: targetTilt),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutBack,
+            builder: (context, tiltValue, child) {
+              return Container(
+                height: 160,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    )
+                  ],
+                  border: Border.all(
+                    color: widget.isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.02),
+                  ),
+                ),
+                child: CustomPaint(
+                  painter: LawScalePainter(
+                    tiltValue: tiltValue,
+                    isDark: widget.isDark,
+                    leftBlocks: _selectedIds.where((id) => _factors.firstWhere((f) => f['id'] == id)['weight'] < 0).length,
+                    rightBlocks: _selectedIds.where((id) => _factors.firstWhere((f) => f['id'] == id)['weight'] > 0).length,
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Factors selector
+          Text(
+            'ปัจจัยแวดล้อมทางคดีความ:',
+            style: TextStyle(
+              fontFamily: 'Prompt',
+              fontSize: 11 * widget.fontScale,
+              fontWeight: FontWeight.bold,
+              color: widget.isDark ? Colors.white70 : Colors.black87,
             ),
           ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          const SizedBox(height: 8),
+          ..._factors.map((factor) {
+            final isSelected = _selectedIds.contains(factor['id']);
+            final int weight = factor['weight'] as int;
+            final isPositive = weight > 0;
+            final Color weightColor = isPositive ? Colors.redAccent : AppColors.success;
+            final String weightText = isPositive ? '+$weight (คุก)' : '$weight (บำบัด)';
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: GestureDetector(
+                onTap: () => _toggleFactor(factor['id'] as String),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? (isPositive ? Colors.redAccent.withValues(alpha: 0.06) : AppColors.success.withValues(alpha: 0.06))
+                        : (widget.isDark ? const Color(0xFF1E293B) : Colors.white),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isSelected
+                          ? weightColor.withValues(alpha: 0.5)
+                          : (widget.isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200),
+                      width: isSelected ? 1.8 : 1.0,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isSelected ? weightColor : Colors.transparent,
+                          border: Border.all(
+                            color: isSelected ? weightColor : Colors.grey.shade400,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: isSelected
+                            ? const Icon(Icons.check, size: 12, color: Colors.white)
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              factor['label'] as String,
+                              style: TextStyle(
+                                fontFamily: 'Prompt',
+                                fontSize: 11.5 * widget.fontScale,
+                                fontWeight: FontWeight.bold,
+                                color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              factor['desc'] as String,
+                              style: TextStyle(
+                                fontFamily: 'Prompt',
+                                fontSize: 9.5 * widget.fontScale,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: weightColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          weightText,
+                          style: TextStyle(
+                            fontFamily: 'Prompt',
+                            fontSize: 9 * widget.fontScale,
+                            fontWeight: FontWeight.bold,
+                            color: weightColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 16),
+
+          // Dynamic Result Card
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _sellerRole ? Colors.redAccent.withOpacity(0.08) : AppColors.success.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(16),
+              color: resultColor.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _sellerRole ? Colors.redAccent.withOpacity(0.3) : AppColors.success.withOpacity(0.3),
+                color: resultColor.withValues(alpha: 0.3),
                 width: 1.5,
               ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  _sellerRole ? Icons.gavel_rounded : Icons.local_hospital_rounded,
-                  color: _sellerRole ? Colors.redAccent : AppColors.success,
-                  size: 20,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: resultColor.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    resultIcon,
+                    color: resultColor,
+                    size: 24,
+                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 14),
                 Expanded(
-                  child: Text(
-                    _sellerRole
-                        ? 'โทษสูงสุดถึงประหารชีวิต! สารควบคุมประเภทที่ 1 เช่น เฮโรอีน เมทแอมเฟตามีน มีโทษจำคุก หรือประหารชีวิต ขึ้นอยู่กับปริมาณยาในความครอบครอง'
-                        : 'สิทธิ์รับการรักษาดีกว่าเดิม! กฎหมายมองผู้ใช้เป็นผู้ป่วยมากกว่าอาชญากร หากสมัครเข้าบำบัดเอง ลดหย่อนโทษและเริ่มต้นใหม่ได้ หลีกเลี่ยงประวัติอาชญากรรม',
-                    style: TextStyle(
-                      fontSize: 11 * widget.fontScale,
-                      fontWeight: FontWeight.bold,
-                      color: _sellerRole ? Colors.redAccent : AppColors.success,
-                      fontFamily: 'Prompt',
-                      height: 1.4,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        resultTitle,
+                        style: TextStyle(
+                          fontFamily: 'Prompt',
+                          fontSize: 13 * widget.fontScale,
+                          fontWeight: FontWeight.bold,
+                          color: resultColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        resultDesc,
+                        style: TextStyle(
+                          fontFamily: 'Prompt',
+                          fontSize: 10.5 * widget.fontScale,
+                          color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -3444,39 +4807,137 @@ class _ScalesOfJusticeVisualState extends State<ScalesOfJusticeVisual> {
 }
 
 class LawScalePainter extends CustomPainter {
-  final bool tilted;
+  final double tiltValue; // -1.0 to 1.0
   final bool isDark;
+  final int leftBlocks;
+  final int rightBlocks;
 
-  LawScalePainter({required this.tilted, required this.isDark});
+  LawScalePainter({
+    required this.tiltValue,
+    required this.isDark,
+    required this.leftBlocks,
+    required this.rightBlocks,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final double cx = size.width / 2;
-    final double cy = size.height / 2;
+    final double cy = size.height / 2 + 10;
 
-    // Draw main pillar of scale
-    final p = Paint()
-      ..color = isDark ? Colors.white30 : Colors.black26
-      ..strokeWidth = 4.0;
-    canvas.drawLine(Offset(cx, cy - 20), Offset(cx, cy + 30), p);
-    canvas.drawLine(Offset(cx - 15, cy + 30), Offset(cx + 15, cy + 30), p);
+    // Colors
+    final Color mainColor = isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.4);
+    final Color brassColor = isDark ? const Color(0xFFD4AF37) : const Color(0xFFB59410);
 
-    // Beam tilting
-    final double tiltY = tilted ? 14 : 0;
+    // 1. Draw Stand/Pillar Base & Post
+    final pillarPaint = Paint()
+      ..color = mainColor
+      ..style = PaintingStyle.fill;
+    
+    // Pillar Base
+    final Rect baseRect = Rect.fromLTRB(cx - 30, cy + 40, cx + 30, cy + 48);
+    canvas.drawRRect(RRect.fromRectAndRadius(baseRect, const Radius.circular(4)), pillarPaint);
+
+    // Vertical Post
+    final postPaint = Paint()
+      ..color = mainColor
+      ..strokeWidth = 6.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(cx, cy - 40), Offset(cx, cy + 40), postPaint);
+
+    // Center pivot knob
+    final pivotPaint = Paint()
+      ..color = brassColor
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(cx, cy - 35), 7, pivotPaint);
+
+    // 2. Beam geometry
+    final double maxAngle = 15.0 * pi / 180.0;
+    final double angle = tiltValue * maxAngle;
+    final double beamLength = size.width * 0.55;
+
+    final double bx1 = cx - (beamLength / 2) * cos(angle);
+    final double by1 = (cy - 35) - (beamLength / 2) * sin(angle);
+
+    final double bx2 = cx + (beamLength / 2) * cos(angle);
+    final double by2 = (cy - 35) + (beamLength / 2) * sin(angle);
+
+    // Draw main beam
     final beamPaint = Paint()
-      ..color = Colors.amber
-      ..strokeWidth = 3.0;
-    canvas.drawLine(Offset(cx - 40, cy - 10 + tiltY), Offset(cx + 40, cy - 10 - tiltY), beamPaint);
+      ..color = brassColor
+      ..strokeWidth = 4.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(bx1, by1), Offset(bx2, by2), beamPaint);
 
-    // Draw weights
-    final weightPaint = Paint()..color = tilted ? Colors.redAccent : AppColors.success;
-    canvas.drawCircle(Offset(cx - 40, cy + 10 + tiltY), 8, weightPaint);
-    canvas.drawCircle(Offset(cx + 40, cy + 10 - tiltY), 8, weightPaint);
+    // 3. Hanging Trays
+    // Left Tray
+    _drawTray(canvas, Offset(bx1, by1), isDark ? AppColors.success : const Color(0xFF2E7D32), "🏥", leftBlocks);
+    
+    // Right Tray
+    _drawTray(canvas, Offset(bx2, by2), isDark ? Colors.redAccent : const Color(0xFFC62828), "⛓️", rightBlocks);
+  }
+
+  void _drawTray(Canvas canvas, Offset hangPoint, Color accentColor, String emoji, int blocksCount) {
+    const double trayHeight = 45.0;
+    const double trayWidth = 34.0;
+    final double tx = hangPoint.dx;
+    final double ty = hangPoint.dy + trayHeight;
+
+    // Draw suspension strings
+    final stringPaint = Paint()
+      ..color = isDark ? Colors.white24 : Colors.black26
+      ..strokeWidth = 1.0;
+    
+    canvas.drawLine(hangPoint, Offset(tx - trayWidth / 2, ty), stringPaint);
+    canvas.drawLine(hangPoint, Offset(tx + trayWidth / 2, ty), stringPaint);
+    canvas.drawLine(hangPoint, Offset(tx, ty), stringPaint);
+
+    // Draw Tray Plate
+    final trayPaint = Paint()
+      ..color = accentColor
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(tx - trayWidth / 2 - 2, ty), Offset(tx + trayWidth / 2 + 2, ty), trayPaint);
+
+    // Draw tray stand/bottom lip
+    final lipPaint = Paint()
+      ..color = accentColor.withValues(alpha: 0.15)
+      ..style = PaintingStyle.fill;
+    final Rect lipRect = Rect.fromLTRB(tx - trayWidth / 2, ty, tx + trayWidth / 2, ty + 4);
+    canvas.drawRRect(RRect.fromRectAndRadius(lipRect, const Radius.circular(2)), lipPaint);
+
+    // Draw emoji indicator
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: emoji,
+        style: const TextStyle(fontSize: 12),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(tx - textPainter.width / 2, ty - 18));
+
+    // Draw blocks representing weight
+    if (blocksCount > 0) {
+      final blockPaint = Paint()
+        ..color = accentColor
+        ..style = PaintingStyle.fill;
+      for (int i = 0; i < blocksCount; i++) {
+        final double bx = tx - 4.0 + (i % 2 == 0 ? -4.0 : 4.0);
+        final double by = ty - 4.0 - (i / 2).floor() * 6.5;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromLTWH(bx, by, 7, 5), const Radius.circular(1.5)),
+          blockPaint,
+        );
+      }
+    }
   }
 
   @override
   bool shouldRepaint(covariant LawScalePainter oldDelegate) {
-    return oldDelegate.tilted != tilted || oldDelegate.isDark != isDark;
+    return oldDelegate.tiltValue != tiltValue ||
+        oldDelegate.isDark != isDark ||
+        oldDelegate.leftBlocks != leftBlocks ||
+        oldDelegate.rightBlocks != rightBlocks;
   }
 }
 
@@ -3494,59 +4955,259 @@ class CareerPassportStamps extends StatefulWidget {
 
 class _CareerPassportStampsState extends State<CareerPassportStamps> {
   bool _hasRecord = false;
+  
+  // Stamping animation states
+  double _opacity1 = 0.0;
+  double _opacity2 = 0.0;
+  double _opacity3 = 0.0;
+  
+  double _scale1 = 2.5;
+  double _scale2 = 2.5;
+  double _scale3 = 2.5;
+
+  bool _isStamping = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Trigger initial stamping animation after widget compiles
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _triggerStamping();
+    });
+  }
+
+  void _triggerStamping() async {
+    if (_isStamping) return;
+    setState(() {
+      _isStamping = true;
+      _opacity1 = 0.0; _scale1 = 2.5;
+      _opacity2 = 0.0; _scale2 = 2.5;
+      _opacity3 = 0.0; _scale3 = 2.5;
+    });
+
+    // Stamp 1
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
+    setState(() {
+      _opacity1 = 1.0;
+      _scale1 = 1.0;
+    });
+    
+    // Stamp 2
+    await Future.delayed(const Duration(milliseconds: 350));
+    if (!mounted) return;
+    setState(() {
+      _opacity2 = 1.0;
+      _scale2 = 1.0;
+    });
+
+    // Stamp 3
+    await Future.delayed(const Duration(milliseconds: 350));
+    if (!mounted) return;
+    setState(() {
+      _opacity3 = 1.0;
+      _scale3 = 1.0;
+      _isStamping = false;
+    });
+  }
+  
+  void _changeProfile(bool hasRecord) {
+    if (_isStamping) return;
+    setState(() {
+      _hasRecord = hasRecord;
+    });
+    _triggerStamping();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+        ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          // Header
+          Row(
             children: [
-              const Text('ประวัติเกี่ยวกับยาเสพติด:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  const Text('สะอาด', style: TextStyle(fontSize: 11, fontFamily: 'Prompt')),
-                  Switch(
-                    value: _hasRecord,
-                    onChanged: (v) => setState(() => _hasRecord = v),
-                    activeColor: Colors.redAccent,
-                  ),
-                  const Text('มีประวัติ', style: TextStyle(fontSize: 11, fontFamily: 'Prompt', color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                ],
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.badge_rounded, color: AppColors.primary, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'อนุมัติหนังสือเดินทางอาชีพ',
+                      style: TextStyle(
+                        fontFamily: 'Prompt',
+                        fontSize: 13.5 * widget.fontScale,
+                        fontWeight: FontWeight.bold,
+                        color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
+                    ),
+                    Text(
+                      'ตรวจเช็คประวัติอาชญากรรมเพื่อพิจารณาสิทธิ์การเดินทางและเข้าทำงาน',
+                      style: TextStyle(
+                        fontFamily: 'Prompt',
+                        fontSize: 10.5 * widget.fontScale,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 16,
-            runSpacing: 12,
-            alignment: WrapAlignment.center,
+          const SizedBox(height: 16),
+
+          // Profiles Selection Row
+          Row(
             children: [
-              _buildStampItem(Icons.flight_takeoff_rounded, 'ทุนเรียนต่อ', !_hasRecord),
-              _buildStampItem(Icons.business_rounded, 'บริษัทชั้นนำ', !_hasRecord),
-              _buildStampItem(Icons.work_rounded, 'ราชการ/ทหาร', !_hasRecord),
+              Expanded(
+                child: _buildProfileTab(
+                  label: 'นายนที',
+                  status: 'ผู้บำบัดรักษาฟื้นฟูสำเร็จ',
+                  isClean: true,
+                  isSelected: !_hasRecord,
+                  onTap: () => _changeProfile(false),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildProfileTab(
+                  label: 'นายวายุ',
+                  status: 'ผู้มีประวัติคดีอาญาทางยา',
+                  isClean: false,
+                  isSelected: _hasRecord,
+                  onTap: () => _changeProfile(true),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
+
+          // Passport Layout Container
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: widget.isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade200,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                )
+              ],
+            ),
+            child: Column(
+              children: [
+                // Dossier Section
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: _hasRecord ? Colors.redAccent.withValues(alpha: 0.1) : AppColors.success.withValues(alpha: 0.1),
+                      child: Icon(
+                        _hasRecord ? Icons.person_off_rounded : Icons.person_rounded,
+                        color: _hasRecord ? Colors.redAccent : AppColors.success,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _hasRecord ? 'ผู้สมัคร: นายวายุ' : 'ผู้สมัคร: นายนที',
+                            style: TextStyle(
+                              fontFamily: 'Prompt',
+                              fontSize: 12 * widget.fontScale,
+                              fontWeight: FontWeight.bold,
+                              color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                            ),
+                          ),
+                          Text(
+                            _hasRecord
+                                ? 'สถานะ: ตรวจพบประวัติยาเสพติดประเภทที่ 1'
+                                : 'สถานะ: ผ่านการบำบัดโดยสมัครใจ / ไร้ประวัติคดี',
+                            style: TextStyle(
+                              fontFamily: 'Prompt',
+                              fontSize: 10 * widget.fontScale,
+                              color: _hasRecord ? Colors.redAccent : AppColors.success,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 24, thickness: 1),
+
+                // Stamping Grid
+                Column(
+                  children: [
+                    _buildStampRow(
+                      icon: Icons.flight_takeoff_rounded,
+                      title: 'STUDY VISA (วีซ่าเรียนต่อต่างประเทศ)',
+                      description: 'ขอทุนการศึกษาและหนังสือเดินทางประเทศเป้าหมาย',
+                      approved: !_hasRecord,
+                      opacity: _opacity1,
+                      scale: _scale1,
+                      rotation: -0.08,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildStampRow(
+                      icon: Icons.business_rounded,
+                      title: 'WORK PERMIT (บริษัทเทคโนโลยีชั้นนำ)',
+                      description: 'ผ่านเกณฑ์ตรวจสอบประวัติบุคคลเข้าทำงานงานไอที',
+                      approved: !_hasRecord,
+                      opacity: _opacity2,
+                      scale: _scale2,
+                      rotation: 0.05,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildStampRow(
+                      icon: Icons.gavel_rounded,
+                      title: 'GOVERNMENT (การสมัครสอบราชการ/ทหาร)',
+                      description: 'ตรวจสอบคุณสมบัติต้องห้ามตามพระราชบัญญัติฯ',
+                      approved: !_hasRecord,
+                      opacity: _opacity3,
+                      scale: _scale3,
+                      rotation: -0.04,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Dynamic Guidance
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: _hasRecord ? Colors.redAccent.withOpacity(0.08) : AppColors.success.withOpacity(0.08),
+              color: _hasRecord ? Colors.redAccent.withValues(alpha: 0.08) : AppColors.success.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: _hasRecord ? Colors.redAccent.withOpacity(0.3) : AppColors.success.withOpacity(0.3),
+                color: _hasRecord ? Colors.redAccent.withValues(alpha: 0.3) : AppColors.success.withValues(alpha: 0.3),
                 width: 1.5,
               ),
             ),
@@ -3562,8 +5223,8 @@ class _CareerPassportStampsState extends State<CareerPassportStamps> {
                 Expanded(
                   child: Text(
                     _hasRecord
-                        ? 'ปิดประตูโอกาส! มีข้อจำกัดในการสมัครงานสำคัญ รวมถึงการขอทุนต่างประเทศที่ปิดกั้น'
-                        : 'อนาคตสดใสไร้ขีดจำกัด! ทุกโอกาสเปิดรอ สามารถสมัครทุน ทำงาน หรือท่องเที่ยวต่างประเทศได้อิสระ',
+                        ? 'ประวัติอาชญากรรมทางเพศ/ยาเสพติด จะถูกเก็บถาวรในทะเบียนประวัติอาชญากร ส่งผลให้ถูกปฏิเสธวีซ่าและขาดคุณสมบัติในการทำงานสำคัญตลอดชีวิต'
+                        : 'การเข้ารับการบำบัดรักษาครบตามเกณฑ์ กฎหมายจะไม่บันทึกประวัติอาชญากรรม ทำให้ยังคงได้สิทธิ์ในการเรียนต่อ ทำงานเอกชน และสอบราชการได้ตามปกติ',
                     style: TextStyle(
                       fontSize: 11 * widget.fontScale,
                       fontWeight: FontWeight.bold,
@@ -3581,43 +5242,173 @@ class _CareerPassportStampsState extends State<CareerPassportStamps> {
     );
   }
 
-  Widget _buildStampItem(IconData icon, String title, bool approved) {
-    return Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
+  Widget _buildProfileTab({
+    required String label,
+    required String status,
+    required bool isClean,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final activeColor = isClean ? AppColors.success : Colors.redAccent;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? activeColor.withValues(alpha: 0.1)
+              : (widget.isDark ? const Color(0xFF1E293B) : Colors.white),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? activeColor : (widget.isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade300),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
           children: [
-            Icon(icon, size: 14, color: widget.isDark ? Colors.white70 : Colors.black87),
-            const SizedBox(width: 4),
-            Text(title, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, fontFamily: 'Prompt')),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Prompt',
+                fontSize: 12.5 * widget.fontScale,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? activeColor : (widget.isDark ? Colors.white70 : Colors.black87),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              status,
+              style: TextStyle(
+                fontFamily: 'Prompt',
+                fontSize: 9 * widget.fontScale,
+                color: isSelected ? activeColor.withValues(alpha: 0.8) : Colors.grey,
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            color: approved ? AppColors.success.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: approved ? AppColors.success : Colors.redAccent, width: 1.2),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+      ),
+    );
+  }
+
+  Widget _buildStampRow({
+    required IconData icon,
+    required String title,
+    required String description,
+    required bool approved,
+    required double opacity,
+    required double scale,
+    required double rotation,
+  }) {
+    final stampColor = approved ? AppColors.success : Colors.redAccent;
+    final stampText = approved ? 'APPROVED' : 'DENIED';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey.shade100,
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Base Content
+          Row(
             children: [
-              Icon(approved ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 10, color: approved ? AppColors.success : Colors.redAccent),
-              const SizedBox(width: 4),
-              Text(
-                approved ? 'APPROVED' : 'DENIED',
-                style: TextStyle(
-                  fontSize: 8.5,
-                  fontWeight: FontWeight.bold,
-                  color: approved ? AppColors.success : Colors.redAccent,
-                  fontFamily: 'Prompt',
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: (widget.isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 20, color: widget.isDark ? Colors.white70 : Colors.black54),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontFamily: 'Prompt',
+                        fontSize: 11 * widget.fontScale,
+                        fontWeight: FontWeight.bold,
+                        color: widget.isDark ? Colors.white70 : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontFamily: 'Prompt',
+                        fontSize: 9 * widget.fontScale,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
-      ],
+
+          // Overlay ink stamp with scale and tilt animation
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 200),
+            right: approved ? 24 : 12,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 150),
+              opacity: opacity,
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 300),
+                scale: scale,
+                curve: Curves.bounceOut,
+                child: Transform.rotate(
+                  angle: rotation,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: stampColor.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: stampColor,
+                        width: 2.2,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          stampText,
+                          style: TextStyle(
+                            fontFamily: 'Prompt',
+                            fontSize: 9.5 * widget.fontScale,
+                            fontWeight: FontWeight.bold,
+                            color: stampColor,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        Text(
+                          approved ? 'ผ่านการพิจารณา' : 'ไม่อนุมัติ / มีคดี',
+                          style: TextStyle(
+                            fontFamily: 'Prompt',
+                            fontSize: 7.5 * widget.fontScale,
+                            fontWeight: FontWeight.bold,
+                            color: stampColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

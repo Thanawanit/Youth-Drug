@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../main.dart';
 import '../state/app_state.dart';
 import '../constants/app_colors.dart';
@@ -222,6 +223,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
             elevation: 0,
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
+              tooltip: 'ย้อนกลับ',
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
@@ -467,6 +469,7 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
       children: [
         IconButton(
           icon: Icon(icon, color: color, size: 28),
+          tooltip: label,
           onPressed: onPressed,
         ),
         Text(
@@ -483,36 +486,39 @@ class _RandomFactPageState extends State<RandomFactPage> with SingleTickerProvid
   }
 
   void _shareFact(Fact fact) {
-    // Simple mock sharing dialog to show interaction feedback in offline-first environment
-    showDialog(
-      context: context,
-      builder: (context) {
-        final isDark = appStateNotifier.value.isDarkMode;
-        return AlertDialog(
-          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-          title: const Text(
-            'แชร์ความรู้เรียบร้อยแล้ว',
-            style: TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.w700),
+    final isDark = appStateNotifier.value.isDarkMode;
+    Clipboard.setData(ClipboardData(text: '${fact.title}\n\n${fact.message}'));
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'คัดลอก "${fact.title}" ไปยังคลิปบอร์ดแล้ว',
+          style: const TextStyle(
+            fontFamily: 'Prompt',
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
-          content: Text(
-            'คัดลอก "${fact.title}" ไปยังคลิปบอร์ดแล้ว',
-            style: const TextStyle(fontFamily: 'Prompt', fontSize: 14),
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isDark ? const Color(0xFF1E293B) : AppColors.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: isDark ? const Color(0xFF334155) : Colors.transparent,
+            width: 1.5,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'ตกลง',
-                style: TextStyle(
-                  color: isDark ? AppColors.success : AppColors.primary,
-                  fontFamily: 'Prompt',
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+        ),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'ตกลง',
+          textColor: isDark ? AppColors.success : Colors.amberAccent,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+      ),
     );
   }
 }
