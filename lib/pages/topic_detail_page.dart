@@ -357,8 +357,10 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
       // ----------------------------------------------------
       case TopicType.definition:
         if (index == 0) {
-          visualWidget = ContrastBattleVisual(isDark: isDark, fontScale: fontScale);
+          visualWidget = Intro5W1HVisual(isDark: isDark, fontScale: fontScale);
         } else if (index == 1) {
+          visualWidget = ContrastBattleVisual(isDark: isDark, fontScale: fontScale);
+        } else if (index == 2) {
           visualWidget = BrainDopamineVisual(isDark: isDark, fontScale: fontScale);
         } else {
           visualWidget = ArmorShieldVisual(isDark: isDark, fontScale: fontScale);
@@ -762,6 +764,195 @@ class TopicSection {
     this.iconColor,
     this.tips,
   });
+}
+
+// ============================================================================
+// WIDGET 0.9: Intro5W1HVisual (Introductory What, Where, When, How Interactive Display)
+// ============================================================================
+class Intro5W1HVisual extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const Intro5W1HVisual({super.key, required this.isDark, required this.fontScale});
+
+  @override
+  State<Intro5W1HVisual> createState() => _Intro5W1HVisualState();
+}
+
+class _Intro5W1HVisualState extends State<Intro5W1HVisual> {
+  int _activeTab = 0; // 0: What, 1: Where, 2: When, 3: How
+
+  final List<Map<String, dynamic>> _tabsData = [
+    {
+      'title': 'WHAT',
+      'label': 'คืออะไร?',
+      'icon': Icons.help_outline_rounded,
+      'color': Colors.blueAccent,
+      'content': 'สารเคมีหรือสารธรรมชาติทุกชนิดที่เข้าสู่ร่างกาย (โดยการกิน ดม สูบ หรือฉีด) แล้วส่งผลต่อประสาทส่วนกลาง ทำให้ร่างกาย จิตใจ และพฤติกรรมเปลี่ยนแปลงไปอย่างรุนแรง',
+    },
+    {
+      'title': 'WHERE',
+      'label': 'ที่ไหน?',
+      'icon': Icons.place_rounded,
+      'color': Colors.redAccent,
+      'content': 'ในอดีตมีการใช้ตามธรรมชาติหรือเขตการแพทย์ แต่ในปัจจุบันแพร่กระจายไปทั่วโลก รวมถึงจุดเสี่ยง เช่น ชุมชนแออัด สถานบันเทิง และช่องทางสื่อออนไลน์ล่อลวงเยาวชน',
+    },
+    {
+      'title': 'WHEN',
+      'label': 'เมื่อไหร่?',
+      'icon': Icons.watch_later_rounded,
+      'color': Colors.amber,
+      'content': 'ในอดีตใช้ในการสงครามเพื่อระงับปวด ต่อมามีการเสพติดแพร่ระบาด และในปัจจุบัน ความเสี่ยงสูงมักเกิดขึ้นในช่วงวัยรุ่นที่สมองส่วนความคิดและการควบคุมตนเองยังพัฒนาไม่เต็มที่',
+    },
+    {
+      'title': 'HOW',
+      'label': 'อย่างไร?',
+      'icon': Icons.explore_rounded,
+      'color': AppColors.success,
+      'content': 'สารเสพติดเข้าทำลายระบบประสาทส่วนควบคุมความสุข (Reward Pathway) ทำให้สมองชินกับโดปามีนปริมาณสูง นำไปสู่การโหยหาและเสพติดเรื้อรังที่ผู้เสพไม่อาจควบคุมตัวเองได้ด้วยใจเปล่า',
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final activeColor = _tabsData[_activeTab]['color'] as Color;
+    final cardColor = widget.isDark ? const Color(0xFF1E293B) : Colors.white;
+    final activeTabBg = activeColor.withValues(alpha: 0.12);
+    final borderColor = widget.isDark ? const Color(0xFF334155) : AppColors.border;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+        ),
+      ),
+      child: Column(
+        children: [
+          // 4 Grid tabs
+          Row(
+            children: List.generate(4, (index) {
+              final tab = _tabsData[index];
+              final isActive = _activeTab == index;
+              final Color tabColor = tab['color'] as Color;
+              
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _activeTab = index;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isActive ? activeTabBg : cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isActive ? tabColor : borderColor,
+                        width: isActive ? 2.0 : 1.0,
+                      ),
+                      boxShadow: isActive
+                          ? [
+                              BoxShadow(
+                                color: tabColor.withValues(alpha: 0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              )
+                            ]
+                          : null,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          tab['icon'] as IconData,
+                          color: isActive ? tabColor : (widget.isDark ? Colors.white60 : AppColors.textGrey),
+                          size: 22,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          tab['title'] as String,
+                          style: TextStyle(
+                            fontSize: 9.5 * widget.fontScale,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Prompt',
+                            color: isActive ? tabColor : (widget.isDark ? Colors.white70 : AppColors.textDark),
+                          ),
+                        ),
+                        Text(
+                          tab['label'] as String,
+                          style: TextStyle(
+                            fontSize: 8.5 * widget.fontScale,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Prompt',
+                            color: isActive ? tabColor : (widget.isDark ? Colors.grey.shade400 : Colors.grey.shade500),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 14),
+
+          // Detail Display Card
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: activeColor.withValues(alpha: 0.25), width: 1.5),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: activeColor.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(_tabsData[_activeTab]['icon'] as IconData, color: activeColor, size: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'การตั้งคำถามและวิเคราะห์เชิงลึก: ${_tabsData[_activeTab]['title']}',
+                      style: TextStyle(
+                        fontFamily: 'Prompt',
+                        fontSize: 12 * widget.fontScale,
+                        fontWeight: FontWeight.bold,
+                        color: activeColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  _tabsData[_activeTab]['content'] as String,
+                  style: TextStyle(
+                    fontFamily: 'Prompt',
+                    fontSize: 11.5 * widget.fontScale,
+                    color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ============================================================================
