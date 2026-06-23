@@ -878,75 +878,93 @@ class _LearningPortalPageState extends State<LearningPortalPage> with TickerProv
   ) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: state.isDarkMode ? const Color(0xFF1E293B) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: state.isDarkMode ? Colors.white24 : Colors.black12,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+        return SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
+            ),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  24.0,
+                  24.0,
+                  24.0,
+                  MediaQuery.of(context).viewInsets.bottom + 24.0,
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Icon(icon, color: iconColor, size: 30),
-                  const SizedBox(width: 12),
-                  Text(
-                    'ผลกระทบต่อ$title',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: state.isDarkMode ? Colors.white : AppColors.textDark,
-                      fontFamily: 'Prompt',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                summary,
-                style: TextStyle(
-                  fontSize: 14.5,
-                  color: state.isDarkMode ? Colors.white70 : AppColors.textGrey,
-                  height: 1.6,
-                  fontFamily: 'Prompt',
-                ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: state.isDarkMode ? AppColors.success : AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: state.isDarkMode ? Colors.white24 : Colors.black12,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'เข้าใจแล้ว',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, fontFamily: 'Prompt'),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Icon(icon, color: iconColor, size: 30),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'ผลกระทบต่อ$title',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: state.isDarkMode ? Colors.white : AppColors.textDark,
+                              fontFamily: 'Prompt',
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    Text(
+                      summary,
+                      style: TextStyle(
+                        fontSize: 14.5 * state.fontScale,
+                        color: state.isDarkMode ? Colors.white70 : AppColors.textGrey,
+                        height: 1.6,
+                        fontFamily: 'Prompt',
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: state.isDarkMode ? AppColors.success : AppColors.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Text(
+                            'เข้าใจแล้ว',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, fontFamily: 'Prompt'),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         );
       },

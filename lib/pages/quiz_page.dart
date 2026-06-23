@@ -105,169 +105,173 @@ class _QuizPageState extends State<QuizPage> {
         return SafeArea(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.8,
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.white24 : Colors.black12,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'ทบทวนข้อที่เข้าใจคลาดเคลื่อน',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      fontFamily: 'Prompt',
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'มาทำความเข้าใจเพิ่มเติมเกี่ยวกับข้อมูลที่คลาดเคลื่อนกันนะ',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: subTextColor,
-                      fontFamily: 'Prompt',
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Column(
-                        children: incorrectList.map((item) {
-                          final QuizQuestion q = item['question'];
-                          final int? userIndex = item['userIndex'];
-                          final hasUserAnswered = userIndex != null;
-
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 20),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF334155).withValues(alpha: 0.3) : AppColors.background,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isDark ? const Color(0xFF334155) : AppColors.border,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  q.questionText,
-                                  style: TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: textColor,
-                                    fontFamily: 'Prompt',
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                // User's Answer
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.error.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.cancel_rounded, color: AppColors.error, size: 16),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'คำตอบที่คุณเลือก: ${hasUserAnswered ? q.options[userIndex] : "ไม่ได้ตอบ"}',
-                                          style: const TextStyle(
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.error,
-                                            fontFamily: 'Prompt',
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Correct Answer
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.success.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 16),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'คำตอบที่ถูกต้อง: ${q.options[q.correctIndex]}',
-                                          style: const TextStyle(
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.success,
-                                            fontFamily: 'Prompt',
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                // Explanation
-                                Text(
-                                  'คำอธิบาย: ${q.explanation}',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    color: subTextColor,
-                                    height: 1.45,
-                                    fontFamily: 'Prompt',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark ? AppColors.success : AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  24.0,
+                  24.0,
+                  24.0,
+                  MediaQuery.of(context).viewInsets.bottom + 24.0,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white24 : Colors.black12,
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                      child: const Text(
-                        'ปิดหน้าต่างนี้',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Prompt'),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'ทบทวนข้อที่เข้าใจคลาดเคลื่อน',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Prompt',
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 6),
+                    Text(
+                      'มาทำความเข้าใจเพิ่มเติมเกี่ยวกับข้อมูลที่คลาดเคลื่อนกันนะ',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: subTextColor,
+                        fontFamily: 'Prompt',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: incorrectList.map((item) {
+                        final QuizQuestion q = item['question'];
+                        final int? userIndex = item['userIndex'];
+                        final hasUserAnswered = userIndex != null;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF334155).withValues(alpha: 0.3) : AppColors.background,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF334155) : AppColors.border,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                q.questionText,
+                                style: TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: textColor,
+                                  fontFamily: 'Prompt',
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              // User's Answer
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.cancel_rounded, color: AppColors.error, size: 16),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'คำตอบที่คุณเลือก: ${hasUserAnswered ? q.options[userIndex] : "ไม่ได้ตอบ"}',
+                                        style: const TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.error,
+                                          fontFamily: 'Prompt',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              // Correct Answer
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.success.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 16),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'คำตอบที่ถูกต้อง: ${q.options[q.correctIndex]}',
+                                        style: const TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.success,
+                                          fontFamily: 'Prompt',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              // Explanation
+                              Text(
+                                'คำอธิบาย: ${q.explanation}',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: subTextColor,
+                                  height: 1.45,
+                                  fontFamily: 'Prompt',
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDark ? AppColors.success : AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'ปิดหน้าต่างนี้',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Prompt'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

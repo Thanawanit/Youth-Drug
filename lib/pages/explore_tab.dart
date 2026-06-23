@@ -154,6 +154,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
 
         return Scaffold(
           backgroundColor: Colors.transparent,
+          resizeToAvoidBottomInset: false,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -909,78 +910,81 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
         return SafeArea(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.75,
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: state.isDarkMode ? Colors.white24 : Colors.black12,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    fact.category,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.success,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    fact.title,
-                    style: TextStyle(
-                      fontSize: 19 * state.fontScale,
-                      fontWeight: FontWeight.w800,
-                      color: state.isDarkMode ? Colors.white : AppColors.textDark,
-                      fontFamily: 'Prompt',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Text(
-                        fact.message,
-                        style: TextStyle(
-                          fontSize: 14.5 * state.fontScale,
-                          color: state.isDarkMode ? Colors.white70 : AppColors.textGrey,
-                          height: 1.6,
-                          fontFamily: 'Prompt',
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  24.0,
+                  24.0,
+                  24.0,
+                  MediaQuery.of(context).viewInsets.bottom + 24.0,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: state.isDarkMode ? Colors.white24 : Colors.black12,
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: state.isDarkMode ? AppColors.success : AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: const Text(
-                        'ปิดหน้าต่าง',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Prompt'),
+                    const SizedBox(height: 20),
+                    Text(
+                      fact.category,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.success,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      fact.title,
+                      style: TextStyle(
+                        fontSize: 19 * state.fontScale,
+                        fontWeight: FontWeight.w800,
+                        color: state.isDarkMode ? Colors.white : AppColors.textDark,
+                        fontFamily: 'Prompt',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      fact.message,
+                      style: TextStyle(
+                        fontSize: 14.5 * state.fontScale,
+                        color: state.isDarkMode ? Colors.white70 : AppColors.textGrey,
+                        height: 1.6,
+                        fontFamily: 'Prompt',
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: state.isDarkMode ? AppColors.success : AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'ปิดหน้าต่าง',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'Prompt'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1004,87 +1008,90 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
         return SafeArea(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.65,
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: state.isDarkMode ? Colors.white24 : Colors.black12,
-                        borderRadius: BorderRadius.circular(2),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  24.0,
+                  24.0,
+                  24.0,
+                  MediaQuery.of(context).viewInsets.bottom + 24.0,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: state.isDarkMode ? Colors.white24 : Colors.black12,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'อ่านเรื่องที่เกี่ยวข้อง',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      fontFamily: 'Prompt',
+                    const SizedBox(height: 20),
+                    const Text(
+                      'อ่านเรื่องที่เกี่ยวข้อง',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Prompt',
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'ข้อมูลเพิ่มเติมในหมวดหมู่ "${fact.category}"',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textGrey,
-                      fontFamily: 'Prompt',
+                    const SizedBox(height: 4),
+                    Text(
+                      'ข้อมูลเพิ่มเติมในหมวดหมู่ "${fact.category}"',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textGrey,
+                        fontFamily: 'Prompt',
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (related.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 20.0),
-                              child: Text('ไม่มีข้อมูลที่เกี่ยวข้องอื่นๆ ในขณะนี้'),
-                            )
-                          else
-                            ...related.map((f) {
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                color: state.isDarkMode
-                                    ? const Color(0xFF334155).withValues(alpha: 0.4)
-                                    : AppColors.background,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                elevation: 0,
-                                child: ListTile(
-                                  title: Text(
-                                    f.title,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w800,
-                                      color: state.isDarkMode ? Colors.white : AppColors.textDark,
-                                      fontFamily: 'Prompt',
-                                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (related.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20.0),
+                            child: Text('ไม่มีข้อมูลที่เกี่ยวข้องอื่นๆ ในขณะนี้'),
+                          )
+                        else
+                          ...related.map((f) {
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              color: state.isDarkMode
+                                  ? const Color(0xFF334155).withValues(alpha: 0.4)
+                                  : AppColors.background,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
+                              child: ListTile(
+                                title: Text(
+                                  f.title,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: state.isDarkMode ? Colors.white : AppColors.textDark,
+                                    fontFamily: 'Prompt',
                                   ),
-                                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    _showFactDetailBottomSheet(context, f, state);
-                                  },
                                 ),
-                              );
-                            }),
-                          const SizedBox(height: 8),
-                        ],
-                      ),
+                                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _showFactDetailBottomSheet(context, f, state);
+                                },
+                              ),
+                            );
+                          }),
+                        const SizedBox(height: 8),
+                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
