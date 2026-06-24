@@ -377,58 +377,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
     Color borderColor,
     int total,
   ) {
-    // Shared header for custom layouts
-    Widget slideHeader = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: secColor.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Text(
-            'หัวข้อ ${index + 1} จาก $total',
-            style: TextStyle(
-              fontSize: 10 * fontScale,
-              fontWeight: FontWeight.w800,
-              color: secColor,
-              fontFamily: 'Prompt',
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Icon(sec.icon ?? Icons.bookmark_rounded, color: secColor, size: 28),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                sec.title,
-                style: TextStyle(
-                  fontSize: 16 * fontScale,
-                  fontWeight: FontWeight.w900,
-                  color: textColor,
-                  fontFamily: 'Prompt',
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          sec.summary,
-          style: TextStyle(
-            fontSize: 13 * fontScale,
-            fontWeight: FontWeight.w500,
-            color: isDark ? Colors.white70 : AppColors.textGrey,
-            fontFamily: 'Prompt',
-            height: 1.35,
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
+
 
     // Tips footer template
     Widget buildTipsFooter(String tips) {
@@ -580,7 +529,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
           color: AppColors.primary,
           sections: [
             TopicSection(
-              title: 'ปฐมบท: รู้จักยาเสพติด',
+              title: 'บทนำ: รู้จักยาเสพติด',
               summary: 'ทำความเข้าใจนิยามพื้นฐาน วิธีการเข้าสู่ร่างกาย และกลไกทำไมมนุษย์ถึงติดยาเสพติด',
               bullets: [
                 'สารเสพติดคือ สารเคมีหรือสารธรรมชาติที่เข้าสู่ร่างกายแล้วทำให้สุขภาพทรุดโทรมและจิตใจเปลี่ยนแปลงอย่างรุนแรง',
@@ -597,7 +546,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               bullets: [
                 'เป็นสารเคมีที่เข้าสู่ร่างกายแล้วส่งผลกระทบต่อระบบประสาทส่วนกลางและร่างกายอย่างรุนแรง',
                 'ทำให้เกิดการเปลี่ยนแปลงทางชีวภาพ ส่งผลให้ร่างกายและจิตใจมีความต้องการสารนั้นเพิ่มขึ้นเรื่อยๆ',
-                'ส่งผลเสียต่อการทำงานของอวัยวะและพฤติกรรมในระยะยาว ทำให้ผู้ใช้ไม่สามารถควบคุมตนเองได้',
+                'ส่งผลเสียต่ออวัยวะและพฤติกรรมโดยตรง',
               ],
               icon: Icons.info_outline_rounded,
               iconColor: AppColors.primary,
@@ -608,7 +557,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               summary: 'สารเคมีเข้าไปรบกวนระบบสมองส่วนควบคุมความสุข',
               bullets: [
                 'สารเสพติดจะกระตุ้นการหลั่งสารโดปามีนในสมองส่วนระบบการให้รางวัล (Reward Pathway) มากกว่าปกติ',
-                'เมื่อสมองชินกับปริมาณสารเคมีที่สูง จะลดการตอบสนองตามธรรมชาติลง ส่งผลให้รู้สึกเฉื่อยชาและไร้สุขในยามปกติ',
+                'เมื่อสมองชินกับปริมาณสารเคมีที่สูง จะลดการตอบสนองตามธรรมชาติลง ส่งผลให้รู้สึกเฉื่อยชาและไม่มีความสุขในชีวิตประจำวัน',
                 'นำไปสู่สภาวะสมองติดยา (Brain Disease of Addiction) ซึ่งทำให้ผู้ใช้มีความยากเกินต้านทานที่จะปฏิเสธสารเสพติด',
               ],
               icon: Icons.psychology_rounded,
@@ -621,7 +570,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               bullets: [
                 'การป้องกันตั้งแต่ต้นช่วยป้องกันความเสียหายถาวรของระบบสมองที่ยังพัฒนาไม่เต็มที่ในวัยรุ่น',
                 'ลดโอกาสที่จะเกิดพฤติกรรมเสี่ยงอื่น ๆ เช่น การหลงผิด การกระทำผิดกฎหมาย หรือการประสบอุบัติเหตุ',
-                'สร้างเสริมความเข้มแข็งทางจิตใจ ทักษะชีวิต และภูมิคุ้มกันในการรับมือกับความกดดันทางสังคมอย่างยั่งยืน',
+                'สร้างทักษะชีวิตและภูมิคุ้มกันทางจิตใจ',
               ],
               icon: Icons.shield_rounded,
               iconColor: AppColors.success,
@@ -642,7 +591,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               bullets: [
                 'เร่งระบบการทำงานของหัวใจและสมองส่วนกลาง ทำให้ร่างกายรู้สึกตื่นตัวและมีพลังงานชั่วคราว',
                 'ทำให้เกิดอาการหัวใจเต้นเร็ว ความดันโลหิตสูง รูม่านตาขยาย นอนไม่หลับ และมีความก้าวร้าวเพิ่มขึ้น',
-                'เมื่อหมดฤทธิ์ยาจะเกิดอาการสลึมสลือ ร่างกายเหนื่อยล้าสะสม และสมองมีอาการซึมเศร้าอย่างรุนแรง',
+                'เมื่อหมดฤทธิ์ยาจะเกิดอาการสลึมสลือ ร่างกายเหนื่อยล้าสะสม และเกิดภาวะอารมณ์ดิ่งหรือซึมเศร้าอย่างรุนแรง',
               ],
               icon: Icons.bolt_rounded,
               iconColor: Colors.amber,
@@ -678,7 +627,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               bullets: [
                 'ออกฤทธิ์ร่วมกันหลายรูปแบบในเวลาเดียวกัน โดยอาจทั้งกระตุ้น กด หรือหลอนประสาทตามปริมาณและชนิดของสาร',
                 'ทำให้ผู้เสพมีอารมณ์แปรปรวนอย่างรุนแรง สับสนในเวลาและสถานที่ และเกิดความเครียดสะสมทางจิตใจ',
-                'ส่งผลต่อระบบการตัดสินใจและการเรียนรู้ของเยาวชน ทำให้การพัฒนาสมองชะงักงัน',
+                'ส่งผลต่อระบบการตัดสินใจและการเรียนรู้ของเยาวชน ทำให้การพัฒนาสมองหยุดชะงัก',
               ],
               icon: Icons.sync_rounded,
               iconColor: AppColors.success,
@@ -698,7 +647,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               summary: 'ส่งผลกระทบต่ออารมณ์ความรู้สึกและสภาวะจิตใจ',
               bullets: [
                 'รบกวนสมดุลของสารเคมีในสมองอย่างรุนแรง ทำให้ไม่สามารถควบคุมอารมณ์ของตนเองได้ในชีวิตประจำวัน',
-                'ก่อให้เกิดภาวะวิตกกังวล หวาดระแวง กลัวคนมาทำร้าย สับสน มีอารมณ์ฉุนเฉียว และเสี่ยงต่อโรคซึมเศร้า',
+                'เกิดภาวะหวาดระแวง อารมณ์ฉุนเฉียว และเสี่ยงต่อโรคซึมเศร้า',
                 'ส่งผลระยะยาวทำให้ระบบความนึกคิดเสื่อมลง เกิดสภาวะทางจิตเวชเรื้อรังที่จำเป็นต้องรักษาทางการแพทย์',
               ],
               icon: Icons.psychology_rounded,
@@ -710,7 +659,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               summary: 'ส่งผลเสียต่อการทำงานของอวัยวะภายในร่างกาย',
               bullets: [
                 'ทำลายระบบภูมิคุ้มกันและส่งผลเสียต่อการทำงานของอวัยวะภายใน เช่น ตับ ไต ปอด และหัวใจ',
-                'ทำให้ร่างกายทรุดโทรม น้ำหนักลดลงอย่างรวดเร็ว ผิวพรรณหม่นหมอง และดูแก่กว่าวัยจริงอย่างชัดเจน',
+                'ทำให้ร่างกายทรุดโทรม น้ำหนักลดลงอย่างรวดเร็ว ผิวพรรณทรุดโทรมลงอย่างชัดเจน และดูแก่กว่าวัยจริงอย่างชัดเจน',
                 'มีความเสี่ยงสูงที่จะติดโรคทางกระแสเลือดและเสียชีวิตเฉียบพลันจากปริมาณสารที่เกินขนาด',
               ],
               icon: Icons.favorite_rounded,
@@ -768,7 +717,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               bullets: [
                 'การคบหากลุ่มเพื่อนที่มีทัศนคติเชิงบวกจะช่วยส่งเสริมสุขภาพ จิตใจ และกระตุ้นพฤติกรรมการเรียนรู้ที่ดี',
                 'เพื่อนที่ดีจะยอมรับในตัวตน มีความเคารพในการตัดสินใจ และคอยเตือนสติเมื่อเกิดสิ่งผิดพลาด',
-                'ร่วมมือกันทำกิจกรรมสร้างสรรค์ เช่น การเล่นกีฬา เล่นดนตรี หรือติวหนังสือเรียน ช่วยหันเหความสนใจจากสิ่งอบายมุข',
+                'ร่วมมือกันทำกิจกรรมสร้างสรรค์ เช่น การเล่นกีฬา เล่นดนตรี หรือติวหนังสือเรียน ช่วยหันเหความสนใจจากสิ่งเสพติดและพฤติกรรมเสี่ยง',
               ],
               icon: Icons.people_rounded,
               iconColor: Colors.amber,
@@ -1095,24 +1044,24 @@ class _IntroOverviewVisualState extends State<IntroOverviewVisual> {
       'label': 'ความหมาย',
       'icon': Icons.menu_book_rounded,
       'color': Colors.blueAccent,
-      'content': 'สารเคมีหรือสารธรรมชาติใดๆ ที่เมื่อเข้าสู่ร่างกายไม่ว่าจะโดยการกิน ดม สูบ หรือฉีด แล้วจะก่อให้เกิดผลกระทบต่อร่างกายและจิตใจอย่างรุนแรง ทำให้สุขภาพทรุดโทรมลงเรื่อยๆ',
-      'subinfo': 'ส่งผลต่อระบบประสาทส่วนกลางและพฤติกรรมโดยตรง',
+      'content': 'ยาเสพติด คือ สารหรือวัตถุที่เมื่อเข้าสู่ร่างกายแล้วส่งผลต่อสมอง ระบบประสาท อารมณ์ หรือพฤติกรรม และอาจทำให้เกิดการพึ่งพาหรือการเสพติดได้ ทั้งนี้สารเหล่านี้จะเข้าไปปรับเปลี่ยนสมดุลของสมองในระยะยาว',
+      'subinfo': 'ส่งผลกระทบต่ออวัยวะและพฤติกรรมโดยตรง',
     },
     {
       'title': 'การรับสาร',
       'label': 'ช่องทางรับยา',
       'icon': Icons.vaccines_rounded,
       'color': Colors.amber,
-      'content': 'ยาเสพติดเข้าสู่ร่างกายได้หลายวิธี เช่น การสูบ (ทำลายปอด), การกิน/ดม (ดูดซึมผ่านเนื้อเยื่อ), และการฉีด (สารเคมีเข้าสู่กระแสเลือดโดยตรงและส่งผลร้ายแรงเร็วที่สุด)',
-      'subinfo': 'การฉีดทำลายหลอดเลือดและเสี่ยงติดเชื้อในกระแสเลือดสูง',
+      'content': 'สารเคมีเข้าสู่ร่างกายได้หลายทาง เช่น การรับประทาน, การสูดดมหรือสูบ (ดูดซึมผ่านปอดรวดเร็ว), การฉีด (เข้ากระแสเลือดโดยตรง), และการดูดซึมผ่านเยื่อบุผิว ซึ่งทุกเส้นทางส่งพิษถึงสมองอย่างรวดเร็ว',
+      'subinfo': 'การฉีดมีความเสี่ยงติดเชื้อในกระแสเลือดและอันตรายเฉียบพลันสูงสุด',
     },
     {
       'title': 'ทำไมถึงติด',
       'label': 'แฮ็กสมอง',
       'icon': Icons.psychology_rounded,
       'color': Colors.redAccent,
-      'content': 'สารเคมีจะเข้าไปบังคับให้สมองหลั่งสารโดปามีน (ความสุข) มากผิดปกติ เมื่อสมองปรับตัวให้เคยชิน จะลดการผลิตเองตามธรรมชาติ ทำให้ร่างกายโหยหายาเสพติดมาทดแทนอยู่เสมอ',
-      'subinfo': 'โครงสร้างสมองถูกเปลี่ยนแปลงถาวรจนสูญเสียการควบคุม',
+      'content': 'สารเคมีแฮ็กระบบรางวัลของสมองเหนี่ยวนำให้หลั่งโดปามีนปริมาณสูงเฉียบพลัน ทำให้สมองเรียนรู้พฤติกรรมนี้และเกิดการปรับตัวทางสรีรวิทยาจนนำไปสู่ความต้องการใช้ซ้ำเพื่อพยุงอารมณ์และลดความทรมาน',
+      'subinfo': 'สมองที่ถูกปรับตัวจะสูญเสียการควบคุมตามธรรมชาติในที่สุด',
     },
   ];
 
@@ -2191,27 +2140,28 @@ class _BrainDopamineVisualState extends State<BrainDopamineVisual> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: activeColor.withValues(alpha: 0.1),
+                    color: activeColor.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.science_rounded, color: activeColor, size: 24),
+                  child: Icon(Icons.insights_rounded, color: activeColor, size: 24),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'ห้องจำลองกลไกสมองติดยา',
+                        'กลไกสมองเสพติด (Dopamine Loop)',
                         style: TextStyle(
-                          fontSize: 13.5 * widget.fontScale,
+                          fontSize: 14.5 * widget.fontScale,
                           fontWeight: FontWeight.w900,
                           fontFamily: 'Prompt',
                           color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
-                        'Dopamine Simulator Lab',
+                        'เรียนรู้บทบาทของโดปามีนและการเปลี่ยนแปลงระบบรางวัล',
                         style: TextStyle(
                           fontSize: 10 * widget.fontScale,
                           fontFamily: 'Prompt',
@@ -2384,7 +2334,7 @@ class _DopamineSimulationSheetState extends State<_DopamineSimulationSheet> with
   Widget build(BuildContext context) {
     final double sheetHeight = MediaQuery.of(context).size.height * 0.85;
     
-    Color stepColor = AppColors.success;
+    Color stepColor = Colors.blue;
     String statusTitle = "ปกติ (ระบบสมดุล)";
     double dopamineLevel = 0.45;
     String description = "สมองทำงานปกติเหมือนเปิดก๊อกน้ำความสุข (โดปามีน) ไหลรินเบาๆ เมื่อส่งความรู้สึกเสร็จก็ระบายน้ำทิ้งได้สะดวกตามธรรมชาติ ทำให้เรารู้สึกสุขสงบและพร้อมเรียนรู้";
@@ -2392,14 +2342,14 @@ class _DopamineSimulationSheetState extends State<_DopamineSimulationSheet> with
     String effectInfo = "ตัวรับและท่อดูดกลับทำงานราบรื่น ไม่มีสารเคมีค้าง";
 
     if (_currentStep == 1) {
-      stepColor = Colors.redAccent;
+      stepColor = Colors.amber;
       statusTitle = "รับสารเสพติด (ล้นทะลัก!)";
       dopamineLevel = 1.0;
       description = "ยาเสพติดจะเข้าไปปิดช่องดูดซึมกลับ (ตัวรีไซเคิล) ทำให้สารโดปามีนติดค้างและเอ่อล้นทะลักเต็มระบบ สมองจึงถูกบังคับให้รับความสุขล้นพ้นชั่วครู่จนเริ่มบอบช้ำ";
       flowInfo = "โดปามีนโดนกักขังล้นระบบ ประสาทตื่นตัวสูงสุด";
       effectInfo = "สมองเริ่มเสียหาย และหาทางปิดช่องรับสัญญาณ";
     } else if (_currentStep == 2) {
-      stepColor = Colors.grey;
+      stepColor = Colors.red;
       statusTitle = "หมดฤทธิ์ยา (ขาดแคลน/ดื้อยา)";
       dopamineLevel = 0.08;
       description = "เมื่อฤทธิ์ยาหมดลง ก๊อกผลิตน้ำแห้งขอด (สมองอ่อนแอจนผลิตโดปามีนเองแทบไม่ได้) แถมตัวรับความสุขก็พังเสียหาย ทำให้สารความสุขตกต่ำรุนแรง รู้สึกซึมเศร้าทรมาน";
@@ -2489,15 +2439,52 @@ class _DopamineSimulationSheetState extends State<_DopamineSimulationSheet> with
             ),
             child: Row(
               children: [
-                _buildStepTab(0, '1. ปกติ / สมดุล', Icons.spa_rounded, AppColors.success),
+                _buildStepTab(0, '1. ปกติ / สมดุล', Icons.spa_rounded, Colors.blue),
                 const SizedBox(width: 4),
-                _buildStepTab(1, '2. ใช้สาร / ล้นระบบ', Icons.bolt_rounded, Colors.redAccent),
+                _buildStepTab(1, '2. ใช้สาร / ล้นระบบ', Icons.bolt_rounded, Colors.amber),
                 const SizedBox(width: 4),
-                _buildStepTab(2, '3. หมดฤทธิ์ / ดื้อยา', Icons.mood_bad_rounded, Colors.grey),
+                _buildStepTab(2, '3. หมดฤทธิ์ / ดื้อยา', Icons.mood_bad_rounded, Colors.red),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+
+          // Concept Banner
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: (widget.isDark ? Colors.blue.withValues(alpha: 0.1) : Colors.blue.withValues(alpha: 0.05)),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.blue.withValues(alpha: 0.25),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.lightbulb_outline_rounded,
+                  color: Colors.blue,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    "แนวคิดหลัก: ไม่ได้เกิดจากโดปามีนอย่างเดียว แต่เกิดจากสมองเรียนรู้และปรับตัว จนระบบรางวัลทำงานเปลี่ยนไป",
+                    style: TextStyle(
+                      fontFamily: 'Prompt',
+                      fontSize: 10 * widget.fontScale,
+                      fontWeight: FontWeight.w600,
+                      color: widget.isDark ? Colors.blue.shade100 : Colors.blue.shade900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
 
           // Expanded CustomPaint visual
           Expanded(
@@ -2541,7 +2528,7 @@ class _DopamineSimulationSheetState extends State<_DopamineSimulationSheet> with
                 style: TextStyle(
                   fontSize: 11 * widget.fontScale,
                   fontWeight: FontWeight.bold,
-                  color: stepColor == Colors.grey ? (widget.isDark ? Colors.white60 : Colors.black54) : stepColor,
+                  color: stepColor,
                   fontFamily: 'Prompt',
                 ),
               ),
@@ -2554,7 +2541,7 @@ class _DopamineSimulationSheetState extends State<_DopamineSimulationSheet> with
               value: dopamineLevel,
               minHeight: 6,
               backgroundColor: widget.isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-              valueColor: AlwaysStoppedAnimation<Color>(stepColor == Colors.grey ? Colors.blueGrey : stepColor),
+              valueColor: AlwaysStoppedAnimation<Color>(stepColor),
             ),
           ),
           const SizedBox(height: 14),
@@ -2577,7 +2564,7 @@ class _DopamineSimulationSheetState extends State<_DopamineSimulationSheet> with
                       _currentStep == 0
                           ? Icons.check_circle_rounded
                           : (_currentStep == 1 ? Icons.warning_rounded : Icons.error_rounded),
-                      color: stepColor == Colors.grey ? Colors.blueGrey : stepColor,
+                      color: stepColor,
                       size: 18,
                     ),
                     const SizedBox(width: 8),
@@ -2586,7 +2573,7 @@ class _DopamineSimulationSheetState extends State<_DopamineSimulationSheet> with
                       style: TextStyle(
                         fontSize: 13 * widget.fontScale,
                         fontWeight: FontWeight.w800,
-                        color: stepColor == Colors.grey ? (widget.isDark ? Colors.white : Colors.black87) : stepColor,
+                        color: stepColor,
                         fontFamily: 'Prompt',
                       ),
                     ),
@@ -2646,15 +2633,22 @@ class SynapseDopaminePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Colors
+    // ----------------------------------------------------
+    // 0. Base Colors Config
+    // ----------------------------------------------------
     final Color strokeColor = isDark ? Colors.white30 : Colors.black26;
     final Color textColor = isDark ? Colors.white70 : Colors.black87;
-    final Color activeGreen = const Color(0xFF10B981);
-    final Color activeRed = const Color(0xFFEF4444);
-    final Color activeAmber = const Color(0xFFFBBF24);
-    final Color activeBlue = const Color(0xFF3B82F6);
-    
-    // Pipe Paint
+
+    // Step-based main colors: Normal = Blue, Stimulated = Yellow, Unbalanced = Red
+    Color mainThemeColor;
+    if (currentStep == 0) {
+      mainThemeColor = const Color(0xFF3B82F6); // Blue
+    } else if (currentStep == 1) {
+      mainThemeColor = const Color(0xFFFBBF24); // Yellow/Amber
+    } else {
+      mainThemeColor = const Color(0xFFEF4444); // Red
+    }
+
     final pipePaint = Paint()
       ..color = isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.06)
       ..style = PaintingStyle.stroke
@@ -2667,8 +2661,8 @@ class SynapseDopaminePainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
 
-    // Helper to draw text
-    void drawText(String text, Offset position, Color color, {double fontSize = 9.5, bool alignCenter = true}) {
+    // Helper text painter
+    void drawText(String text, Offset position, Color color, {double fontSize = 9.5, bool alignCenter = true, bool bold = true}) {
       final textPainter = TextPainter(
         text: TextSpan(
           text: text,
@@ -2676,7 +2670,7 @@ class SynapseDopaminePainter extends CustomPainter {
             color: color,
             fontSize: fontSize,
             fontFamily: 'Prompt',
-            fontWeight: FontWeight.bold,
+            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -2687,80 +2681,81 @@ class SynapseDopaminePainter extends CustomPainter {
       textPainter.paint(canvas, offset);
     }
 
-    // 1. Draw Pipes Layout
-    // Faucet Pipe (from left edge to faucet head)
+    // ----------------------------------------------------
+    // 1. Draw Faucet and Knob (Left Side)
+    // ----------------------------------------------------
+    final double fx = size.width * 0.22;
+    final double fy = size.height * 0.58;
+
+    // Pipe feeding into faucet
     final faucetPath = Path()
-      ..moveTo(0, size.height * 0.28)
-      ..lineTo(size.width * 0.22, size.height * 0.28)
-      ..lineTo(size.width * 0.22, size.height * 0.36);
+      ..moveTo(0, size.height * 0.24)
+      ..lineTo(fx, size.height * 0.24)
+      ..lineTo(fx, size.height * 0.32);
     canvas.drawPath(faucetPath, pipePaint);
     canvas.drawPath(faucetPath, pipeOutlinePaint);
 
-    // Draw faucet head (metal spout)
-    final faucetSpout = Paint()
+    // Spout body
+    final spoutRect = Rect.fromLTWH(fx - 12, size.height * 0.32, 24, 8);
+    final spoutPaint = Paint()
       ..color = isDark ? Colors.grey.shade600 : Colors.grey.shade400
       ..style = PaintingStyle.fill;
-    canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.18, size.height * 0.36, size.width * 0.08, 6),
-      faucetSpout,
-    );
+    canvas.drawRect(spoutRect, spoutPaint);
+    canvas.drawRect(spoutRect, pipeOutlinePaint);
 
-    // Return Pipe (Recycle)
-    // Runs from right of funnel, curves up and curves back towards left to recycle
-    final recyclePath = Path()
-      ..moveTo(size.width * 0.28, size.height * 0.74)
-      ..cubicTo(
-        size.width * 0.40, size.height * 0.74,
-        size.width * 0.40, size.height * 0.44,
-        size.width * 0.28, size.height * 0.44,
-      );
-
-    if (currentStep == 2) {
-      // Draw broken pipe for Step 3
-      final brokenPath1 = Path()
-        ..moveTo(size.width * 0.28, size.height * 0.74)
-        ..quadraticBezierTo(size.width * 0.35, size.height * 0.74, size.width * 0.36, size.height * 0.65);
-      final brokenPath2 = Path()
-        ..moveTo(size.width * 0.34, size.height * 0.53)
-        ..quadraticBezierTo(size.width * 0.35, size.height * 0.44, size.width * 0.28, size.height * 0.44);
-        
-      canvas.drawPath(brokenPath1, pipePaint);
-      canvas.drawPath(brokenPath1, pipeOutlinePaint);
-      canvas.drawPath(brokenPath2, pipePaint);
-      canvas.drawPath(brokenPath2, pipeOutlinePaint);
-      
-      // Draw a "broken/leak" splash
-      drawText('⚡ ท่อชำรุด', Offset(size.width * 0.38, size.height * 0.58), Colors.orangeAccent, fontSize: 8);
+    // Rotating Knob / Valve Handle on top of Faucet
+    final Offset knobCenter = Offset(fx, size.height * 0.20);
+    double knobAngle = 0;
+    if (currentStep == 0) {
+      knobAngle = pi / 4; // Partially open
+    } else if (currentStep == 1) {
+      knobAngle = animValue * 2 * pi; // Spinning to show rush
     } else {
-      canvas.drawPath(recyclePath, pipePaint);
-      canvas.drawPath(recyclePath, pipeOutlinePaint);
+      knobAngle = 0; // Closed / stuck
     }
 
-    // 2. Draw Receptors Funnel (ตัวรับ)
-    final double fx = size.width * 0.22;
-    final double fy = size.height * 0.76;
+    canvas.save();
+    canvas.translate(knobCenter.dx, knobCenter.dy);
+    canvas.rotate(knobAngle);
     
+    // Draw cross handle valve
+    final valvePaint = Paint()
+      ..color = (currentStep == 2) ? Colors.red.shade400 : (isDark ? Colors.blueGrey.shade300 : Colors.grey.shade700)
+      ..style = PaintingStyle.fill;
+    final valveOutline = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    
+    // Horizontal bar
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: Offset.zero, width: 26, height: 6), const Radius.circular(3)), valvePaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: Offset.zero, width: 26, height: 6), const Radius.circular(3)), valveOutline);
+    // Vertical bar
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: Offset.zero, width: 6, height: 26), const Radius.circular(3)), valvePaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: Offset.zero, width: 6, height: 26), const Radius.circular(3)), valveOutline);
+    // Center cap
+    canvas.drawCircle(Offset.zero, 4.5, Paint()..color = mainThemeColor);
+    canvas.drawCircle(Offset.zero, 4.5, valveOutline);
+    
+    canvas.restore();
+
+    // ----------------------------------------------------
+    // 2. Draw Receptors & Funnel
+    // ----------------------------------------------------
     final funnelPath = Path()
-      ..moveTo(fx - 24, fy - 10)
-      ..lineTo(fx + 24, fy - 10)
-      ..lineTo(fx + 10, fy + 8)
-      ..lineTo(fx - 10, fy + 8)
+      ..moveTo(fx - 26, fy - 10)
+      ..lineTo(fx + 26, fy - 10)
+      ..lineTo(fx + 12, fy + 8)
+      ..lineTo(fx - 12, fy + 8)
       ..close();
 
-    Color funnelColor = activeGreen;
-    if (currentStep == 1) {
-      funnelColor = activeRed;
-    } else if (currentStep == 2) {
-      funnelColor = Colors.grey.shade500;
-    }
-
     final funnelPaint = Paint()
-      ..color = funnelColor.withValues(alpha: 0.2)
+      ..color = mainThemeColor.withValues(alpha: 0.15)
       ..style = PaintingStyle.fill;
     final funnelBorderPaint = Paint()
-      ..color = funnelColor
+      ..color = mainThemeColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
+      ..strokeWidth = 2.0;
 
     canvas.drawPath(funnelPath, funnelPaint);
     canvas.drawPath(funnelPath, funnelBorderPaint);
@@ -2768,217 +2763,425 @@ class SynapseDopaminePainter extends CustomPainter {
     if (currentStep == 2) {
       // Draw cracks on funnel
       final crackPaint = Paint()
-        ..color = isDark ? Colors.white54 : Colors.black54
+        ..color = isDark ? Colors.white60 : Colors.black54
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0;
-      canvas.drawLine(Offset(fx - 12, fy - 10), Offset(fx - 4, fy), crackPaint);
-      canvas.drawLine(Offset(fx + 12, fy - 10), Offset(fx + 4, fy + 2), crackPaint);
-      canvas.drawLine(Offset(fx - 2, fy + 8), Offset(fx, fy), crackPaint);
+      canvas.drawLine(Offset(fx - 14, fy - 10), Offset(fx - 6, fy), crackPaint);
+      canvas.drawLine(Offset(fx + 14, fy - 10), Offset(fx + 4, fy + 2), crackPaint);
+      canvas.drawLine(Offset(fx - 4, fy + 8), Offset(fx - 2, fy + 1), crackPaint);
     }
 
-    // 3. Draw Dopamine Drops (หยดสารโดปามีน)
-    final dropPaint = Paint()
-      ..color = activeAmber
+    // Receptors LEDs (representing desensitization & tolerance)
+    // 4 LED lights positioned below the funnel
+    final double ledY = fy + 18;
+    final List<Offset> ledOffsets = [
+      Offset(fx - 18, ledY),
+      Offset(fx - 6, ledY),
+      Offset(fx + 6, ledY),
+      Offset(fx + 18, ledY),
+    ];
+
+    for (int i = 0; i < 4; i++) {
+      Color ledColor;
+      bool isGlow = false;
+
+      if (currentStep == 0) {
+        // Normal: 4 active Blue LEDs
+        ledColor = const Color(0xFF3B82F6);
+        isGlow = true;
+      } else if (currentStep == 1) {
+        // Stimulated: 4 active bright Yellow LEDs
+        ledColor = const Color(0xFFFBBF24);
+        isGlow = true;
+      } else {
+        // Unbalanced: Only 1 LED active (dim Red), other 3 are dark/grey
+        if (i == 0) {
+          ledColor = const Color(0xFFEF4444).withValues(alpha: 0.5); // Dim red
+          isGlow = true;
+        } else {
+          ledColor = isDark ? Colors.white12 : Colors.grey.shade400; // Grey / off
+          isGlow = false;
+        }
+      }
+
+      final ledPaint = Paint()
+        ..color = ledColor
+        ..style = PaintingStyle.fill;
+      final ledOutline = Paint()
+        ..color = strokeColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
+
+      // LED Glow effect
+      if (isGlow) {
+        canvas.drawCircle(
+          ledOffsets[i],
+          6.0,
+          Paint()
+            ..color = ledColor.withValues(alpha: 0.4)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+        );
+      }
+      canvas.drawCircle(ledOffsets[i], 3.5, ledPaint);
+      canvas.drawCircle(ledOffsets[i], 3.5, ledOutline);
+    }
+
+    // ----------------------------------------------------
+    // 3. Draw Dopamine Particles
+    // ----------------------------------------------------
+    final particlePaint = Paint()
+      ..color = (currentStep == 0)
+          ? const Color(0xFF3B82F6) // Blue
+          : ((currentStep == 1) ? const Color(0xFFFBBF24) : const Color(0xFFEF4444).withValues(alpha: 0.4))
       ..style = PaintingStyle.fill;
 
+    final double startY = size.height * 0.34;
+    final double endY = fy - 12;
+
     if (currentStep == 0) {
-      // Normal: moderate drops flowing calmly
-      final double startY = size.height * 0.38;
-      final double endY = fy - 12;
+      // Normal: moderate blue drops flowing
       for (int i = 0; i < 3; i++) {
         final double t = ((animValue + i / 3.0) % 1.0);
         final double y = startY + (endY - startY) * t;
-        canvas.drawCircle(Offset(fx, y), 5, dropPaint);
-      }
-      
-      // Moving recycle dots inside return pipe
-      for (int i = 0; i < 2; i++) {
-        final double t = ((animValue + i / 2.0) % 1.0);
-        final double rx = size.width * 0.28 + (size.width * 0.08) * sin(t * pi);
-        final double ry = size.height * 0.74 - (size.height * 0.30) * t;
-        canvas.drawCircle(Offset(rx, ry), 3.5, Paint()..color = activeAmber.withValues(alpha: 0.75));
+        canvas.drawCircle(Offset(fx, y), 4.5, particlePaint);
       }
     } else if (currentStep == 1) {
-      // Drug: massive drops flooding fast
-      final double startY = size.height * 0.38;
-      final double endY = fy - 12;
-      for (int i = 0; i < 8; i++) {
-        final double t = ((animValue * 1.5 + i / 8.0) % 1.0);
+      // Stimulated: massive yellow drops flowing fast
+      for (int i = 0; i < 7; i++) {
+        final double t = ((animValue * 1.6 + i / 7.0) % 1.0);
         final double y = startY + (endY - startY) * t;
-        final double offset = 4 * sin(t * 4 * pi + i);
-        canvas.drawCircle(Offset(fx + offset, y), 5.5, dropPaint);
+        final double offset = 3 * sin(t * 4 * pi + i);
+        canvas.drawCircle(Offset(fx + offset, y), 5.0, particlePaint);
       }
-      
-      // Overflow pool inside funnel
-      final poolPaint = Paint()
-        ..color = activeAmber.withValues(alpha: 0.8)
-        ..style = PaintingStyle.fill;
-      canvas.drawRect(
-        Rect.fromLTRB(fx - 14, fy - 6, fx + 14, fy + 4),
-        poolPaint,
-      );
-      
-      // Draw blockage block in recycle pipe
-      final blockPaint = Paint()
-        ..color = activeRed
-        ..style = PaintingStyle.fill;
-      final blockRect = Rect.fromCenter(
-        center: Offset(size.width * 0.34, size.height * 0.68),
-        width: 32,
-        height: 16,
-      );
-      canvas.drawRRect(RRect.fromRectAndRadius(blockRect, const Radius.circular(4)), blockPaint);
-      canvas.drawRRect(RRect.fromRectAndRadius(blockRect, const Radius.circular(4)), pipeOutlinePaint);
-      drawText('บล็อก', Offset(size.width * 0.34, size.height * 0.68), Colors.white, fontSize: 8);
+    } else {
+      // Unbalanced: Red drops dripping very slowly, far apart
+      for (int i = 0; i < 1; i++) {
+        final double t = ((animValue * 0.4) % 1.0);
+        final double y = startY + (endY - startY) * t;
+        canvas.drawCircle(Offset(fx, y), 3.5, particlePaint);
+      }
     }
 
-    // 4. Draw Brain Character
-    final double cx = size.width * 0.70;
-    final double cy = size.height * 0.52;
+    // ----------------------------------------------------
+    // 4. Draw Brain Adaptation Gears ("การปรับตัวของสมอง")
+    // ----------------------------------------------------
+    final Offset gearCenter1 = Offset(size.width * 0.48, size.height * 0.28);
+    final Offset gearCenter2 = Offset(size.width * 0.58, size.height * 0.34);
+
+    double gearAngle1 = animValue * 2 * pi;
+    double gearAngle2 = -animValue * 2 * pi * (22 / 14) + pi / 8;
+
+    if (currentStep == 2) {
+      // Jammed / stuck: vibrate back and forth instead of spinning
+      gearAngle1 = sin(animValue * 10 * pi) * 0.05;
+      gearAngle2 = -gearAngle1 * (22 / 14);
+    }
+
+    void drawSingleGear(Offset center, double radius, double angle, int numTeeth, Color color) {
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.rotate(angle);
+
+      final gearPaint = Paint()
+        ..color = color.withValues(alpha: isDark ? 0.25 : 0.15)
+        ..style = PaintingStyle.fill;
+      final gearBorder = Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8;
+
+      // Base circle
+      canvas.drawCircle(Offset.zero, radius, gearPaint);
+      canvas.drawCircle(Offset.zero, radius, gearBorder);
+
+      // Draw teeth
+      for (int i = 0; i < numTeeth; i++) {
+        final double a = i * (2 * pi / numTeeth);
+        canvas.save();
+        canvas.rotate(a);
+        
+        final toothPath = Path()
+          ..moveTo(-3, -radius)
+          ..lineTo(-2, -radius - 4)
+          ..lineTo(2, -radius - 4)
+          ..lineTo(3, -radius)
+          ..close();
+          
+        canvas.drawPath(toothPath, gearPaint);
+        canvas.drawPath(toothPath, gearBorder);
+        canvas.restore();
+      }
+
+      // Center cap
+      canvas.drawCircle(Offset.zero, radius * 0.3, Paint()..color = (isDark ? Colors.grey.shade800 : Colors.grey.shade200));
+      canvas.drawCircle(Offset.zero, radius * 0.3, gearBorder);
+      
+      canvas.restore();
+    }
+
+    // Draw interlocking gears
+    drawSingleGear(gearCenter1, 22, gearAngle1, 12, mainThemeColor);
+    drawSingleGear(gearCenter2, 14, gearAngle2, 8, mainThemeColor.withValues(alpha: 0.8));
+
+    // Label for Gears
+    drawText('การปรับตัวของสมอง', Offset(size.width * 0.53, size.height * 0.18), textColor, fontSize: 8.5);
+
+    // ----------------------------------------------------
+    // 5. Draw Satisfaction Meter (Needle Speedometer Gauge)
+    // ----------------------------------------------------
+    final Offset gaugeCenter = Offset(size.width * 0.78, size.height * 0.28);
+    final double gaugeRadius = 26.0;
+
+    final gaugePaint = Paint()
+      ..color = isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.0
+      ..strokeCap = StrokeCap.round;
+
+    // Draw speedometer arc (from 180 deg to 360 deg)
+    canvas.drawArc(
+      Rect.fromCircle(center: gaugeCenter, radius: gaugeRadius),
+      pi,
+      pi,
+      false,
+      gaugePaint,
+    );
+
+    // Draw colored sections on gauge arc
+    final sectionPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.0;
+
+    // Red zone (0% to 25%)
+    sectionPaint.color = const Color(0xFFEF4444).withValues(alpha: 0.6);
+    canvas.drawArc(Rect.fromCircle(center: gaugeCenter, radius: gaugeRadius), pi, pi * 0.25, false, sectionPaint);
     
-    Color brainColor = const Color(0xFFFDA4AF);
-    
+    // Yellow zone (25% to 75%)
+    sectionPaint.color = const Color(0xFFFBBF24).withValues(alpha: 0.6);
+    canvas.drawArc(Rect.fromCircle(center: gaugeCenter, radius: gaugeRadius), pi + pi * 0.25, pi * 0.5, false, sectionPaint);
+
+    // Blue/Green zone (75% to 100%)
+    sectionPaint.color = const Color(0xFF3B82F6).withValues(alpha: 0.6);
+    canvas.drawArc(Rect.fromCircle(center: gaugeCenter, radius: gaugeRadius), pi + pi * 0.75, pi * 0.25, false, sectionPaint);
+
+    // Needle Angle based on satisfaction level
+    // Step 0: 45% (Normal satisfaction), Step 1: 95% (Extreme pleasure), Step 2: 10% (Crash)
+    double targetSatisfaction = 0.45;
     if (currentStep == 1) {
-      brainColor = const Color(0xFFF43F5E);
+      targetSatisfaction = 0.95;
     } else if (currentStep == 2) {
-      brainColor = const Color(0xFF94A3B8);
+      targetSatisfaction = 0.10;
+    }
+
+    final double needleAngle = pi + (targetSatisfaction * pi);
+    final Offset needleTip = Offset(
+      gaugeCenter.dx + (gaugeRadius - 2) * cos(needleAngle),
+      gaugeCenter.dy + (gaugeRadius - 2) * sin(needleAngle),
+    );
+
+    final needlePaint = Paint()
+      ..color = (currentStep == 2) ? const Color(0xFFEF4444) : (isDark ? Colors.white : Colors.black87)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(gaugeCenter, needleTip, needlePaint);
+    canvas.drawCircle(gaugeCenter, 3.5, Paint()..color = mainThemeColor);
+    canvas.drawCircle(gaugeCenter, 3.5, Paint()..color = strokeColor..style = PaintingStyle.stroke);
+
+    drawText('ระดับความพึงพอใจ', Offset(gaugeCenter.dx, gaugeCenter.dy + 12), textColor, fontSize: 8.5);
+
+    // ----------------------------------------------------
+    // 6. Draw Brain Character
+    // ----------------------------------------------------
+    final double cx = size.width * 0.78;
+    final double cy = size.height * 0.58;
+
+    Color brainColor = const Color(0xFFFDA4AF);
+    if (currentStep == 1) {
+      brainColor = const Color(0xFFF43F5E); // Bright excited pink
+    } else if (currentStep == 2) {
+      brainColor = const Color(0xFF94A3B8); // Slate grey / damaged
     }
 
     final brainPaint = Paint()
       ..color = brainColor
       ..style = PaintingStyle.fill;
 
-    canvas.drawCircle(Offset(cx, cy), 28, brainPaint);
-    canvas.drawCircle(Offset(cx - 20, cy), 22, brainPaint);
-    canvas.drawCircle(Offset(cx + 20, cy), 22, brainPaint);
-    canvas.drawCircle(Offset(cx - 10, cy - 18), 20, brainPaint);
-    canvas.drawCircle(Offset(cx + 10, cy - 18), 20, brainPaint);
-    canvas.drawCircle(Offset(cx - 12, cy + 14), 18, brainPaint);
-    canvas.drawCircle(Offset(cx + 12, cy + 14), 18, brainPaint);
+    // Draw main lobes
+    canvas.drawCircle(Offset(cx, cy), 22, brainPaint);
+    canvas.drawCircle(Offset(cx - 16, cy), 17, brainPaint);
+    canvas.drawCircle(Offset(cx + 16, cy), 17, brainPaint);
+    canvas.drawCircle(Offset(cx - 8, cy - 14), 16, brainPaint);
+    canvas.drawCircle(Offset(cx + 8, cy - 14), 16, brainPaint);
+    canvas.drawCircle(Offset(cx - 10, cy + 11), 14, brainPaint);
+    canvas.drawCircle(Offset(cx + 10, cy + 11), 14, brainPaint);
 
     final foldPaint = Paint()
       ..color = (currentStep == 2) ? Colors.black26 : Colors.white24
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
+      ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.round;
-      
-    canvas.drawArc(Rect.fromCircle(center: Offset(cx - 15, cy - 8), radius: 10), 0.5, 2.0, false, foldPaint);
-    canvas.drawArc(Rect.fromCircle(center: Offset(cx + 15, cy - 8), radius: 10), 0.6, 2.0, false, foldPaint);
-    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy + 12), radius: 12), -1.0, 2.0, false, foldPaint);
 
-    // 5. Draw Brain Face Expressions
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx - 12, cy - 6), radius: 8), 0.5, 2.0, false, foldPaint);
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx + 12, cy - 6), radius: 8), 0.6, 2.0, false, foldPaint);
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy + 8), radius: 10), -1.0, 2.0, false, foldPaint);
+
+    // Eyes and mouth
     final facePaint = Paint()
       ..color = (currentStep == 2) ? const Color(0xFF334155) : const Color(0xFF1E293B)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
+      ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
     if (currentStep == 0) {
-      // Happy Smiling Eyes: ^ ^
+      // Happy eyes ^ ^
       final leftEyePath = Path()
-        ..moveTo(cx - 12, cy - 3)
-        ..quadraticBezierTo(cx - 8, cy - 7, cx - 4, cy - 3);
+        ..moveTo(cx - 9, cy - 3)
+        ..quadraticBezierTo(cx - 6, cy - 6, cx - 3, cy - 3);
       final rightEyePath = Path()
-        ..moveTo(cx + 4, cy - 3)
-        ..quadraticBezierTo(cx + 8, cy - 7, cx + 12, cy - 3);
+        ..moveTo(cx + 3, cy - 3)
+        ..quadraticBezierTo(cx + 6, cy - 6, cx + 9, cy - 3);
       canvas.drawPath(leftEyePath, facePaint);
       canvas.drawPath(rightEyePath, facePaint);
 
+      // Smiling mouth
+      final mouthPath = Path()
+        ..moveTo(cx - 3, cy + 4)
+        ..quadraticBezierTo(cx, cy + 7, cx + 3, cy + 4);
+      canvas.drawPath(mouthPath, facePaint);
+
+      // Blushing cheeks
+      final cheekPaint = Paint()..color = Colors.pinkAccent.withValues(alpha: 0.3)..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset(cx - 12, cy + 3), 3, cheekPaint);
+      canvas.drawCircle(Offset(cx + 12, cy + 3), 3, cheekPaint);
+    } else if (currentStep == 1) {
+      // Excited eyes O O
+      final eyeOutline = Paint()..color = Colors.white..style = PaintingStyle.fill;
+      final pupilPaint = Paint()..color = const Color(0xFF1E293B)..style = PaintingStyle.fill;
+
+      canvas.drawCircle(Offset(cx - 6, cy - 3), 4.5, eyeOutline);
+      canvas.drawCircle(Offset(cx - 6, cy - 3), 2.0, pupilPaint);
+
+      canvas.drawCircle(Offset(cx + 6, cy - 3), 4.5, eyeOutline);
+      canvas.drawCircle(Offset(cx + 6, cy - 3), 2.0, pupilPaint);
+
+      // Excited open mouth
+      final mouthPaint = Paint()..color = const Color(0xFFE11D48)..style = PaintingStyle.fill;
+      canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy + 5), width: 6, height: 8), mouthPaint);
+
+      drawText('✨', Offset(cx - 18, cy - 20), Colors.amber, fontSize: 12);
+      drawText('✨', Offset(cx + 18, cy - 20), Colors.amber, fontSize: 12);
+    } else {
+      // Sad Crying Eyes \ /
+      canvas.drawLine(Offset(cx - 8, cy - 5), Offset(cx - 4, cy - 2), facePaint);
+      canvas.drawLine(Offset(cx + 8, cy - 5), Offset(cx + 4, cy - 2), facePaint);
+
+      // Frowny mouth
       final mouthPath = Path()
         ..moveTo(cx - 4, cy + 6)
-        ..quadraticBezierTo(cx, cy + 10, cx + 4, cy + 6);
+        ..quadraticBezierTo(cx, cy + 3, cx + 4, cy + 6);
       canvas.drawPath(mouthPath, facePaint);
 
-      final cheekPaint = Paint()..color = Colors.redAccent.withValues(alpha: 0.4)..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(cx - 15, cy + 4), 4, cheekPaint);
-      canvas.drawCircle(Offset(cx + 15, cy + 4), 4, cheekPaint);
-    } else if (currentStep == 1) {
-      // Excited eyes (O O)
-      final eyeOutline = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.fill;
-      final pupilPaint = Paint()
-        ..color = const Color(0xFF1E293B)
-        ..style = PaintingStyle.fill;
-
-      canvas.drawCircle(Offset(cx - 8, cy - 4), 5.5, eyeOutline);
-      canvas.drawCircle(Offset(cx - 8, cy - 4), 2.5, pupilPaint);
-
-      canvas.drawCircle(Offset(cx + 8, cy - 4), 5.5, eyeOutline);
-      canvas.drawCircle(Offset(cx + 8, cy - 4), 2.5, pupilPaint);
-
-      final mouthPaint = Paint()..color = const Color(0xFFE11D48)..style = PaintingStyle.fill;
-      canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy + 6), width: 8, height: 10), mouthPaint);
-      
-      drawText('✨', Offset(cx - 24, cy - 26), Colors.amber, fontSize: 14);
-      drawText('✨', Offset(cx + 24, cy - 26), Colors.amber, fontSize: 14);
-    } else {
-      // Sad Crying Eyes: \ /
-      canvas.drawLine(Offset(cx - 11, cy - 6), Offset(cx - 5, cy - 2), facePaint);
-      canvas.drawLine(Offset(cx + 11, cy - 6), Offset(cx + 5, cy - 2), facePaint);
-
-      final mouthPath = Path()
-        ..moveTo(cx - 5, cy + 8)
-        ..quadraticBezierTo(cx, cy + 4, cx + 5, cy + 8);
-      canvas.drawPath(mouthPath, facePaint);
-
+      // Tears falling
       final tearPaint = Paint()..color = Colors.lightBlueAccent..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(cx - 9, cy + 4 + 4 * (animValue % 1.0)), 3.5, tearPaint);
-      canvas.drawCircle(Offset(cx + 9, cy + 2 + 4 * ((animValue + 0.5) % 1.0)), 3, tearPaint);
+      canvas.drawCircle(Offset(cx - 7, cy + 3 + 4 * (animValue % 1.0)), 2.5, tearPaint);
+      canvas.drawCircle(Offset(cx + 7, cy + 1 + 4 * ((animValue + 0.5) % 1.0)), 2.0, tearPaint);
     }
 
-    // 6. Signal Connection from Receptor to Brain
-    final signalPaint = Paint()
-      ..color = (currentStep == 1) 
-          ? activeRed.withValues(alpha: 0.8) 
-          : ((currentStep == 2) ? Colors.grey.withValues(alpha: 0.3) : activeBlue.withValues(alpha: 0.6))
+    drawText('สมองส่วนควบคุม', Offset(cx, cy - 25), textColor, fontSize: 8.5);
+
+    // ----------------------------------------------------
+    // 7. Draw Curved Feedback Loop (Center Bottom)
+    // ----------------------------------------------------
+    final double loopY = size.height * 0.82;
+    final double loopStartX = size.width * 0.18;
+    final double loopEndX = size.width * 0.82;
+    
+    // Draw horizontal dashed connection line representing feedback loop
+    final loopLinePaint = Paint()
+      ..color = mainThemeColor.withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = (currentStep == 1) ? 3.5 : 2
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 2.0;
 
-    final Path dashPath = Path();
-    final double dashWidth = 6.0;
-    final double gapWidth = 4.0;
-    
-    final double seg1Start = fy + 8;
-    final double seg1End = fy + 20;
-    double currentY = seg1Start;
-    while (currentY < seg1End) {
-      dashPath.moveTo(fx, currentY);
-      dashPath.lineTo(fx, min(currentY + dashWidth, seg1End));
-      currentY += dashWidth + gapWidth;
+    // Draw dashed path
+    final loopPath = Path();
+    const double dashLen = 5.0;
+    const double gapLen = 4.0;
+    double currentX = loopStartX;
+    while (currentX < loopEndX) {
+      loopPath.moveTo(currentX, loopY);
+      loopPath.lineTo(min(currentX + dashLen, loopEndX), loopY);
+      currentX += dashLen + gapLen;
     }
-    
-    final double hStart = fx;
-    final double hEnd = cx - 24;
-    final double hY = cy + 12;
-    double currentX = hStart;
-    while (currentX < hEnd) {
-      double x = currentX;
-      double y = (x < fx + 24) ? (fy + 20 + (hY - (fy + 20)) * ((x - fx) / 24)) : hY;
-      double nextX = min(x + dashWidth, hEnd);
-      double nextY = (nextX < fx + 24) ? (fy + 20 + (hY - (fy + 20)) * ((nextX - fx) / 24)) : hY;
-      dashPath.moveTo(x, y);
-      dashPath.lineTo(nextX, nextY);
-      currentX += dashWidth + gapWidth;
-    }
-    canvas.drawPath(dashPath, signalPaint);
+    canvas.drawPath(loopPath, loopLinePaint);
 
-    if (currentStep == 1) {
-      final double t = (animValue * 2.0) % 1.0;
-      final double px = fx + (cx - 24 - fx) * t;
-      final double py = (px < fx + 24) ? (fy + 20 + (cy + 12 - (fy + 20)) * ((px - fx) / 24)) : (cy + 12);
-      canvas.drawCircle(Offset(px, py), 5.5, Paint()..color = Colors.amber);
-      drawText('⚡', Offset(px, py - 10), Colors.amber, fontSize: 11);
+    // Draw running flow dot along the line
+    final double flowProgress = animValue;
+    final double dotX = loopStartX + (loopEndX - loopStartX) * flowProgress;
+    canvas.drawCircle(
+      Offset(dotX, loopY),
+      4.0,
+      Paint()
+        ..color = mainThemeColor
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
+    canvas.drawCircle(Offset(dotX, loopY), 2.5, Paint()..color = Colors.white);
+
+    // Draw Loop Step Cards
+    final double stepWidth = (loopEndX - loopStartX) / 4.0;
+    final List<String> loopSteps = ['กระตุ้น', 'รู้สึกดี', 'เรียนรู้', 'อยากซ้ำ'];
+    
+    for (int i = 0; i < 4; i++) {
+      final double sx = loopStartX + (i + 0.5) * stepWidth;
+      final Offset cardOffset = Offset(sx, loopY + 12);
+      
+      // Draw background pill card
+      final bool isCurrentStepHighlight = (flowProgress * 4).floor() == i;
+      final Color pillBg = isCurrentStepHighlight
+          ? mainThemeColor.withValues(alpha: isDark ? 0.3 : 0.15)
+          : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03));
+      final Color pillBorder = isCurrentStepHighlight
+          ? mainThemeColor
+          : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05));
+      final Color pillText = isCurrentStepHighlight
+          ? (isDark ? Colors.white : mainThemeColor)
+          : (isDark ? Colors.white54 : Colors.black54);
+
+      final Rect pillRect = Rect.fromCenter(center: cardOffset, width: 44, height: 16);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(pillRect, const Radius.circular(8)),
+        Paint()..color = pillBg,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(pillRect, const Radius.circular(8)),
+        Paint()
+          ..color = pillBorder
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
+
+      drawText(
+        loopSteps[i],
+        cardOffset,
+        pillText,
+        fontSize: 8.0,
+        alignCenter: true,
+        bold: isCurrentStepHighlight,
+      );
+      
+      // Draw arrow in between cards
+      if (i < 3) {
+        final double arrowX = loopStartX + (i + 1) * stepWidth;
+        drawText('➔', Offset(arrowX, loopY), mainThemeColor, fontSize: 8.0);
+      }
     }
 
-    // 7. Text Labels on Visual Canvas
-    final labelColor = isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.45);
-    
-    drawText('ก๊อกโดปามีน (แหล่งผลิต)', Offset(fx, size.height * 0.18), textColor, fontSize: 8.5);
-    drawText('ตัวรับความสุข (ตัวรับสาร)', Offset(fx, fy + 22), textColor, fontSize: 8.5);
-    drawText('ท่อดูดซึมกลับ', Offset(size.width * 0.44, size.height * 0.44), labelColor, fontSize: 8);
-    drawText('สมองส่วนความสุข', Offset(cx, cy - 35), textColor, fontSize: 8.5);
+    // ----------------------------------------------------
+    // 8. General Labels
+    // ----------------------------------------------------
+    drawText('ก๊อกโดปามีน (แหล่งผลิต)', Offset(fx, size.height * 0.13), textColor, fontSize: 8.5);
+    drawText('ตัวรับความสุข (ตัวรับสาร)', Offset(fx, fy + 30), textColor, fontSize: 8.5);
   }
 
   @override
@@ -5133,7 +5336,7 @@ class _RefusalChatSimulatorState extends State<RefusalChatSimulator> {
                         ),
                       ),
                       child: Text(
-                        'เฮ้ ลองยาแปลกๆ ตัวนี้ดูสิ สนุกมากเลยนะ ไม่ต้องกลัว ครั้งแรกไม่เป็นไร มาเลย!',
+                        'เห้ย มีตัวนี้มาใหม่ ลองป่ะ โคตรสุด ไม่ต้องกลัวหรอก ครั้งเดียวไม่ติดหรอก มาดิ',
                         style: TextStyle(
                           fontSize: 12,
                           height: 1.4,
@@ -5198,7 +5401,7 @@ class _RefusalChatSimulatorState extends State<RefusalChatSimulator> {
                               ? 'โอเค... ลองก็ได้ ครั้งเดียวน่าจะโอเค'
                               : (_selectedOption == 1
                                   ? 'เอ่อ...ยังไม่แน่ใจนะ ขอคิดดูก่อน แวะมาหาใหม่!'
-                                  : 'ไม่เป็นไร ขอโทษนะ ผมไม่สนใจเรื่องนี้เลย ขอบคุณมากครับ'),
+                                  : 'ไม่อ่ะแก เราไม่เล่นเรื่องพวกนี้เลย ขอบใจมาก'),
                           style: TextStyle(
                             fontSize: 12,
                             height: 1.4,
@@ -5276,7 +5479,7 @@ class _RefusalChatSimulatorState extends State<RefusalChatSimulator> {
               children: [
                 _buildRefusalOption(0, '1. ยอมตาม ไม่กล้าปฏิเสธ (เสี่ยงอันตราย)', Colors.redAccent),
                 _buildRefusalOption(1, '2. ปฏิเสธไม่ชัดเจน (ถูกกดดันต่อเนื่องได้)', Colors.orangeAccent),
-                _buildRefusalOption(2, '3. ปฏิเสธชัดเจนมั่นใจสุภาพ (ทางเลือกที่ดีที่สุด)', AppColors.success),
+                _buildRefusalOption(2, '3. ปฏิเสธชัดเจนมั่นใจ (ทางเลือกที่ดีที่สุด)', AppColors.success),
               ],
             ),
           ] else ...[
@@ -6150,7 +6353,7 @@ class _LawDecisionPathwaysState extends State<LawDecisionPathways> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                isRehab ? 'ดูชะตากรรมและการฟื้นตัว' : 'ดูคำพิพากษาและอนาคต',
+                isRehab ? 'ดูผลลัพธ์และการฟื้นตัว' : 'ดูคำพิพากษาและอนาคต',
                 style: const TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.bold, fontSize: 12),
               ),
               const SizedBox(width: 8),
@@ -6220,7 +6423,7 @@ class _LawDecisionPathwaysState extends State<LawDecisionPathways> {
                     icon: Icons.no_accounts_rounded,
                     color: Colors.redAccent,
                     title: 'การเดินทางและทำงาน',
-                    desc: 'หมดสิทธิ์รับราชการ ขัดเกณฑ์เอกสารเดินทาง ทุนเรียนหาย วีซ่าข้ามแดนถูกแบน',
+                    desc: 'หมดสิทธิ์รับราชการ ไม่ผ่านเงื่อนไขการขอเอกสารเดินทาง ทุนเรียนหาย วีซ่าข้ามแดนถูกแบน',
                   ),
                 ],
         ),
