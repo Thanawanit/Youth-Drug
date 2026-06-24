@@ -750,29 +750,33 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
           builder: (context, cardConstraints) {
             final double cardHeight = cardConstraints.maxHeight;
             // Hide header if the container height is too small
-            final bool showHeader = cardHeight > 340;
-            final bool compactSpacing = cardHeight <= 420;
+            final bool showHeader = cardHeight > 385;
+            final bool compactSpacing = cardHeight <= 450;
+            final bool ultraCompact = cardHeight <= 350;
 
-            final double verticalPadding = compactSpacing ? 12.0 : 24.0;
-            final double horizontalPadding = compactSpacing ? 16.0 : 24.0;
-            final double innerSpacing = compactSpacing ? 8.0 : 16.0;
+            final double verticalPadding = ultraCompact ? 8.0 : (compactSpacing ? 12.0 : 24.0);
+            final double horizontalPadding = ultraCompact ? 12.0 : (compactSpacing ? 16.0 : 24.0);
+            final double innerSpacing = ultraCompact ? 4.0 : (compactSpacing ? 8.0 : 16.0);
+            final bool showCover = !ultraCompact;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (showCover)
+                  _buildCardCover(fact.category, isDark, compactSpacing, ultraCompact, cardHeight),
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
                       horizontalPadding,
-                      verticalPadding,
+                      showCover ? (compactSpacing ? 12.0 : 16.0) : verticalPadding,
                       horizontalPadding,
-                      compactSpacing ? 8.0 : 16.0,
+                      ultraCompact ? 6.0 : (compactSpacing ? 8.0 : 16.0),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 1. Symbol & Category Display
-                        if (showHeader) ...[
+                        // 1. Symbol & Category Display (Only shown on ultraCompact where cover is hidden)
+                        if (!showCover && showHeader) ...[
                           Row(
                             children: [
                               Container(
@@ -820,7 +824,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                         Text(
                           fact.title,
                           style: TextStyle(
-                            fontSize: (isReading ? 21.0 : (compactSpacing ? 15.5 : 18.0)) * fontScale,
+                            fontSize: (isReading ? 21.0 : (ultraCompact ? 14.0 : (compactSpacing ? 15.5 : 18.0))) * fontScale,
                             fontWeight: FontWeight.w800,
                             color: isDark ? Colors.white : AppColors.textDark,
                             height: 1.3,
@@ -828,7 +832,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                           maxLines: showHeader ? 2 : 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: compactSpacing ? 6.0 : 10.0),
+                        SizedBox(height: ultraCompact ? 4.0 : (compactSpacing ? 6.0 : 10.0)),
 
                         // 3. Fact Message Body
                         Expanded(
@@ -837,14 +841,14 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                             child: Text(
                               fact.message,
                               style: TextStyle(
-                                fontSize: (isReading ? 15.5 : (compactSpacing ? 12.0 : 13.5)) * fontScale,
+                                fontSize: (isReading ? 15.5 : (ultraCompact ? 11.0 : (compactSpacing ? 12.0 : 13.5))) * fontScale,
                                 color: isDark ? Colors.white70 : AppColors.textGrey,
                                 height: isReading ? 1.7 : 1.5,
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: compactSpacing ? 8.0 : 12.0),
+                        SizedBox(height: ultraCompact ? 6.0 : (compactSpacing ? 8.0 : 12.0)),
 
                         // 4. Action Row: ♡ บันทึก / ⟳ สุ่ม / 📚 อ่านต่อ (Inside the card)
                         SizedBox(
@@ -868,6 +872,10 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                                   inactiveLabel: compactSpacing ? 'เก็บไว้อ่าน' : 'เก็บไว้อ่าน',
                                   activeColor: Colors.redAccent,
                                   inactiveColor: isDark ? Colors.white70 : AppColors.textGrey,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: ultraCompact ? 6.0 : 10.0,
+                                    vertical: ultraCompact ? 4.0 : 6.0,
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 // Shuffle Card
@@ -876,6 +884,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                                   label: 'สุ่มอีกใบ',
                                   color: isDark ? AppColors.success : AppColors.primary,
                                   onPressed: () => _shuffleToRandomPage(filteredCount),
+                                  compact: compactSpacing,
                                 ),
                                 const SizedBox(width: 8),
                                 // Read related
@@ -886,6 +895,7 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
                                   onPressed: () {
                                     _showRelatedFactsBottomSheet(context, fact, state);
                                   },
+                                  compact: compactSpacing,
                                 ),
                               ],
                             ),
@@ -908,23 +918,167 @@ class _ExploreTabState extends State<ExploreTab> with SingleTickerProviderStateM
     required String label,
     required Color color,
     required VoidCallback onPressed,
+    bool compact = false,
   }) {
     return TextButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, size: 16, color: color),
+      icon: Icon(icon, size: compact ? 13 : 16, color: color),
       label: Text(
         label,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: compact ? 11 : 12,
           fontWeight: FontWeight.w800,
           color: color,
           fontFamily: 'Prompt',
         ),
       ),
       style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 8 : 12,
+          vertical: compact ? 6 : 8,
+        ),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+    );
+  }
+
+  Widget _buildCardCover(String category, bool isDark, bool compactSpacing, bool ultraCompact, double cardHeight) {
+    Color baseColor;
+    IconData icon;
+    String subtitle;
+    List<Color> gradientColors;
+
+    switch (category) {
+      case 'รู้ไหม':
+        baseColor = AppColors.catFact;
+        icon = Icons.lightbulb_rounded;
+        subtitle = 'เกร็ดความรู้น่าสนใจรอบตัว';
+        gradientColors = isDark
+            ? [const Color(0xFF1E3A8A).withValues(alpha: 0.8), const Color(0xFF0F172A)]
+            : [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)];
+        break;
+      case 'การป้องกัน':
+        baseColor = AppColors.catPrevention;
+        icon = Icons.security_rounded;
+        subtitle = 'แนวทางสร้างภูมิคุ้มกันชีวิต';
+        gradientColors = isDark
+            ? [const Color(0xFF064E3B).withValues(alpha: 0.8), const Color(0xFF022C22)]
+            : [const Color(0xFFECFDF5), const Color(0xFFD1FAE5)];
+        break;
+      case 'ข้อควรระวัง':
+        baseColor = AppColors.catWarning;
+        icon = Icons.report_problem_rounded;
+        subtitle = 'สัญญาณอันตรายและผลกระทบ';
+        gradientColors = isDark
+            ? [const Color(0xFF7C2D12).withValues(alpha: 0.8), const Color(0xFF431407)]
+            : [const Color(0xFFFFF7ED), const Color(0xFFFEF3C7)];
+        break;
+      case 'ความรู้เพิ่มเติม':
+      default:
+        baseColor = AppColors.catMore;
+        icon = Icons.library_books_rounded;
+        subtitle = 'เจาะลึกความรู้วิชาการน่ารู้';
+        gradientColors = isDark
+            ? [const Color(0xFF5B21B6).withValues(alpha: 0.8), const Color(0xFF2E1065)]
+            : [const Color(0xFFF5F3FF), const Color(0xFFEDE9FE)];
+        break;
+    }
+
+    final double coverHeight = compactSpacing ? 100 : 135;
+
+    return Container(
+      width: double.infinity,
+      height: coverHeight,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: baseColor.withValues(alpha: isDark ? 0.08 : 0.04),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 30,
+            bottom: -30,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: baseColor.withValues(alpha: isDark ? 0.06 : 0.03),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.black26 : Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: baseColor.withValues(alpha: isDark ? 0.4 : 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    icon,
+                    color: baseColor,
+                    size: compactSpacing ? 24 : 32,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        category,
+                        style: TextStyle(
+                          fontSize: (compactSpacing ? 16.5 : 20.0),
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : (category == 'รู้ไหม' ? const Color(0xFF1E3A8A) : baseColor),
+                          fontFamily: 'Prompt',
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: compactSpacing ? 10.0 : 11.5,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white60 : Colors.black54,
+                          fontFamily: 'Prompt',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

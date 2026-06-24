@@ -31,12 +31,12 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   void _loadRandomQuestions() {
-    // Pick 5 unique random questions from the dataset (10 questions available)
+    // Pick 10 unique random questions from the dataset (10 questions available)
     final random = Random();
     final List<QuizQuestion> pool = List.from(quizQuestionsDataset);
     final List<QuizQuestion> selected = [];
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 10; i++) {
       if (pool.isEmpty) break;
       final index = random.nextInt(pool.length);
       selected.add(pool.removeAt(index));
@@ -465,7 +465,7 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   Widget _buildCompletionScreen(bool isDark, Color cardColor, Color borderColor) {
-    final showConfetti = _correctCount == 5;
+    final showConfetti = _correctCount == _selectedQuestions.length;
     final hasMistakes = _correctCount < _selectedQuestions.length;
 
     Widget mainCard = SingleChildScrollView(

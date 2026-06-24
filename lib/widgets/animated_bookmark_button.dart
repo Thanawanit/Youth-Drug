@@ -19,6 +19,7 @@ class AnimatedBookmarkButton extends StatefulWidget {
   final Color activeColor;
   final Color inactiveColor;
   final bool isIconButtonOnly; // If true, matches layout of the bottom row in random_fact_page (vertical stack of icon + label). If false, matches inline action row (horizontal text button).
+  final EdgeInsetsGeometry? padding;
 
   const AnimatedBookmarkButton({
     super.key,
@@ -31,6 +32,7 @@ class AnimatedBookmarkButton extends StatefulWidget {
     this.activeColor = Colors.redAccent,
     this.inactiveColor = AppColors.textGrey,
     this.isIconButtonOnly = false,
+    this.padding,
   });
 
   @override
@@ -143,7 +145,7 @@ class _AnimatedBookmarkButtonState extends State<AnimatedBookmarkButton> with Ti
           ),
         ),
         style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),

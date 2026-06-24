@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:async';
+import 'dart:ui' show ImageFilter;
 import '../state/app_state.dart';
 import '../main.dart';
 import '../constants/app_colors.dart';
@@ -110,21 +111,17 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
                         final sec = info.sections[index];
                         final secColor = sec.iconColor ?? info.color;
 
-                        return SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                          child: _buildCustomSlideLayout(
-                            widget.topicType,
-                            index,
-                            sec,
-                            secColor,
-                            isDark,
-                            state.fontScale,
-                            textColor,
-                            cardBg,
-                            borderColor,
-                            total,
-                          ),
+                        return _buildCustomSlideLayout(
+                          widget.topicType,
+                          index,
+                          sec,
+                          secColor,
+                          isDark,
+                          state.fontScale,
+                          textColor,
+                          cardBg,
+                          borderColor,
+                          total,
                         );
                       },
                     ),
@@ -241,6 +238,133 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
   }
 
   // ==================== DISPATCH LAYOUT FOR EACH SLIDE ====================
+  Widget _buildKnowledgeDatabaseCard({
+    required List<String> bullets,
+    required Color secColor,
+    required double fontScale,
+    required bool isDark,
+    required Color textColor,
+    required Color cardBg,
+    required Color borderColor,
+  }) {
+    if (bullets.isEmpty) return const SizedBox.shrink();
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.library_books_rounded, color: secColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'สาระสำคัญ',
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 13 * fontScale,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...bullets.map((bullet) {
+            IconData icon = Icons.check_circle_outline_rounded;
+            if (bullet.contains('สมอง') || bullet.contains('ประสาท') || bullet.contains('จิต') || bullet.contains('โดปามีน')) {
+              icon = Icons.psychology_rounded;
+            } else if (bullet.contains('ร่างกาย') || bullet.contains('สุขภาพ') || bullet.contains('โรค') || bullet.contains('หายใจ') || bullet.contains('หัวใจ') || bullet.contains('ตับ') || bullet.contains('ไต')) {
+              icon = Icons.health_and_safety_rounded;
+            } else if (bullet.contains('กฎหมาย') || bullet.contains('โทษ') || bullet.contains('ศาล') || bullet.contains('ความผิด') || bullet.contains('คดี')) {
+              icon = Icons.gavel_rounded;
+            } else if (bullet.contains('ป้องกัน') || bullet.contains('เกราะ') || bullet.contains('ทักษะ')) {
+              icon = Icons.shield_rounded;
+            } else if (bullet.contains('สาร') || bullet.contains('เคมี')) {
+              icon = Icons.science_rounded;
+            }
+            
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 2.0, right: 10.0),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: secColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: secColor, size: 12),
+                  ),
+                  Expanded(
+                    child: Text(
+                      bullet,
+                      style: TextStyle(
+                        fontSize: 11.5 * fontScale,
+                        color: textColor,
+                        height: 1.45,
+                        fontFamily: 'Prompt',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionDivider({
+    required Color secColor,
+    required double fontScale,
+    required bool isDark,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Text(
+            'กิจกรรมจำลอง',
+            style: TextStyle(
+              fontFamily: 'Prompt',
+              fontSize: 12.0 * fontScale,
+              fontWeight: FontWeight.w900,
+              color: isDark ? Colors.white70 : AppColors.textDark,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Divider(
+              color: secColor.withOpacity(0.18),
+              thickness: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCustomSlideLayout(
     TopicType type,
     int index,
@@ -349,15 +473,14 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
       );
     }
 
-    // Determine custom visual and layout depending on topic type and current slide index
     final Widget visualWidget;
     switch (type) {
-      // ----------------------------------------------------
-      // DEFINITIONS
-      // ----------------------------------------------------
       case TopicType.definition:
         if (index == 0) {
-          visualWidget = Intro5W1HVisual(isDark: isDark, fontScale: fontScale);
+          visualWidget = IntroOverviewVisual(
+            isDark: isDark,
+            fontScale: fontScale,
+          );
         } else if (index == 1) {
           visualWidget = ContrastBattleVisual(isDark: isDark, fontScale: fontScale);
         } else if (index == 2) {
@@ -367,9 +490,6 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
         }
         break;
 
-      // ----------------------------------------------------
-      // CLASSIFICATIONS
-      // ----------------------------------------------------
       case TopicType.classification:
         if (index == 0) {
           visualWidget = StimulantRushVisual(isDark: isDark, fontScale: fontScale);
@@ -382,9 +502,6 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
         }
         break;
 
-      // ----------------------------------------------------
-      // IMPACTS
-      // ----------------------------------------------------
       case TopicType.impact:
         if (index == 0) {
           visualWidget = MoodCrackedMirror(isDark: isDark, fontScale: fontScale);
@@ -397,9 +514,6 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
         }
         break;
 
-      // ----------------------------------------------------
-      // PREVENTIONS
-      // ----------------------------------------------------
       case TopicType.prevention:
         if (index == 0) {
           visualWidget = RefusalChatSimulator(isDark: isDark);
@@ -410,9 +524,6 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
         }
         break;
 
-      // ----------------------------------------------------
-      // LAW
-      // ----------------------------------------------------
       case TopicType.law:
         if (index == 0) {
           visualWidget = LawDecisionPathways(isDark: isDark, fontScale: fontScale);
@@ -424,47 +535,39 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
         break;
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        slideHeader,
-        visualWidget,
-        const SizedBox(height: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: sec.bullets.map((bullet) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 6.0, right: 10.0),
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: secColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      bullet,
-                      style: TextStyle(
-                        fontSize: 12.5 * fontScale,
-                        color: textColor,
-                        height: 1.45,
-                        fontFamily: 'Prompt',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-        if (sec.tips != null) buildTipsFooter(sec.tips!),
-      ],
+    final bool showDatabaseCard = !(type == TopicType.definition && index == 0);
+
+    return TopicSlideScrollWrapper(
+      topicType: type,
+      index: index,
+      sec: sec,
+      secColor: secColor,
+      isDark: isDark,
+      fontScale: fontScale,
+      textColor: textColor,
+      cardBg: cardBg,
+      borderColor: borderColor,
+      total: total,
+      databaseCard: showDatabaseCard && sec.bullets.isNotEmpty
+          ? _buildKnowledgeDatabaseCard(
+              bullets: sec.bullets,
+              secColor: secColor,
+              fontScale: fontScale,
+              isDark: isDark,
+              textColor: textColor,
+              cardBg: cardBg,
+              borderColor: borderColor,
+            )
+          : const SizedBox.shrink(),
+      sectionDivider: showDatabaseCard
+          ? _buildSectionDivider(
+              secColor: secColor,
+              fontScale: fontScale,
+              isDark: isDark,
+            )
+          : const SizedBox.shrink(),
+      visualWidget: visualWidget,
+      tipsFooter: sec.tips != null ? buildTipsFooter(sec.tips!) : const SizedBox.shrink(),
     );
   }
 
@@ -477,16 +580,16 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
           color: AppColors.primary,
           sections: [
             TopicSection(
-              title: 'ปฐมบท: อะไร ที่ไหน เมื่อไหร่ อย่างไร',
-              summary: 'ทำความเข้าใจที่มาและช่องทางการแพร่ระบาดของยาเสพติด (5W1H)',
+              title: 'ปฐมบท: รู้จักยาเสพติด',
+              summary: 'ทำความเข้าใจนิยามพื้นฐาน วิธีการเข้าสู่ร่างกาย และกลไกทำไมมนุษย์ถึงติดยาเสพติด',
               bullets: [
-                'สารเคมีหรือสารธรรมชาติที่เข้าสู่ร่างกายแล้วส่งผลกระทบให้เกิดการเปลี่ยนแปลงทางจิตใจ ร่างกาย และพฤติกรรม (What)',
-                'พบเห็นการใช้งานในประวัติศาสตร์ตั้งแต่การใช้ระงับปวดทางทหารและการแพทย์ แต่ถูกแปรเปลี่ยนเป็นสิ่งผิดกฎหมายในสังคมปัจจุบัน (When & Where)',
-                'แพร่เข้าสู่ร่างกายได้หลายรูปแบบ ทั้งกิน ดม สูบ หรือฉีด และระบาดผ่านการชักชวนหรือช่องทางสื่อออนไลน์ในกลุ่มเยาวชน (How)',
+                'สารเสพติดคือ สารเคมีหรือสารธรรมชาติที่เข้าสู่ร่างกายแล้วทำให้สุขภาพทรุดโทรมและจิตใจเปลี่ยนแปลงอย่างรุนแรง',
+                'สามารถเข้าสู่ร่างกายได้หลายวิธี ทั้งการกิน ดม สูบ หรือฉีด ซึ่งแต่ละวิธีทำอันตรายต่ออวัยวะภายในต่างกัน',
+                'สารเคมีสังเคราะห์ในปัจจุบันถูกออกแบบมาให้แฮ็กระบบประสาทส่วนกลาง ทำให้สมองเสพติดได้ง่ายและรวดเร็วอย่างยิ่ง',
               ],
-              icon: Icons.explore_rounded,
-              iconColor: Colors.orangeAccent,
-              tips: 'การเรียนรู้จุดเริ่มต้นและกลไกต่างๆ ช่วยให้เรารู้จักระแวดระวังและรู้เท่าทันสื่อและการโฆษณาชวนเชื่อ',
+              icon: Icons.info_outline_rounded,
+              iconColor: Colors.blueAccent,
+              tips: 'การเรียนรู้ลักษณะพื้นฐานของสารเสพติดเป็นก้าวแรกที่ช่วยให้เราแยกแยะสารอันตรายรอบตัวในสังคมได้',
             ),
             TopicSection(
               title: 'ความหมายของยาเสพติด',
@@ -734,6 +837,208 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
   }
 }
 
+class TopicSlideScrollWrapper extends StatefulWidget {
+  final TopicType topicType;
+  final int index;
+  final TopicSection sec;
+  final Color secColor;
+  final bool isDark;
+  final double fontScale;
+  final Color textColor;
+  final Color cardBg;
+  final Color borderColor;
+  final int total;
+  final Widget databaseCard;
+  final Widget sectionDivider;
+  final Widget visualWidget;
+  final Widget tipsFooter;
+
+  const TopicSlideScrollWrapper({
+    super.key,
+    required this.topicType,
+    required this.index,
+    required this.sec,
+    required this.secColor,
+    required this.isDark,
+    required this.fontScale,
+    required this.textColor,
+    required this.cardBg,
+    required this.borderColor,
+    required this.total,
+    required this.databaseCard,
+    required this.sectionDivider,
+    required this.visualWidget,
+    required this.tipsFooter,
+  });
+
+  @override
+  State<TopicSlideScrollWrapper> createState() => _TopicSlideScrollWrapperState();
+}
+
+class _TopicSlideScrollWrapperState extends State<TopicSlideScrollWrapper> {
+  late final ScrollController _scrollController;
+  double _scrollOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    
+    // Trigger a rebuild after layout to evaluate maxScrollExtent accurately
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (mounted) {
+      setState(() {
+        _scrollOffset = _scrollController.offset;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hasSimulation = !(widget.topicType == TopicType.definition && widget.index == 0);
+    
+    // Shared header for custom layouts
+    Widget slideHeader = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: widget.secColor.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Text(
+            'หัวข้อ ${widget.index + 1} จาก ${widget.total}',
+            style: TextStyle(
+              fontSize: 10 * widget.fontScale,
+              fontWeight: FontWeight.w800,
+              color: widget.secColor,
+              fontFamily: 'Prompt',
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Icon(widget.sec.icon ?? Icons.bookmark_rounded, color: widget.secColor, size: 28),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                widget.sec.title,
+                style: TextStyle(
+                  fontSize: 16 * widget.fontScale,
+                  fontWeight: FontWeight.w900,
+                  color: widget.textColor,
+                  fontFamily: 'Prompt',
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          widget.sec.summary,
+          style: TextStyle(
+            fontSize: 13 * widget.fontScale,
+            fontWeight: FontWeight.w500,
+            color: widget.isDark ? Colors.white70 : AppColors.textGrey,
+            fontFamily: 'Prompt',
+            height: 1.35,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+
+    if (!hasSimulation) {
+      return SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            slideHeader,
+            widget.visualWidget,
+            widget.tipsFooter,
+          ],
+        ),
+      );
+    }
+
+    final double maxScroll = _scrollController.hasClients ? _scrollController.position.maxScrollExtent : 200.0;
+    final bool isScrollable = maxScroll > 50.0;
+    
+    // Active offset starts when user scrolls past 10px, up to 140px of scrolling
+    final double activeOffset = (_scrollOffset - 10.0).clamp(0.0, 140.0);
+    final double percent = isScrollable ? (activeOffset / 140.0) : 1.0;
+    
+    final double bottomOpacity = isScrollable ? (0.15 + 0.85 * percent) : 1.0;
+    final double translateY = isScrollable ? (25.0 * (1.0 - percent)) : 0.0;
+    final double blurSigma = isScrollable ? (4.5 * (1.0 - percent)) : 0.0;
+
+    Widget bottomSection = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        widget.sectionDivider,
+        widget.visualWidget,
+        widget.tipsFooter,
+      ],
+    );
+
+    Widget animatedBottomSection = Opacity(
+      opacity: bottomOpacity,
+      child: Transform.translate(
+        offset: Offset(0, translateY),
+        child: blurSigma > 0.1
+            ? ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+                child: bottomSection,
+              )
+            : bottomSection,
+      ),
+    );
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          // 1. Top Section (Header + Database Card)
+          slideHeader,
+          widget.databaseCard,
+
+          // 2. Standard spacing
+          const SizedBox(height: 16),
+
+          // 3. Bottom Section (Section Divider + Simulation + Tips)
+          animatedBottomSection,
+          
+          if (isScrollable) const SizedBox(height: 80),
+        ],
+      ),
+    );
+  }
+}
+
 class TopicInfo {
   final String title;
   final IconData icon;
@@ -769,46 +1074,45 @@ class TopicSection {
 // ============================================================================
 // WIDGET 0.9: Intro5W1HVisual (Introductory What, Where, When, How Interactive Display)
 // ============================================================================
-class Intro5W1HVisual extends StatefulWidget {
+// ============================================================================
+// WIDGET 0.9: IntroOverviewVisual (Overview & Learning Roadmap Interactive Display)
+// ============================================================================
+class IntroOverviewVisual extends StatefulWidget {
   final bool isDark;
   final double fontScale;
-  const Intro5W1HVisual({super.key, required this.isDark, required this.fontScale});
+  const IntroOverviewVisual({super.key, required this.isDark, required this.fontScale});
 
   @override
-  State<Intro5W1HVisual> createState() => _Intro5W1HVisualState();
+  State<IntroOverviewVisual> createState() => _IntroOverviewVisualState();
 }
 
-class _Intro5W1HVisualState extends State<Intro5W1HVisual> {
-  int _activeTab = 0; // 0: What, 1: Where, 2: When, 3: How
+class _IntroOverviewVisualState extends State<IntroOverviewVisual> {
+  int _activeTab = 0; // 0: นิยามหลัก, 1: การรับสาร, 2: ทำไมถึงติด
 
   final List<Map<String, dynamic>> _tabsData = [
     {
-      'title': 'WHAT',
-      'label': 'คืออะไร?',
-      'icon': Icons.help_outline_rounded,
+      'title': 'นิยามหลัก',
+      'label': 'ความหมาย',
+      'icon': Icons.menu_book_rounded,
       'color': Colors.blueAccent,
-      'content': 'สารเคมีหรือสารธรรมชาติทุกชนิดที่เข้าสู่ร่างกาย (โดยการกิน ดม สูบ หรือฉีด) แล้วส่งผลต่อประสาทส่วนกลาง ทำให้ร่างกาย จิตใจ และพฤติกรรมเปลี่ยนแปลงไปอย่างรุนแรง',
+      'content': 'สารเคมีหรือสารธรรมชาติใดๆ ที่เมื่อเข้าสู่ร่างกายไม่ว่าจะโดยการกิน ดม สูบ หรือฉีด แล้วจะก่อให้เกิดผลกระทบต่อร่างกายและจิตใจอย่างรุนแรง ทำให้สุขภาพทรุดโทรมลงเรื่อยๆ',
+      'subinfo': 'ส่งผลต่อระบบประสาทส่วนกลางและพฤติกรรมโดยตรง',
     },
     {
-      'title': 'WHERE',
-      'label': 'ที่ไหน?',
-      'icon': Icons.place_rounded,
-      'color': Colors.redAccent,
-      'content': 'ในอดีตมีการใช้ตามธรรมชาติหรือเขตการแพทย์ แต่ในปัจจุบันแพร่กระจายไปทั่วโลก รวมถึงจุดเสี่ยง เช่น ชุมชนแออัด สถานบันเทิง และช่องทางสื่อออนไลน์ล่อลวงเยาวชน',
-    },
-    {
-      'title': 'WHEN',
-      'label': 'เมื่อไหร่?',
-      'icon': Icons.watch_later_rounded,
+      'title': 'การรับสาร',
+      'label': 'ช่องทางรับยา',
+      'icon': Icons.vaccines_rounded,
       'color': Colors.amber,
-      'content': 'ในอดีตใช้ในการสงครามเพื่อระงับปวด ต่อมามีการเสพติดแพร่ระบาด และในปัจจุบัน ความเสี่ยงสูงมักเกิดขึ้นในช่วงวัยรุ่นที่สมองส่วนความคิดและการควบคุมตนเองยังพัฒนาไม่เต็มที่',
+      'content': 'ยาเสพติดเข้าสู่ร่างกายได้หลายวิธี เช่น การสูบ (ทำลายปอด), การกิน/ดม (ดูดซึมผ่านเนื้อเยื่อ), และการฉีด (สารเคมีเข้าสู่กระแสเลือดโดยตรงและส่งผลร้ายแรงเร็วที่สุด)',
+      'subinfo': 'การฉีดทำลายหลอดเลือดและเสี่ยงติดเชื้อในกระแสเลือดสูง',
     },
     {
-      'title': 'HOW',
-      'label': 'อย่างไร?',
-      'icon': Icons.explore_rounded,
-      'color': AppColors.success,
-      'content': 'สารเสพติดเข้าทำลายระบบประสาทส่วนควบคุมความสุข (Reward Pathway) ทำให้สมองชินกับโดปามีนปริมาณสูง นำไปสู่การโหยหาและเสพติดเรื้อรังที่ผู้เสพไม่อาจควบคุมตัวเองได้ด้วยใจเปล่า',
+      'title': 'ทำไมถึงติด',
+      'label': 'แฮ็กสมอง',
+      'icon': Icons.psychology_rounded,
+      'color': Colors.redAccent,
+      'content': 'สารเคมีจะเข้าไปบังคับให้สมองหลั่งสารโดปามีน (ความสุข) มากผิดปกติ เมื่อสมองปรับตัวให้เคยชิน จะลดการผลิตเองตามธรรมชาติ ทำให้ร่างกายโหยหายาเสพติดมาทดแทนอยู่เสมอ',
+      'subinfo': 'โครงสร้างสมองถูกเปลี่ยนแปลงถาวรจนสูญเสียการควบคุม',
     },
   ];
 
@@ -820,7 +1124,7 @@ class _Intro5W1HVisualState extends State<Intro5W1HVisual> {
     final borderColor = widget.isDark ? const Color(0xFF334155) : AppColors.border;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(24),
@@ -829,10 +1133,29 @@ class _Intro5W1HVisualState extends State<Intro5W1HVisual> {
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 4 Grid tabs
           Row(
-            children: List.generate(4, (index) {
+            children: [
+              Icon(Icons.science_rounded, color: widget.isDark ? const Color(0xFFC084FC) : AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'ข้อมูลเบื้องต้นเกี่ยวกับสารเสพติด:',
+                style: TextStyle(
+                  fontSize: 13.5 * widget.fontScale,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Prompt',
+                  color: widget.isDark ? Colors.white70 : AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // Tab bar selector
+          Row(
+            children: List.generate(3, (index) {
               final tab = _tabsData[index];
               final isActive = _activeTab == index;
               final Color tabColor = tab['color'] as Color;
@@ -845,25 +1168,23 @@ class _Intro5W1HVisualState extends State<Intro5W1HVisual> {
                     });
                   },
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       color: isActive ? activeTabBg : cardColor,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isActive ? tabColor : borderColor,
-                        width: isActive ? 2.0 : 1.0,
+                        width: isActive ? 1.8 : 1.0,
                       ),
-                      boxShadow: isActive
-                          ? [
-                              BoxShadow(
-                                color: tabColor.withValues(alpha: 0.15),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
-                              )
-                            ]
-                          : null,
+                      boxShadow: isActive ? [
+                        BoxShadow(
+                          color: tabColor.withValues(alpha: widget.isDark ? 0.15 : 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        )
+                      ] : null,
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -871,13 +1192,13 @@ class _Intro5W1HVisualState extends State<Intro5W1HVisual> {
                         Icon(
                           tab['icon'] as IconData,
                           color: isActive ? tabColor : (widget.isDark ? Colors.white60 : AppColors.textGrey),
-                          size: 22,
+                          size: 20,
                         ),
                         const SizedBox(height: 6),
                         Text(
                           tab['title'] as String,
                           style: TextStyle(
-                            fontSize: 9.5 * widget.fontScale,
+                            fontSize: 11 * widget.fontScale,
                             fontWeight: FontWeight.w900,
                             fontFamily: 'Prompt',
                             color: isActive ? tabColor : (widget.isDark ? Colors.white70 : AppColors.textDark),
@@ -886,8 +1207,8 @@ class _Intro5W1HVisualState extends State<Intro5W1HVisual> {
                         Text(
                           tab['label'] as String,
                           style: TextStyle(
-                            fontSize: 8.5 * widget.fontScale,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 9.0 * widget.fontScale,
+                            fontWeight: FontWeight.bold,
                             fontFamily: 'Prompt',
                             color: isActive ? tabColor : (widget.isDark ? Colors.grey.shade400 : Colors.grey.shade500),
                           ),
@@ -899,51 +1220,78 @@ class _Intro5W1HVisualState extends State<Intro5W1HVisual> {
               );
             }),
           ),
+          
           const SizedBox(height: 14),
-
-          // Detail Display Card
+          
+          // Info display area
           AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(16),
             width: double.infinity,
             decoration: BoxDecoration(
               color: cardColor,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: activeColor.withValues(alpha: 0.25), width: 1.5),
+              border: Border.all(color: activeColor.withValues(alpha: 0.25), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: activeColor.withValues(alpha: widget.isDark ? 0.08 : 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: activeColor.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(_tabsData[_activeTab]['icon'] as IconData, color: activeColor, size: 18),
-                    ),
-                    const SizedBox(width: 10),
+                    Icon(_tabsData[_activeTab]['icon'] as IconData, color: activeColor, size: 18),
+                    const SizedBox(width: 8),
                     Text(
-                      'การตั้งคำถามและวิเคราะห์เชิงลึก: ${_tabsData[_activeTab]['title']}',
+                      _tabsData[_activeTab]['title'] as String,
                       style: TextStyle(
                         fontFamily: 'Prompt',
-                        fontSize: 12 * widget.fontScale,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 13.5 * widget.fontScale,
+                        fontWeight: FontWeight.w900,
                         color: activeColor,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 Text(
                   _tabsData[_activeTab]['content'] as String,
                   style: TextStyle(
                     fontFamily: 'Prompt',
-                    fontSize: 11.5 * widget.fontScale,
-                    color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-                    height: 1.5,
+                    fontSize: 12.0 * widget.fontScale,
+                    color: widget.isDark ? Colors.grey.shade200 : Colors.grey.shade700,
+                    height: 1.55,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: activeColor.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: activeColor, size: 13),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _tabsData[_activeTab]['subinfo'] as String,
+                          style: TextStyle(
+                            fontFamily: 'Prompt',
+                            fontSize: 10.0 * widget.fontScale,
+                            color: activeColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -955,7 +1303,6 @@ class _Intro5W1HVisualState extends State<Intro5W1HVisual> {
   }
 }
 
-// ============================================================================
 // WIDGET 1.0: ContrastBattleVisual
 // ============================================================================
 class _SortItem {
@@ -963,6 +1310,24 @@ class _SortItem {
   final String desc;
   final bool isMedicine;
   _SortItem(this.name, this.desc, this.isMedicine);
+}
+
+class _CrystalClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(size.width * 0.5, 0.0); // top point
+    path.lineTo(size.width, size.height * 0.3); // upper right
+    path.lineTo(size.width * 0.8, size.height * 0.9); // lower right
+    path.lineTo(size.width * 0.5, size.height); // bottom point
+    path.lineTo(size.width * 0.2, size.height * 0.9); // lower left
+    path.lineTo(0.0, size.height * 0.3); // upper left
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
 class ContrastBattleVisual extends StatefulWidget {
@@ -1033,235 +1398,409 @@ class _ContrastBattleVisualState extends State<ContrastBattleVisual> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_gameCompleted) {
-      return _buildCompletionScreen();
-    }
-    
-    final currentItem = _items[_currentIndex];
-    
-    return Column(
-      children: [
-        // Progress header
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'จำแนกประเภท: การ์ดที่ ${_currentIndex + 1}/${_items.length}',
-              style: TextStyle(
-                fontFamily: 'Prompt',
-                fontSize: 12 * widget.fontScale,
-                fontWeight: FontWeight.bold,
-                color: widget.isDark ? Colors.blueGrey.shade300 : Colors.grey.shade600,
-              ),
-            ),
-            Text(
-              'คะแนน: $_score/${_items.length}',
-              style: TextStyle(
-                fontFamily: 'Prompt',
-                fontSize: 12 * widget.fontScale,
-                fontWeight: FontWeight.bold,
-                color: AppColors.success,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        
-        // Draggable Card Container
-        SizedBox(
-          height: 130,
-          width: double.infinity,
-          child: Draggable<bool>(
-            data: currentItem.isMedicine,
-            feedback: Material(
-              color: Colors.transparent,
-              child: _buildCardUI(currentItem, isFeedback: true),
-            ),
-            childWhenDragging: Container(
-              decoration: BoxDecoration(
-                color: widget.isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.02),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.08),
-                  width: 1.5,
-                ),
-              ),
-            ),
-            child: _buildCardUI(currentItem, isFeedback: false),
-          ),
-        ),
-        
-        const SizedBox(height: 16),
-        Text(
-          'ลากการ์ดลงกล่องด้านล่าง หรือแตะกล่องเพื่อแยกหมวดหมู่',
-          style: TextStyle(
-            fontSize: 10.5 * widget.fontScale,
-            fontFamily: 'Prompt',
-            fontWeight: FontWeight.bold,
-            color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-          ),
-        ),
-        const SizedBox(height: 12),
-        
-        // Drop targets / Buckets
-        Row(
-          children: [
-            // Left target (Medicine)
-            Expanded(
-              child: DragTarget<bool>(
-                onWillAcceptWithDetails: (details) {
-                  setState(() => _isHoveringLeft = true);
-                  return true;
-                },
-                onLeave: (data) {
-                  setState(() => _isHoveringLeft = false);
-                },
-                onAcceptWithDetails: (details) {
-                  setState(() => _isHoveringLeft = false);
-                  _handleSort(true);
-                },
-                builder: (context, candidateData, rejectedData) {
-                  return _buildBucket(
-                    label: 'ยารักษาโรค',
-                    isMedicine: true,
-                    isHovered: _isHoveringLeft,
-                    color: const Color(0xFF10B981),
-                    icon: Icons.healing_rounded,
-                    onTap: () => _handleSort(true),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Right target (Drugs)
-            Expanded(
-              child: DragTarget<bool>(
-                onWillAcceptWithDetails: (details) {
-                  setState(() => _isHoveringRight = true);
-                  return true;
-                },
-                onLeave: (data) {
-                  setState(() => _isHoveringRight = false);
-                },
-                onAcceptWithDetails: (details) {
-                  setState(() => _isHoveringRight = false);
-                  _handleSort(false);
-                },
-                builder: (context, candidateData, rejectedData) {
-                  return _buildBucket(
-                    label: 'ยาเสพติด',
-                    isMedicine: false,
-                    isHovered: _isHoveringRight,
-                    color: const Color(0xFFEF4444),
-                    icon: Icons.coronavirus_rounded,
-                    onTap: () => _handleSort(false),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-        
-        // Last Answer Feedback Indicator
-        if (_feedbackText != null) ...[
-          const SizedBox(height: 14),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: _lastCorrect == true
-                  ? AppColors.success.withValues(alpha: 0.08)
-                  : Colors.redAccent.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: _lastCorrect == true ? AppColors.success : Colors.redAccent,
-                width: 1,
-              ),
-            ),
-            child: Text(
-              _feedbackText!,
-              style: TextStyle(
-                fontFamily: 'Prompt',
-                fontSize: 11 * widget.fontScale,
-                fontWeight: FontWeight.bold,
-                color: _lastCorrect == true ? AppColors.success : Colors.redAccent,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
+  // --- SUBSTANCE SHAPE BUILDERS ---
 
-  Widget _buildCardUI(_SortItem item, {required bool isFeedback}) {
-    final width = isFeedback ? MediaQuery.of(context).size.width * 0.7 : double.infinity;
+  Widget _buildParacetamol(String name) {
     return Container(
-      width: width,
-      padding: const EdgeInsets.all(16),
+      width: 155,
+      height: 52,
       decoration: BoxDecoration(
-        color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
-          width: 1.5,
+          color: widget.isDark ? Colors.white24 : Colors.grey.shade300,
+          width: 2,
+        ),
+        gradient: LinearGradient(
+          colors: widget.isDark
+              ? [const Color(0xFFF1F5F9), const Color(0xFF94A3B8)]
+              : [Colors.white, const Color(0xFFE2E8F0)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isFeedback ? 0.15 : 0.04),
-            blurRadius: isFeedback ? 16 : 8,
-            offset: Offset(0, isFeedback ? 8 : 4),
-          )
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
-      child: Row(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.help_outline_rounded,
-              color: widget.isDark ? Colors.blueGrey.shade300 : Colors.grey.shade600,
-              size: 24,
+          Center(
+            child: Container(
+              width: 1.5,
+              height: 52,
+              color: widget.isDark ? Colors.white30 : Colors.black12,
             ),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  item.name,
-                  style: TextStyle(
-                    fontFamily: 'Prompt',
-                    fontSize: 14 * widget.fontScale,
-                    fontWeight: FontWeight.bold,
-                    color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
-                  ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              name,
+              style: const TextStyle(
+                fontFamily: 'Prompt',
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF1E293B),
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildYaba(String name) {
+    return SizedBox(
+      width: 155,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFC2410C), width: 2),
+              gradient: const RadialGradient(
+                colors: [Color(0xFFFB923C), Color(0xFFEA580C)],
+                radius: 0.65,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withOpacity(0.3),
+                  blurRadius: 6,
+                  spreadRadius: 1,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  item.desc,
-                  style: TextStyle(
-                    fontFamily: 'Prompt',
-                    fontSize: 10.5 * widget.fontScale,
-                    height: 1.4,
-                    color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+              ],
+            ),
+            alignment: Alignment.center,
+            child: const Text(
+              'WY',
+              style: TextStyle(
+                color: Color(0xFF7C2D12),
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            name,
+            style: TextStyle(
+              fontFamily: 'Prompt',
+              fontSize: 10.5 * widget.fontScale,
+              fontWeight: FontWeight.w900,
+              color: widget.isDark ? Colors.redAccent : Colors.red.shade800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAntibiotic(String name) {
+    return Container(
+      width: 155,
+      height: 52,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: widget.isDark ? Colors.white30 : Colors.grey.shade300,
+          width: 1.8,
+        ),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFEF4444), Color(0xFFEF4444),
+            Color(0xFFFBBF24), Color(0xFFFBBF24),
+          ],
+          stops: [0.0, 0.5, 0.5, 1.0],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Text(
+          name,
+          style: const TextStyle(
+            fontFamily: 'Prompt',
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black45,
+                offset: Offset(0, 1.5),
+                blurRadius: 3,
+              ),
+            ],
+          ),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroin(String name) {
+    return SizedBox(
+      width: 155,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 85,
+            height: 65,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: widget.isDark ? Colors.white38 : Colors.grey.shade400,
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  height: 4,
+                  color: Colors.redAccent,
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.85),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(4),
+                        bottomRight: Radius.circular(4),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.black54,
+                      size: 18,
+                    ),
                   ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 4),
+          Text(
+            name,
+            style: TextStyle(
+              fontFamily: 'Prompt',
+              fontSize: 10.5 * widget.fontScale,
+              fontWeight: FontWeight.w900,
+              color: widget.isDark ? Colors.redAccent : Colors.red.shade800,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildVaccine(String name) {
+    return SizedBox(
+      width: 155,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 24,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade600,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Container(
+                width: 14,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  border: Border.symmetric(
+                    horizontal: BorderSide(color: Colors.grey.shade500, width: 1),
+                    vertical: BorderSide(color: Colors.grey.shade400, width: 1),
+                  ),
+                ),
+              ),
+              Container(
+                width: 50,
+                height: 38,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: widget.isDark ? Colors.white38 : Colors.grey.shade400,
+                    width: 1.5,
+                  ),
+                  gradient: LinearGradient(
+                    colors: widget.isDark
+                        ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                        : [Colors.white, const Color(0xFFF1F5F9)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF38BDF8).withOpacity(0.65),
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(4),
+                            bottomRight: Radius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Center(
+                      child: Icon(
+                        Icons.vaccines_rounded,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            name,
+            style: TextStyle(
+              fontFamily: 'Prompt',
+              fontSize: 10.5 * widget.fontScale,
+              fontWeight: FontWeight.w900,
+              color: widget.isDark ? Colors.lightBlueAccent : Colors.blue.shade800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIce(String name) {
+    return SizedBox(
+      width: 155,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ClipPath(
+            clipper: _CrystalClipper(),
+            child: Container(
+              width: 65,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.cyanAccent.withOpacity(0.9),
+                    Colors.white.withOpacity(0.95),
+                    const Color(0xFFE0F2FE).withOpacity(0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.diamond_rounded,
+                  color: Colors.cyan,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            name,
+            style: TextStyle(
+              fontFamily: 'Prompt',
+              fontSize: 10.5 * widget.fontScale,
+              fontWeight: FontWeight.w900,
+              color: widget.isDark ? Colors.cyanAccent : Colors.cyan.shade800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDraggablePill(_SortItem item, {required bool isDragging, bool isPlaceholder = false}) {
+    final name = item.name;
+    
+    Widget shape;
+    if (name.contains('พารา')) {
+      shape = _buildParacetamol(name);
+    } else if (name.contains('ยาบ้า')) {
+      shape = _buildYaba(name);
+    } else if (name.contains('ปฏิชีวนะ')) {
+      shape = _buildAntibiotic(name);
+    } else if (name.contains('เฮโรอีน')) {
+      shape = _buildHeroin(name);
+    } else if (name.contains('วัคซีน')) {
+      shape = _buildVaccine(name);
+    } else if (name.contains('ยาไอซ์')) {
+      shape = _buildIce(name);
+    } else {
+      shape = Container(
+        width: 155,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(name, textAlign: TextAlign.center),
+      );
+    }
+
+    if (isPlaceholder) {
+      return Opacity(
+        opacity: 0.25,
+        child: shape,
+      );
+    }
+
+    return AnimatedOpacity(
+      opacity: isDragging ? 0.75 : 1.0,
+      duration: const Duration(milliseconds: 150),
+      child: shape,
     );
   }
 
@@ -1280,49 +1819,51 @@ class _ContrastBattleVisualState extends State<ContrastBattleVisual> {
         duration: const Duration(milliseconds: 150),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          height: 80,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           decoration: BoxDecoration(
             color: isHovered
-                ? color.withValues(alpha: 0.15)
+                ? color.withOpacity(0.12)
                 : (widget.isDark ? const Color(0xFF1E293B) : Colors.white),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isHovered ? color : (widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06)),
+              color: isHovered ? color : (widget.isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.06)),
               width: isHovered ? 2.5 : 1.5,
             ),
             boxShadow: [
               if (isHovered)
                 BoxShadow(
-                  color: color.withValues(alpha: 0.25),
-                  blurRadius: 10,
+                  color: color.withOpacity(0.25),
+                  blurRadius: 8,
                   spreadRadius: 1,
                 )
               else
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
+                  color: Colors.black.withOpacity(0.02),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 )
             ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: color, size: 24),
+                child: Icon(icon, color: color, size: 20),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
                   fontFamily: 'Prompt',
-                  fontSize: 12 * widget.fontScale,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 11.5 * widget.fontScale,
+                  fontWeight: FontWeight.w900,
                   color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
                 ),
               ),
@@ -1343,8 +1884,8 @@ class _ContrastBattleVisualState extends State<ContrastBattleVisual> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: perfectScore 
-              ? AppColors.success.withValues(alpha: 0.5) 
-              : Colors.blueAccent.withValues(alpha: 0.3),
+              ? AppColors.success.withOpacity(0.5) 
+              : Colors.blueAccent.withOpacity(0.3),
           width: 1.5,
         ),
       ),
@@ -1397,10 +1938,216 @@ class _ContrastBattleVisualState extends State<ContrastBattleVisual> {
       ),
     );
   }
-}
 
-// ============================================================================
-// WIDGET 1.1: BrainDopamineVisual (Dopamine Control Center)
+  @override
+  Widget build(BuildContext context) {
+    if (_gameCompleted) {
+      return _buildCompletionScreen();
+    }
+    
+    final currentItem = _items[_currentIndex];
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: widget.isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'จัดประเภทการ์ด: ${_currentIndex + 1}/${_items.length}',
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 11 * widget.fontScale,
+                  fontWeight: FontWeight.bold,
+                  color: widget.isDark ? Colors.blueGrey.shade300 : Colors.grey.shade600,
+                ),
+              ),
+              Text(
+                'คะแนน: $_score/${_items.length}',
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 11 * widget.fontScale,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.success,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: widget.isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  color: widget.isDark ? Colors.blueGrey.shade400 : Colors.blueGrey.shade500,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'คำใบ้รายละเอียดสาร:',
+                        style: TextStyle(
+                          fontFamily: 'Prompt',
+                          fontSize: 9.5 * widget.fontScale,
+                          fontWeight: FontWeight.bold,
+                          color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        currentItem.desc,
+                        style: TextStyle(
+                          fontFamily: 'Prompt',
+                          fontSize: 11 * widget.fontScale,
+                          height: 1.45,
+                          color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: DragTarget<bool>(
+                  onWillAcceptWithDetails: (details) {
+                    setState(() => _isHoveringLeft = true);
+                    return true;
+                  },
+                  onLeave: (data) {
+                    setState(() => _isHoveringLeft = false);
+                  },
+                  onAcceptWithDetails: (details) {
+                    setState(() => _isHoveringLeft = false);
+                    _handleSort(true);
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    return _buildBucket(
+                      label: 'ยารักษาโรค',
+                      isMedicine: true,
+                      isHovered: _isHoveringLeft,
+                      color: const Color(0xFF10B981),
+                      icon: Icons.healing_rounded,
+                      onTap: () => _handleSort(true),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DragTarget<bool>(
+                  onWillAcceptWithDetails: (details) {
+                    setState(() => _isHoveringRight = true);
+                    return true;
+                  },
+                  onLeave: (data) {
+                    setState(() => _isHoveringRight = false);
+                  },
+                  onAcceptWithDetails: (details) {
+                    setState(() => _isHoveringRight = false);
+                    _handleSort(false);
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    return _buildBucket(
+                      label: 'ยาเสพติด',
+                      isMedicine: false,
+                      isHovered: _isHoveringRight,
+                      color: const Color(0xFFEF4444),
+                      icon: Icons.coronavirus_rounded,
+                      onTap: () => _handleSort(false),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'ลากสารด้านล่างขึ้นไปยังกล่องจัดประเภท หรือแตะกล่องเป้าหมาย',
+            style: TextStyle(
+              fontSize: 10 * widget.fontScale,
+              fontFamily: 'Prompt',
+              fontWeight: FontWeight.bold,
+              color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 105,
+            width: double.infinity,
+            child: Center(
+              child: Draggable<bool>(
+                data: currentItem.isMedicine,
+                feedback: Material(
+                  color: Colors.transparent,
+                  child: _buildDraggablePill(currentItem, isDragging: true),
+                ),
+                childWhenDragging: _buildDraggablePill(currentItem, isDragging: false, isPlaceholder: true),
+                child: _buildDraggablePill(currentItem, isDragging: false),
+              ),
+            ),
+          ),
+          if (_feedbackText != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: _lastCorrect == true
+                    ? AppColors.success.withOpacity(0.08)
+                    : Colors.redAccent.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _lastCorrect == true ? AppColors.success : Colors.redAccent,
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                _feedbackText!,
+                style: TextStyle(
+                  fontFamily: 'Prompt',
+                  fontSize: 11 * widget.fontScale,
+                  fontWeight: FontWeight.bold,
+                  color: _lastCorrect == true ? AppColors.success : Colors.redAccent,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+// WIDGET 1.1: BrainDopamineVisual (Dopamine Control Center - Pop-up Modal)
 // ============================================================================
 class BrainDopamineVisual extends StatefulWidget {
   final bool isDark;
@@ -1411,7 +2158,160 @@ class BrainDopamineVisual extends StatefulWidget {
   State<BrainDopamineVisual> createState() => _BrainDopamineVisualState();
 }
 
-class _BrainDopamineVisualState extends State<BrainDopamineVisual> with SingleTickerProviderStateMixin {
+class _BrainDopamineVisualState extends State<BrainDopamineVisual> {
+  @override
+  Widget build(BuildContext context) {
+    final activeColor = widget.isDark ? const Color(0xFFC084FC) : AppColors.primary;
+    final cardBg = widget.isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = widget.isDark ? const Color(0xFF334155) : AppColors.border;
+
+    return GestureDetector(
+      onTap: () => _openSimulationSheet(context),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: activeColor.withValues(alpha: 0.35), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: activeColor.withValues(alpha: widget.isDark ? 0.12 : 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Column(
+          children: [
+            // Header decoration
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: activeColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.science_rounded, color: activeColor, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ห้องจำลองกลไกสมองติดยา',
+                        style: TextStyle(
+                          fontSize: 13.5 * widget.fontScale,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'Prompt',
+                          color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                        ),
+                      ),
+                      Text(
+                        'Dopamine Simulator Lab',
+                        style: TextStyle(
+                          fontSize: 10 * widget.fontScale,
+                          fontFamily: 'Prompt',
+                          fontWeight: FontWeight.bold,
+                          color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            
+            // Visual Preview representation
+            Container(
+              height: 110,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned(
+                    left: 20,
+                    child: Icon(
+                      Icons.settings_suggest_rounded,
+                      size: 64,
+                      color: activeColor.withValues(alpha: 0.10),
+                    ),
+                  ),
+                  Positioned(
+                    right: 20,
+                    child: Icon(
+                      Icons.psychology_rounded,
+                      size: 80,
+                      color: Colors.pinkAccent.withValues(alpha: 0.10),
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.play_circle_fill_rounded, color: activeColor, size: 38),
+                      const SizedBox(height: 6),
+                      Text(
+                        'แตะเพื่อเปิดเครื่องจำลอง (เต็มจอ)',
+                        style: TextStyle(
+                          fontSize: 11.5 * widget.fontScale,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Prompt',
+                          color: activeColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'แตะเพื่อขยายหน้าจอจำลองแบบโต้ตอบขนาดใหญ่ ช่วยให้เรียนรู้การทำงานของโดปามีนและการติดยาเสพติดได้อย่างละเอียดและชัดเจนที่สุด',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 10.5 * widget.fontScale,
+                color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                fontFamily: 'Prompt',
+                height: 1.45,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openSimulationSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return _DopamineSimulationSheet(isDark: widget.isDark, fontScale: widget.fontScale);
+      },
+    );
+  }
+}
+
+class _DopamineSimulationSheet extends StatefulWidget {
+  final bool isDark;
+  final double fontScale;
+  const _DopamineSimulationSheet({required this.isDark, required this.fontScale});
+
+  @override
+  State<_DopamineSimulationSheet> createState() => _DopamineSimulationSheetState();
+}
+
+class _DopamineSimulationSheetState extends State<_DopamineSimulationSheet> with SingleTickerProviderStateMixin {
   int _currentStep = 0; // 0 = Normal, 1 = Drug, 2 = Crash
   late AnimationController _animController;
 
@@ -1420,7 +2320,7 @@ class _BrainDopamineVisualState extends State<BrainDopamineVisual> with SingleTi
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 3),
     )..repeat();
   }
 
@@ -1441,14 +2341,14 @@ class _BrainDopamineVisualState extends State<BrainDopamineVisual> with SingleTi
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           decoration: BoxDecoration(
             color: isSelected
-                ? activeColor.withOpacity(widget.isDark ? 0.15 : 0.08)
+                ? activeColor.withValues(alpha: widget.isDark ? 0.15 : 0.08)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? activeColor : (widget.isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.06)),
+              color: isSelected ? activeColor : (widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06)),
               width: 1.5,
             ),
           ),
@@ -1457,7 +2357,7 @@ class _BrainDopamineVisualState extends State<BrainDopamineVisual> with SingleTi
             children: [
               Icon(
                 icon,
-                size: 16,
+                size: 18,
                 color: isSelected ? activeColor : (widget.isDark ? Colors.white38 : Colors.black38),
               ),
               const SizedBox(height: 4),
@@ -1480,117 +2380,171 @@ class _BrainDopamineVisualState extends State<BrainDopamineVisual> with SingleTi
     );
   }
 
-  Widget _buildDetailsRow(String label, String text, bool isDark, double fontScale) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 80,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 11 * fontScale,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white70 : AppColors.textDark,
-              fontFamily: 'Prompt',
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 11 * fontScale,
-              color: isDark ? Colors.white60 : AppColors.textGrey,
-              fontFamily: 'Prompt',
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    String brainStatus = 'สมองปกติ (สารโดปามีนสมดุล)';
-    String brainDesc = 'สมองทำงานเป็นปกติ มีความสุขจากการทำกิจกรรมดีๆ ในชีวิตประจำวัน เช่น เล่นกีฬา หรือทำงานอดิเรก';
-    Color brainColor = AppColors.success;
+    final double sheetHeight = MediaQuery.of(context).size.height * 0.85;
+    
+    Color stepColor = AppColors.success;
+    String statusTitle = "ปกติ (ระบบสมดุล)";
     double dopamineLevel = 0.45;
-
-    String detailFeeling = 'มีความสุขแบบปกติและยั่งยืน';
-    String detailMechanism = 'สมองหลั่งโดปามีนในระดับที่สมดุลตามธรรมชาติ';
-    String detailEffect = 'มีสมาธิ อารมณ์ดี และพร้อมเรียนรู้สิ่งใหม่ๆ';
+    String description = "สมองทำงานปกติเหมือนเปิดก๊อกน้ำความสุข (โดปามีน) ไหลรินเบาๆ เมื่อส่งความรู้สึกเสร็จก็ระบายน้ำทิ้งได้สะดวกตามธรรมชาติ ทำให้เรารู้สึกสุขสงบและพร้อมเรียนรู้";
+    String flowInfo = "หลั่งสมดุลเมื่อเรียน เล่นกีฬา หรือทานอาหาร";
+    String effectInfo = "ตัวรับและท่อดูดกลับทำงานราบรื่น ไม่มีสารเคมีค้าง";
 
     if (_currentStep == 1) {
-      brainStatus = 'รับสารเคมี (โดปามีนพุ่งสูงเกิน)';
-      brainDesc = 'สารเสพติดกระตุ้นการหลั่งโดปามีนอย่างรุนแรง ทำให้สมองตื่นตัวและมีความสุขชั่วคราวแบบไม่เป็นธรรมชาติ';
-      brainColor = Colors.redAccent;
+      stepColor = Colors.redAccent;
+      statusTitle = "รับสารเสพติด (ล้นทะลัก!)";
       dopamineLevel = 1.0;
-
-      detailFeeling = 'ตื่นเต้นและมีความสุขสูงมากผิดปกติชั่วคราว';
-      detailMechanism = 'สารเคมีท่วมระบบสมองส่วนควบคุมความสุข';
-      detailEffect = 'สมองเริ่มดื้อยา ต้องการสารเสพติดเพิ่มขึ้น';
+      description = "ยาเสพติดจะเข้าไปปิดช่องดูดซึมกลับ (ตัวรีไซเคิล) ทำให้สารโดปามีนติดค้างและเอ่อล้นทะลักเต็มระบบ สมองจึงถูกบังคับให้รับความสุขล้นพ้นชั่วครู่จนเริ่มบอบช้ำ";
+      flowInfo = "โดปามีนโดนกักขังล้นระบบ ประสาทตื่นตัวสูงสุด";
+      effectInfo = "สมองเริ่มเสียหาย และหาทางปิดช่องรับสัญญาณ";
     } else if (_currentStep == 2) {
-      brainStatus = 'หลังหมดฤทธิ์/ตกต่ำ (สารขาดแคลน)';
-      brainDesc = 'เมื่อฤทธิ์ยาหมดลง สมองจะผลิตโดปามีนได้น้อยลงมาก ทำให้รู้สึกหดหู่และทรมาน';
-      brainColor = Colors.grey;
+      stepColor = Colors.grey;
+      statusTitle = "หมดฤทธิ์ยา (ขาดแคลน/ดื้อยา)";
       dopamineLevel = 0.08;
-
-      detailFeeling = 'ซึมเศร้า อ่อนเพลีย และหงุดหงิดง่าย';
-      detailMechanism = 'ตัวรับความสุขในสมองเสียหายชั่วคราวหรือถาวร';
-      detailEffect = 'ขาดความสุขในชีวิตปกติ และนำไปสู่อาการติดยาเสพติด';
+      description = "เมื่อฤทธิ์ยาหมดลง ก๊อกผลิตน้ำแห้งขอด (สมองอ่อนแอจนผลิตโดปามีนเองแทบไม่ได้) แถมตัวรับความสุขก็พังเสียหาย ทำให้สารความสุขตกต่ำรุนแรง รู้สึกซึมเศร้าทรมาน";
+      flowInfo = "สารโดปามีนลดต่ำกว่าเกณฑ์ปกติมาก รู้สึกไร้สุข";
+      effectInfo = "ดื้อยาและอยากยาเพิ่มขึ้นเพื่อเค้นความสุขเทียมกลับมา";
     }
 
+    final sheetBg = widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final contentBg = widget.isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = widget.isDark ? const Color(0xFF334155) : AppColors.border;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      height: sheetHeight,
       decoration: BoxDecoration(
-        color: widget.isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+        color: sheetBg,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         children: [
+          // Drag handle indicator
+          Center(
+            child: Container(
+              width: 48,
+              height: 5,
+              decoration: BoxDecoration(
+                color: widget.isDark ? Colors.white24 : Colors.black12,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Sheet Header with Close Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'เครื่องจำลองกลไกสมองติดยา',
+                    style: TextStyle(
+                      fontSize: 16 * widget.fontScale,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: 'Prompt',
+                      color: widget.isDark ? Colors.white : const Color(0xFF1E293B),
+                    ),
+                  ),
+                  Text(
+                    'เครื่องมือศึกษาการทำงานของสารเคมีและสมองเสพติด',
+                    style: TextStyle(
+                      fontSize: 10 * widget.fontScale,
+                      fontFamily: 'Prompt',
+                      color: widget.isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.close_rounded),
+                style: IconButton.styleFrom(
+                  backgroundColor: widget.isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Steps Tabs
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: widget.isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02),
+              color: widget.isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.02),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               children: [
-                _buildStepTab(0, '1. ปกติ', Icons.spa_rounded, AppColors.success),
+                _buildStepTab(0, '1. ปกติ / สมดุล', Icons.spa_rounded, AppColors.success),
                 const SizedBox(width: 4),
-                _buildStepTab(1, '2. รับสาร', Icons.bolt_rounded, Colors.redAccent),
+                _buildStepTab(1, '2. ใช้สาร / ล้นระบบ', Icons.bolt_rounded, Colors.redAccent),
                 const SizedBox(width: 4),
-                _buildStepTab(2, '3. หลังหมดฤทธิ์', Icons.mood_bad_rounded, Colors.grey),
+                _buildStepTab(2, '3. หมดฤทธิ์ / ดื้อยา', Icons.mood_bad_rounded, Colors.grey),
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          Container(
-            height: 200,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: widget.isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
-            ),
-            child: CustomPaint(
-              painter: SynapseDopaminePainter(
-                currentStep: _currentStep,
-                isDark: widget.isDark,
-                animValue: _animController.value,
-                repaint: _animController,
+          const SizedBox(height: 16),
+
+          // Expanded CustomPaint visual
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: contentBg,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: borderColor),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(19),
+                child: CustomPaint(
+                  painter: SynapseDopaminePainter(
+                    currentStep: _currentStep,
+                    isDark: widget.isDark,
+                    animValue: _animController.value,
+                    repaint: _animController,
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
+
+          // Dopamine gauge
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('ระดับสารโดปามีน:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Prompt', color: brainColor)),
-              Text('${(dopamineLevel * 100).toInt()}%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: brainColor, fontFamily: 'Prompt')),
+              Text(
+                'ปริมาณสารโดปามีน (ความสุข):',
+                style: TextStyle(
+                  fontSize: 11 * widget.fontScale,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Prompt',
+                  color: widget.isDark ? Colors.white70 : AppColors.textDark,
+                ),
+              ),
+              Text(
+                '${(dopamineLevel * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 11 * widget.fontScale,
+                  fontWeight: FontWeight.bold,
+                  color: stepColor == Colors.grey ? (widget.isDark ? Colors.white60 : Colors.black54) : stepColor,
+                  fontFamily: 'Prompt',
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -1598,74 +2552,80 @@ class _BrainDopamineVisualState extends State<BrainDopamineVisual> with SingleTi
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: dopamineLevel,
-              minHeight: 8,
-              backgroundColor: widget.isDark ? Colors.white.withOpacity(0.14) : Colors.black12,
-              valueColor: AlwaysStoppedAnimation<Color>(brainColor),
+              minHeight: 6,
+              backgroundColor: widget.isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+              valueColor: AlwaysStoppedAnimation<Color>(stepColor == Colors.grey ? Colors.blueGrey : stepColor),
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                _currentStep == 0
-                    ? Icons.check_circle_rounded
-                    : (_currentStep == 1 ? Icons.offline_bolt_rounded : Icons.warning_amber_rounded),
-                color: brainColor,
-                size: 16,
-              ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  brainStatus,
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12 * widget.fontScale, color: brainColor, fontFamily: 'Prompt'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            brainDesc,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 11.5 * widget.fontScale,
-              color: widget.isDark ? Colors.white70 : AppColors.textDark,
-              fontFamily: 'Prompt',
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Deep dive explanation card
+          const SizedBox(height: 14),
+
+          // Unified description card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: brainColor.withOpacity(0.06),
+              color: stepColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: brainColor.withOpacity(0.18), width: 1.2),
+              border: Border.all(color: stepColor.withValues(alpha: 0.15), width: 1.2),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '🔬 รายละเอียดกลไกสมอง:',
-                  style: TextStyle(
-                    fontSize: 11.5 * widget.fontScale,
-                    fontWeight: FontWeight.bold,
-                    color: brainColor,
-                    fontFamily: 'Prompt',
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      _currentStep == 0
+                          ? Icons.check_circle_rounded
+                          : (_currentStep == 1 ? Icons.warning_rounded : Icons.error_rounded),
+                      color: stepColor == Colors.grey ? Colors.blueGrey : stepColor,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      statusTitle,
+                      style: TextStyle(
+                        fontSize: 13 * widget.fontScale,
+                        fontWeight: FontWeight.w800,
+                        color: stepColor == Colors.grey ? (widget.isDark ? Colors.white : Colors.black87) : stepColor,
+                        fontFamily: 'Prompt',
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
-                _buildDetailsRow('😊 ความรู้สึก:', detailFeeling, widget.isDark, widget.fontScale),
-                const SizedBox(height: 6),
-                _buildDetailsRow('⚙ กลไก:', detailMechanism, widget.isDark, widget.fontScale),
-                const SizedBox(height: 6),
-                _buildDetailsRow('⚠️ ผลกระทบ:', detailEffect, widget.isDark, widget.fontScale),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12.5 * widget.fontScale,
+                    color: widget.isDark ? Colors.grey.shade200 : Colors.grey.shade700,
+                    fontFamily: 'Prompt',
+                    height: 1.5,
+                  ),
+                ),
+                const Divider(height: 16, thickness: 0.5),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('⚙️ สารโดปามีน: ', style: TextStyle(fontSize: 11 * widget.fontScale, fontWeight: FontWeight.bold, fontFamily: 'Prompt', color: widget.isDark ? Colors.white70 : Colors.black87)),
+                    Expanded(
+                      child: Text(flowInfo, style: TextStyle(fontSize: 11 * widget.fontScale, fontFamily: 'Prompt', color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade600)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('⚠️ ผลกระทบ: ', style: TextStyle(fontSize: 11 * widget.fontScale, fontWeight: FontWeight.bold, fontFamily: 'Prompt', color: widget.isDark ? Colors.white70 : Colors.black87)),
+                    Expanded(
+                      child: Text(effectInfo, style: TextStyle(fontSize: 11 * widget.fontScale, fontFamily: 'Prompt', color: widget.isDark ? Colors.grey.shade300 : Colors.grey.shade600)),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -1686,51 +2646,29 @@ class SynapseDopaminePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double ySynapseTop = size.height * 0.25;
-    final double ySynapseBottom = size.height * 0.72;
-
-    // Draw neurons outlines
-    final neuronPaint = Paint()
-      ..color = isDark ? Colors.white.withOpacity(0.12) : Colors.black12
+    // Colors
+    final Color strokeColor = isDark ? Colors.white30 : Colors.black26;
+    final Color textColor = isDark ? Colors.white70 : Colors.black87;
+    final Color activeGreen = const Color(0xFF10B981);
+    final Color activeRed = const Color(0xFFEF4444);
+    final Color activeAmber = const Color(0xFFFBBF24);
+    final Color activeBlue = const Color(0xFF3B82F6);
+    
+    // Pipe Paint
+    final pipePaint = Paint()
+      ..color = isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.06)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
+      ..strokeWidth = 14
+      ..strokeCap = StrokeCap.round;
 
-    // Sending terminal (Top bulb with reuptake notches)
-    final topPath = Path();
-    topPath.moveTo(size.width * 0.1, 0);
-    topPath.lineTo(size.width * 0.3, 0);
-    topPath.quadraticBezierTo(size.width * 0.3, ySynapseTop * 0.7, size.width * 0.25, ySynapseTop);
-    
-    // Left reuptake gate (notches upward)
-    topPath.lineTo(size.width * 0.31, ySynapseTop);
-    topPath.lineTo(size.width * 0.31, ySynapseTop - 12);
-    topPath.lineTo(size.width * 0.39, ySynapseTop - 12);
-    topPath.lineTo(size.width * 0.39, ySynapseTop);
-    
-    // Connect center
-    topPath.lineTo(size.width * 0.61, ySynapseTop);
-    
-    // Right reuptake gate (notches upward)
-    topPath.lineTo(size.width * 0.61, ySynapseTop - 12);
-    topPath.lineTo(size.width * 0.69, ySynapseTop - 12);
-    topPath.lineTo(size.width * 0.69, ySynapseTop);
-    
-    // Continue right side
-    topPath.lineTo(size.width * 0.75, ySynapseTop);
-    topPath.quadraticBezierTo(size.width * 0.70, ySynapseTop * 0.7, size.width * 0.70, 0);
-    topPath.lineTo(size.width * 0.9, 0);
-    canvas.drawPath(topPath, neuronPaint);
+    final pipeOutlinePaint = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
 
-    // Receiving terminal (Bottom bulb)
-    final bottomPath = Path();
-    bottomPath.moveTo(size.width * 0.1, size.height);
-    bottomPath.lineTo(size.width * 0.2, ySynapseBottom);
-    bottomPath.lineTo(size.width * 0.8, ySynapseBottom);
-    bottomPath.lineTo(size.width * 0.9, size.height);
-    canvas.drawPath(bottomPath, neuronPaint);
-
-    // Label texts inside synapse representation
-    void drawText(String text, Offset position, Color color, {double fontSize = 8.5, bool alignCenter = true}) {
+    // Helper to draw text
+    void drawText(String text, Offset position, Color color, {double fontSize = 9.5, bool alignCenter = true}) {
       final textPainter = TextPainter(
         text: TextSpan(
           text: text,
@@ -1749,159 +2687,298 @@ class SynapseDopaminePainter extends CustomPainter {
       textPainter.paint(canvas, offset);
     }
 
-    final labelColor = isDark ? Colors.white30 : Colors.black38;
-    drawText('เซลล์ประสาทส่ง (Sending Neuron)', Offset(size.width / 2, 10), labelColor);
-    drawText('เซลล์ประสาทรับ (Receiving Neuron)', Offset(size.width / 2, size.height - 10), labelColor);
+    // 1. Draw Pipes Layout
+    // Faucet Pipe (from left edge to faucet head)
+    final faucetPath = Path()
+      ..moveTo(0, size.height * 0.28)
+      ..lineTo(size.width * 0.22, size.height * 0.28)
+      ..lineTo(size.width * 0.22, size.height * 0.36);
+    canvas.drawPath(faucetPath, pipePaint);
+    canvas.drawPath(faucetPath, pipeOutlinePaint);
 
-    // Reuptake Pump labels & visual states
-    if (currentStep == 0) {
-      drawText('ตัวดูดกลับทำงาน ✓', Offset(size.width * 0.5, ySynapseTop - 20), AppColors.success, fontSize: 8.5);
-      
-      // Draw upward arrows for both pumps showing active reuptake
-      final arrowPaint = Paint()
-        ..color = AppColors.success.withOpacity(0.8)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
-      
-      // Left pump arrow
-      final pathArrowLeft = Path()
-        ..moveTo(size.width * 0.35, ySynapseTop + 8)
-        ..lineTo(size.width * 0.35, ySynapseTop - 4)
-        ..moveTo(size.width * 0.35 - 3, ySynapseTop - 1)
-        ..lineTo(size.width * 0.35, ySynapseTop - 4)
-        ..lineTo(size.width * 0.35 + 3, ySynapseTop - 1);
-      canvas.drawPath(pathArrowLeft, arrowPaint);
+    // Draw faucet head (metal spout)
+    final faucetSpout = Paint()
+      ..color = isDark ? Colors.grey.shade600 : Colors.grey.shade400
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(
+      Rect.fromLTWH(size.width * 0.18, size.height * 0.36, size.width * 0.08, 6),
+      faucetSpout,
+    );
 
-      // Right pump arrow
-      final pathArrowRight = Path()
-        ..moveTo(size.width * 0.65, ySynapseTop + 8)
-        ..lineTo(size.width * 0.65, ySynapseTop - 4)
-        ..moveTo(size.width * 0.65 - 3, ySynapseTop - 1)
-        ..lineTo(size.width * 0.65, ySynapseTop - 4)
-        ..lineTo(size.width * 0.65 + 3, ySynapseTop - 1);
-      canvas.drawPath(pathArrowRight, arrowPaint);
-    } else if (currentStep == 1) {
-      drawText('⚠ ตัวดูดกลับถูกบล็อก! สารท่วมระบบ', Offset(size.width * 0.5, ySynapseTop - 20), Colors.redAccent, fontSize: 8.5);
+    // Return Pipe (Recycle)
+    // Runs from right of funnel, curves up and curves back towards left to recycle
+    final recyclePath = Path()
+      ..moveTo(size.width * 0.28, size.height * 0.74)
+      ..cubicTo(
+        size.width * 0.40, size.height * 0.74,
+        size.width * 0.40, size.height * 0.44,
+        size.width * 0.28, size.height * 0.44,
+      );
+
+    if (currentStep == 2) {
+      // Draw broken pipe for Step 3
+      final brokenPath1 = Path()
+        ..moveTo(size.width * 0.28, size.height * 0.74)
+        ..quadraticBezierTo(size.width * 0.35, size.height * 0.74, size.width * 0.36, size.height * 0.65);
+      final brokenPath2 = Path()
+        ..moveTo(size.width * 0.34, size.height * 0.53)
+        ..quadraticBezierTo(size.width * 0.35, size.height * 0.44, size.width * 0.28, size.height * 0.44);
+        
+      canvas.drawPath(brokenPath1, pipePaint);
+      canvas.drawPath(brokenPath1, pipeOutlinePaint);
+      canvas.drawPath(brokenPath2, pipePaint);
+      canvas.drawPath(brokenPath2, pipeOutlinePaint);
       
-      // Draw red drug blockers blocking the pumps
-      final drugPaint = Paint()
-        ..color = Colors.redAccent
-        ..style = PaintingStyle.fill;
-      final drugOutline = Paint()
-        ..color = Colors.white
+      // Draw a "broken/leak" splash
+      drawText('⚡ ท่อชำรุด', Offset(size.width * 0.38, size.height * 0.58), Colors.orangeAccent, fontSize: 8);
+    } else {
+      canvas.drawPath(recyclePath, pipePaint);
+      canvas.drawPath(recyclePath, pipeOutlinePaint);
+    }
+
+    // 2. Draw Receptors Funnel (ตัวรับ)
+    final double fx = size.width * 0.22;
+    final double fy = size.height * 0.76;
+    
+    final funnelPath = Path()
+      ..moveTo(fx - 24, fy - 10)
+      ..lineTo(fx + 24, fy - 10)
+      ..lineTo(fx + 10, fy + 8)
+      ..lineTo(fx - 10, fy + 8)
+      ..close();
+
+    Color funnelColor = activeGreen;
+    if (currentStep == 1) {
+      funnelColor = activeRed;
+    } else if (currentStep == 2) {
+      funnelColor = Colors.grey.shade500;
+    }
+
+    final funnelPaint = Paint()
+      ..color = funnelColor.withValues(alpha: 0.2)
+      ..style = PaintingStyle.fill;
+    final funnelBorderPaint = Paint()
+      ..color = funnelColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    canvas.drawPath(funnelPath, funnelPaint);
+    canvas.drawPath(funnelPath, funnelBorderPaint);
+
+    if (currentStep == 2) {
+      // Draw cracks on funnel
+      final crackPaint = Paint()
+        ..color = isDark ? Colors.white54 : Colors.black54
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0;
-      
-      // Left pump blocker
-      final rect1 = Rect.fromCenter(center: Offset(size.width * 0.35, ySynapseTop - 6), width: 14, height: 10);
-      canvas.drawRect(rect1, drugPaint);
-      canvas.drawRect(rect1, drugOutline);
-      drawText('ยา', Offset(size.width * 0.35, ySynapseTop - 6), Colors.white, fontSize: 7);
-
-      // Right pump blocker
-      final rect2 = Rect.fromCenter(center: Offset(size.width * 0.65, ySynapseTop - 6), width: 14, height: 10);
-      canvas.drawRect(rect2, drugPaint);
-      canvas.drawRect(rect2, drugOutline);
-      drawText('ยา', Offset(size.width * 0.65, ySynapseTop - 6), Colors.white, fontSize: 7);
-    } else {
-      drawText('ตัวดูดกลับว่างเปล่า (ไม่มีโดปามีนให้ดูด)', Offset(size.width * 0.5, ySynapseTop - 20), Colors.grey, fontSize: 8.5);
+      canvas.drawLine(Offset(fx - 12, fy - 10), Offset(fx - 4, fy), crackPaint);
+      canvas.drawLine(Offset(fx + 12, fy - 10), Offset(fx + 4, fy + 2), crackPaint);
+      canvas.drawLine(Offset(fx - 2, fy + 8), Offset(fx, fy), crackPaint);
     }
 
-    // Draw receptor gates (U-shapes at the bottom)
-    final receptorPaint = Paint()
-      ..color = currentStep == 2
-          ? Colors.grey
-          : (currentStep == 1 ? Colors.redAccent : AppColors.success)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
+    // 3. Draw Dopamine Drops (หยดสารโดปามีน)
+    final dropPaint = Paint()
+      ..color = activeAmber
+      ..style = PaintingStyle.fill;
 
-    final double numReceptors = 5;
-    for (int i = 0; i < numReceptors; i++) {
-      final double rx = size.width * (0.3 + 0.1 * i);
-      final Path rPath = Path()
-        ..moveTo(rx - 8, ySynapseBottom)
-        ..lineTo(rx - 8, ySynapseBottom + 6)
-        ..lineTo(rx + 8, ySynapseBottom + 6)
-        ..lineTo(rx + 8, ySynapseBottom);
-      
-      if (currentStep == 1) {
-        // Glowing overstimulated receptors
-        final glowPaint = Paint()
-          ..color = Colors.orangeAccent.withOpacity(0.35)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 6;
-        canvas.drawPath(rPath, glowPaint);
-      }
-      canvas.drawPath(rPath, receptorPaint);
-      
-      // If overloaded, draw a tiny warning spark symbol over receptors
-      if (currentStep == 1 && i % 2 == 0) {
-        drawText('⚡', Offset(rx, ySynapseBottom - 4), Colors.amber, fontSize: 9);
-      }
-    }
-
-    // Receptor annotations
     if (currentStep == 0) {
-      drawText('ตัวรับสัญญาณทำงานปกติ ✓', Offset(size.width / 2, ySynapseBottom + 18), AppColors.success, fontSize: 8.5);
-    } else if (currentStep == 1) {
-      drawText('⚡ ตัวรับถูกกระตุ้นมากเกิน/เสีย', Offset(size.width / 2, ySynapseBottom + 18), Colors.orangeAccent, fontSize: 8.5);
-    } else {
-      drawText('☁ ตัวรับลดลงเพราะเคยล้นมา (ดื้อยา)', Offset(size.width / 2, ySynapseBottom + 18), Colors.grey, fontSize: 8.5);
-    }
-
-    // Determine particle properties based on state
-    final dopaminePaint = Paint()..color = Colors.amber..style = PaintingStyle.fill;
-    final toxicPaint = Paint()..color = Colors.redAccent..style = PaintingStyle.fill;
-
-    // Draw flowing particles
-    if (currentStep == 2) {
-      // Crash: Very few, slow particles (represents dopamine depletion)
-      final count = 2;
-      final speedMultiplier = 0.2;
-      for (int i = 0; i < count; i++) {
-        final x = size.width * (0.4 + 0.2 * i);
-        final yFraction = (i * 0.45 + animValue * speedMultiplier) % 1.0;
-        final y = ySynapseTop + (ySynapseBottom - ySynapseTop) * yFraction;
-        canvas.drawCircle(Offset(x, y), 3, Paint()..color = Colors.amber.withOpacity(0.4));
-      }
-    } else if (currentStep == 1) {
-      // Drug Intake: Overloaded flow of dopamine + toxic drug particles
-      final count = 18;
-      final speedMultiplier = 1.8;
-      for (int i = 0; i < count; i++) {
-        final x = size.width * (0.24 + 0.032 * i);
-        final yFraction = (i * 0.17 + animValue * speedMultiplier) % 1.0;
-        final y = ySynapseTop + (ySynapseBottom - ySynapseTop) * yFraction;
-        
-        if (i % 2 == 0) {
-          // Flooding dopamine (larger and brighter)
-          canvas.drawCircle(Offset(x, y), 5.5, dopaminePaint);
-        } else {
-          // Toxic drug molecules (red squares)
-          canvas.drawRect(Rect.fromCenter(center: Offset(x, y), width: 7.5, height: 7.5), toxicPaint);
-        }
-      }
-    } else {
-      // Normal balance: Moderate natural flow
-      // 5 falling downwards in center
-      final count = 5;
-      final speedMultiplier = 0.9;
-      for (int i = 0; i < count; i++) {
-        final x = size.width * (0.42 + 0.04 * i);
-        final yFraction = (i * 0.2 + animValue * speedMultiplier) % 1.0;
-        final y = ySynapseTop + (ySynapseBottom - ySynapseTop) * yFraction;
-        canvas.drawCircle(Offset(x, y), 4.5, dopaminePaint);
+      // Normal: moderate drops flowing calmly
+      final double startY = size.height * 0.38;
+      final double endY = fy - 12;
+      for (int i = 0; i < 3; i++) {
+        final double t = ((animValue + i / 3.0) % 1.0);
+        final double y = startY + (endY - startY) * t;
+        canvas.drawCircle(Offset(fx, y), 5, dropPaint);
       }
       
-      // 2 recycling upwards to the pumps
-      final recycleCount = 2;
-      for (int i = 0; i < recycleCount; i++) {
-        final x = size.width * (i == 0 ? 0.35 : 0.65);
-        final yFraction = (i * 0.5 + animValue * 0.8) % 1.0;
-        final y = ySynapseBottom - (ySynapseBottom - ySynapseTop) * yFraction;
-        canvas.drawCircle(Offset(x, y), 3.5, Paint()..color = Colors.amber.withOpacity(0.75));
+      // Moving recycle dots inside return pipe
+      for (int i = 0; i < 2; i++) {
+        final double t = ((animValue + i / 2.0) % 1.0);
+        final double rx = size.width * 0.28 + (size.width * 0.08) * sin(t * pi);
+        final double ry = size.height * 0.74 - (size.height * 0.30) * t;
+        canvas.drawCircle(Offset(rx, ry), 3.5, Paint()..color = activeAmber.withValues(alpha: 0.75));
       }
+    } else if (currentStep == 1) {
+      // Drug: massive drops flooding fast
+      final double startY = size.height * 0.38;
+      final double endY = fy - 12;
+      for (int i = 0; i < 8; i++) {
+        final double t = ((animValue * 1.5 + i / 8.0) % 1.0);
+        final double y = startY + (endY - startY) * t;
+        final double offset = 4 * sin(t * 4 * pi + i);
+        canvas.drawCircle(Offset(fx + offset, y), 5.5, dropPaint);
+      }
+      
+      // Overflow pool inside funnel
+      final poolPaint = Paint()
+        ..color = activeAmber.withValues(alpha: 0.8)
+        ..style = PaintingStyle.fill;
+      canvas.drawRect(
+        Rect.fromLTRB(fx - 14, fy - 6, fx + 14, fy + 4),
+        poolPaint,
+      );
+      
+      // Draw blockage block in recycle pipe
+      final blockPaint = Paint()
+        ..color = activeRed
+        ..style = PaintingStyle.fill;
+      final blockRect = Rect.fromCenter(
+        center: Offset(size.width * 0.34, size.height * 0.68),
+        width: 32,
+        height: 16,
+      );
+      canvas.drawRRect(RRect.fromRectAndRadius(blockRect, const Radius.circular(4)), blockPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(blockRect, const Radius.circular(4)), pipeOutlinePaint);
+      drawText('บล็อก', Offset(size.width * 0.34, size.height * 0.68), Colors.white, fontSize: 8);
     }
+
+    // 4. Draw Brain Character
+    final double cx = size.width * 0.70;
+    final double cy = size.height * 0.52;
+    
+    Color brainColor = const Color(0xFFFDA4AF);
+    
+    if (currentStep == 1) {
+      brainColor = const Color(0xFFF43F5E);
+    } else if (currentStep == 2) {
+      brainColor = const Color(0xFF94A3B8);
+    }
+
+    final brainPaint = Paint()
+      ..color = brainColor
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(Offset(cx, cy), 28, brainPaint);
+    canvas.drawCircle(Offset(cx - 20, cy), 22, brainPaint);
+    canvas.drawCircle(Offset(cx + 20, cy), 22, brainPaint);
+    canvas.drawCircle(Offset(cx - 10, cy - 18), 20, brainPaint);
+    canvas.drawCircle(Offset(cx + 10, cy - 18), 20, brainPaint);
+    canvas.drawCircle(Offset(cx - 12, cy + 14), 18, brainPaint);
+    canvas.drawCircle(Offset(cx + 12, cy + 14), 18, brainPaint);
+
+    final foldPaint = Paint()
+      ..color = (currentStep == 2) ? Colors.black26 : Colors.white24
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+      
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx - 15, cy - 8), radius: 10), 0.5, 2.0, false, foldPaint);
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx + 15, cy - 8), radius: 10), 0.6, 2.0, false, foldPaint);
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy + 12), radius: 12), -1.0, 2.0, false, foldPaint);
+
+    // 5. Draw Brain Face Expressions
+    final facePaint = Paint()
+      ..color = (currentStep == 2) ? const Color(0xFF334155) : const Color(0xFF1E293B)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    if (currentStep == 0) {
+      // Happy Smiling Eyes: ^ ^
+      final leftEyePath = Path()
+        ..moveTo(cx - 12, cy - 3)
+        ..quadraticBezierTo(cx - 8, cy - 7, cx - 4, cy - 3);
+      final rightEyePath = Path()
+        ..moveTo(cx + 4, cy - 3)
+        ..quadraticBezierTo(cx + 8, cy - 7, cx + 12, cy - 3);
+      canvas.drawPath(leftEyePath, facePaint);
+      canvas.drawPath(rightEyePath, facePaint);
+
+      final mouthPath = Path()
+        ..moveTo(cx - 4, cy + 6)
+        ..quadraticBezierTo(cx, cy + 10, cx + 4, cy + 6);
+      canvas.drawPath(mouthPath, facePaint);
+
+      final cheekPaint = Paint()..color = Colors.redAccent.withValues(alpha: 0.4)..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset(cx - 15, cy + 4), 4, cheekPaint);
+      canvas.drawCircle(Offset(cx + 15, cy + 4), 4, cheekPaint);
+    } else if (currentStep == 1) {
+      // Excited eyes (O O)
+      final eyeOutline = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill;
+      final pupilPaint = Paint()
+        ..color = const Color(0xFF1E293B)
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(Offset(cx - 8, cy - 4), 5.5, eyeOutline);
+      canvas.drawCircle(Offset(cx - 8, cy - 4), 2.5, pupilPaint);
+
+      canvas.drawCircle(Offset(cx + 8, cy - 4), 5.5, eyeOutline);
+      canvas.drawCircle(Offset(cx + 8, cy - 4), 2.5, pupilPaint);
+
+      final mouthPaint = Paint()..color = const Color(0xFFE11D48)..style = PaintingStyle.fill;
+      canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy + 6), width: 8, height: 10), mouthPaint);
+      
+      drawText('✨', Offset(cx - 24, cy - 26), Colors.amber, fontSize: 14);
+      drawText('✨', Offset(cx + 24, cy - 26), Colors.amber, fontSize: 14);
+    } else {
+      // Sad Crying Eyes: \ /
+      canvas.drawLine(Offset(cx - 11, cy - 6), Offset(cx - 5, cy - 2), facePaint);
+      canvas.drawLine(Offset(cx + 11, cy - 6), Offset(cx + 5, cy - 2), facePaint);
+
+      final mouthPath = Path()
+        ..moveTo(cx - 5, cy + 8)
+        ..quadraticBezierTo(cx, cy + 4, cx + 5, cy + 8);
+      canvas.drawPath(mouthPath, facePaint);
+
+      final tearPaint = Paint()..color = Colors.lightBlueAccent..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset(cx - 9, cy + 4 + 4 * (animValue % 1.0)), 3.5, tearPaint);
+      canvas.drawCircle(Offset(cx + 9, cy + 2 + 4 * ((animValue + 0.5) % 1.0)), 3, tearPaint);
+    }
+
+    // 6. Signal Connection from Receptor to Brain
+    final signalPaint = Paint()
+      ..color = (currentStep == 1) 
+          ? activeRed.withValues(alpha: 0.8) 
+          : ((currentStep == 2) ? Colors.grey.withValues(alpha: 0.3) : activeBlue.withValues(alpha: 0.6))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (currentStep == 1) ? 3.5 : 2
+      ..strokeCap = StrokeCap.round;
+
+    final Path dashPath = Path();
+    final double dashWidth = 6.0;
+    final double gapWidth = 4.0;
+    
+    final double seg1Start = fy + 8;
+    final double seg1End = fy + 20;
+    double currentY = seg1Start;
+    while (currentY < seg1End) {
+      dashPath.moveTo(fx, currentY);
+      dashPath.lineTo(fx, min(currentY + dashWidth, seg1End));
+      currentY += dashWidth + gapWidth;
+    }
+    
+    final double hStart = fx;
+    final double hEnd = cx - 24;
+    final double hY = cy + 12;
+    double currentX = hStart;
+    while (currentX < hEnd) {
+      double x = currentX;
+      double y = (x < fx + 24) ? (fy + 20 + (hY - (fy + 20)) * ((x - fx) / 24)) : hY;
+      double nextX = min(x + dashWidth, hEnd);
+      double nextY = (nextX < fx + 24) ? (fy + 20 + (hY - (fy + 20)) * ((nextX - fx) / 24)) : hY;
+      dashPath.moveTo(x, y);
+      dashPath.lineTo(nextX, nextY);
+      currentX += dashWidth + gapWidth;
+    }
+    canvas.drawPath(dashPath, signalPaint);
+
+    if (currentStep == 1) {
+      final double t = (animValue * 2.0) % 1.0;
+      final double px = fx + (cx - 24 - fx) * t;
+      final double py = (px < fx + 24) ? (fy + 20 + (cy + 12 - (fy + 20)) * ((px - fx) / 24)) : (cy + 12);
+      canvas.drawCircle(Offset(px, py), 5.5, Paint()..color = Colors.amber);
+      drawText('⚡', Offset(px, py - 10), Colors.amber, fontSize: 11);
+    }
+
+    // 7. Text Labels on Visual Canvas
+    final labelColor = isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.45);
+    
+    drawText('ก๊อกโดปามีน (แหล่งผลิต)', Offset(fx, size.height * 0.18), textColor, fontSize: 8.5);
+    drawText('ตัวรับความสุข (ตัวรับสาร)', Offset(fx, fy + 22), textColor, fontSize: 8.5);
+    drawText('ท่อดูดซึมกลับ', Offset(size.width * 0.44, size.height * 0.44), labelColor, fontSize: 8);
+    drawText('สมองส่วนความสุข', Offset(cx, cy - 35), textColor, fontSize: 8.5);
   }
 
   @override
@@ -1911,7 +2988,7 @@ class SynapseDopaminePainter extends CustomPainter {
         oldDelegate.animValue != animValue;
   }
 }
-// ============================================================================
+
 // WIDGET 1.2: ArmorShieldVisual (Armor Up! Shield Game)
 // ============================================================================
 class ArmorShieldVisual extends StatefulWidget {
@@ -1923,10 +3000,45 @@ class ArmorShieldVisual extends StatefulWidget {
   State<ArmorShieldVisual> createState() => _ArmorShieldVisualState();
 }
 
-class _ArmorShieldVisualState extends State<ArmorShieldVisual> {
+class _ArmorShieldVisualState extends State<ArmorShieldVisual> with TickerProviderStateMixin {
   bool _knowledge = false;
   bool _mindset = false;
   bool _refusal = false;
+
+  late final AnimationController _knowledgeController;
+  late final AnimationController _mindsetController;
+  late final AnimationController _refusalController;
+  late final AnimationController _threatController;
+
+  @override
+  void initState() {
+    super.initState();
+    _knowledgeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _mindsetController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _refusalController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _threatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _knowledgeController.dispose();
+    _mindsetController.dispose();
+    _refusalController.dispose();
+    _threatController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1942,19 +3054,30 @@ class _ArmorShieldVisualState extends State<ArmorShieldVisual> {
       child: Column(
         children: [
           Container(
-            height: 110,
+            height: 120,
             width: double.infinity,
             decoration: BoxDecoration(
               color: widget.isDark ? const Color(0xFF1E293B) : Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: CustomPaint(
-              painter: DefenseShieldPainter(
-                knowledge: _knowledge,
-                mindset: _mindset,
-                refusal: _refusal,
-                isDark: widget.isDark,
-              ),
+            child: AnimatedBuilder(
+              animation: Listenable.merge([
+                _knowledgeController,
+                _mindsetController,
+                _refusalController,
+                _threatController,
+              ]),
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: DefenseShieldPainter(
+                    knowledgeProgress: _knowledgeController.value,
+                    mindsetProgress: _mindsetController.value,
+                    refusalProgress: _refusalController.value,
+                    idleProgress: _threatController.value,
+                    isDark: widget.isDark,
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 12),
@@ -1970,11 +3093,53 @@ class _ArmorShieldVisualState extends State<ArmorShieldVisual> {
           const SizedBox(height: 10),
           Row(
             children: [
-              _buildShieldButton(Icons.shield_rounded, 'ความรู้', _knowledge, () => setState(() => _knowledge = !_knowledge)),
+              _buildShieldButton(
+                Icons.shield_rounded,
+                'ความรู้',
+                _knowledge,
+                () {
+                  setState(() {
+                    _knowledge = !_knowledge;
+                    if (_knowledge) {
+                      _knowledgeController.forward();
+                    } else {
+                      _knowledgeController.reverse();
+                    }
+                  });
+                },
+              ),
               const SizedBox(width: 8),
-              _buildShieldButton(Icons.psychology_rounded, 'จิตใจ', _mindset, () => setState(() => _mindset = !_mindset)),
+              _buildShieldButton(
+                Icons.psychology_rounded,
+                'จิตใจ',
+                _mindset,
+                () {
+                  setState(() {
+                    _mindset = !_mindset;
+                    if (_mindset) {
+                      _mindsetController.forward();
+                    } else {
+                      _mindsetController.reverse();
+                    }
+                  });
+                },
+              ),
               const SizedBox(width: 8),
-              _buildShieldButton(Icons.record_voice_over_rounded, 'ปฏิเสธ', _refusal, () => setState(() => _refusal = !_refusal)),
+              _buildShieldButton(
+                Icons.record_voice_over_rounded,
+                'ปฏิเสธ',
+                _refusal,
+                () {
+                  setState(() {
+                    _refusal = !_refusal;
+                    if (_refusal) {
+                      _refusalController.forward();
+                    } else {
+                      _refusalController.reverse();
+                    }
+                  });
+                },
+              ),
             ],
           ),
         ],
@@ -2004,15 +3169,17 @@ class _ArmorShieldVisualState extends State<ArmorShieldVisual> {
 }
 
 class DefenseShieldPainter extends CustomPainter {
-  final bool knowledge;
-  final bool mindset;
-  final bool refusal;
+  final double knowledgeProgress;
+  final double mindsetProgress;
+  final double refusalProgress;
+  final double idleProgress;
   final bool isDark;
 
   DefenseShieldPainter({
-    required this.knowledge,
-    required this.mindset,
-    required this.refusal,
+    required this.knowledgeProgress,
+    required this.mindsetProgress,
+    required this.refusalProgress,
+    required this.idleProgress,
     required this.isDark,
   });
 
@@ -2021,81 +3188,102 @@ class DefenseShieldPainter extends CustomPainter {
     final double cx = size.width / 2;
     final double cy = size.height / 2;
 
-    void drawEmoji(String emoji, Offset center, double size) {
+    void drawEmoji(String emoji, Offset center, double emojiSize) {
       final tp = TextPainter(
         text: TextSpan(
           text: emoji,
-          style: TextStyle(fontSize: size),
+          style: TextStyle(fontSize: emojiSize),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(center.dx - tp.width / 2, center.dy - tp.height / 2));
     }
 
-    final allEquipped = knowledge && mindset && refusal;
+    final double totalProgress = (knowledgeProgress + mindsetProgress + refusalProgress) / 3.0;
+    final bool allEquipped = knowledgeProgress > 0.95 && mindsetProgress > 0.95 && refusalProgress > 0.95;
 
-    // Inner Core (Life)
     final corePaint = Paint()
       ..color = allEquipped ? Colors.amber : Colors.amber.withOpacity(0.4)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(cx, cy), 16, corePaint);
 
-    final babyEmoji = allEquipped ? '😊' : '😟';
+    final babyEmoji = allEquipped ? '😊' : (totalProgress > 0.5 ? '😐' : '😟');
     drawEmoji(babyEmoji, Offset(cx, cy), 16);
 
-    // Outer Rings
-    if (knowledge) {
+    if (knowledgeProgress > 0.01) {
       final p = Paint()
-        ..color = const Color(0xFF3B82F6).withOpacity(0.3)
+        ..color = const Color(0xFF3B82F6).withOpacity(knowledgeProgress * 0.3)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3;
-      canvas.drawCircle(Offset(cx, cy), 25, p);
-    }
-    if (mindset) {
-      final p = Paint()
-        ..color = const Color(0xFFA855F7).withOpacity(0.3)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3;
-      canvas.drawCircle(Offset(cx, cy), 35, p);
-    }
-    if (refusal) {
-      final p = Paint()
-        ..color = const Color(0xFF10B981).withOpacity(0.35)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3;
-      canvas.drawCircle(Offset(cx, cy), 45, p);
+      final radius = 16 + (25 - 16) * knowledgeProgress;
+      canvas.drawCircle(Offset(cx, cy), radius, p);
     }
 
-    // Threat emojis bouncing off or infiltrating
+    if (mindsetProgress > 0.01) {
+      final p = Paint()
+        ..color = const Color(0xFFA855F7).withOpacity(mindsetProgress * 0.3)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+      final radius = 16 + (35 - 16) * mindsetProgress;
+      canvas.drawCircle(Offset(cx, cy), radius, p);
+    }
+
+    if (refusalProgress > 0.01) {
+      final p = Paint()
+        ..color = const Color(0xFF10B981).withOpacity(refusalProgress * 0.35)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+      final radius = 16 + (45 - 16) * refusalProgress;
+      canvas.drawCircle(Offset(cx, cy), radius, p);
+    }
+
     if (allEquipped) {
-      // Glow safe ring
       final safePaint = Paint()
-        ..color = AppColors.success.withOpacity(0.12)
+        ..color = AppColors.success.withOpacity(0.08)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(Offset(cx, cy), 45, safePaint);
+    }
 
-      // Skulls/virus bouncing off far away
-      drawEmoji('💀', Offset(cx - 70, cy - 30), 18);
-      drawEmoji('🦠', Offset(cx + 70, cy + 30), 18);
-      drawEmoji('🚫', Offset(cx - 52, cy - 22), 12);
-      drawEmoji('🚫', Offset(cx + 52, cy + 22), 12);
-    } else {
-      // Threat emojis infiltrating close to the center baby
-      drawEmoji('💀', Offset(cx - 28, cy - 12), 18);
-      drawEmoji('🦠', Offset(cx + 20, cy + 20), 18);
+    final double easeK = Curves.easeOutBack.transform(knowledgeProgress);
+    final double easeM = Curves.easeOutBack.transform(mindsetProgress);
+    final double easeR = Curves.easeOutBack.transform(refusalProgress);
+
+    double baseDist = 22.0;
+    double pushDist = 14.0 * easeK + 14.0 * easeM + 16.0 * easeR;
+    if (allEquipped) {
+      pushDist += 12.0;
+    }
+    
+    final double idleWave = sin(idleProgress * 2 * pi) * 2.5;
+    final double finalDist = baseDist + pushDist + idleWave;
+
+    final double angle1 = 5 * pi / 4;
+    final Offset threatPos1 = Offset(cx + finalDist * cos(angle1), cy + finalDist * sin(angle1));
+    drawEmoji('💀', threatPos1, 18);
+
+    final double angle2 = pi / 4;
+    final Offset threatPos2 = Offset(cx + finalDist * cos(angle2), cy + finalDist * sin(angle2));
+    drawEmoji('🦠', threatPos2, 18);
+
+    if (knowledgeProgress > 0.75) {
+      drawEmoji('🛡️', Offset(cx - 30 * cos(pi/6), cy - 30 * sin(pi/6)), 9);
+    }
+    if (refusalProgress > 0.75) {
+      drawEmoji('🚫', Offset(cx - 52 * cos(pi/6), cy - 52 * sin(pi/6)), 11);
+      drawEmoji('🚫', Offset(cx + 52 * cos(pi/6), cy + 52 * sin(pi/6)), 11);
     }
   }
 
   @override
   bool shouldRepaint(covariant DefenseShieldPainter oldDelegate) {
-    return oldDelegate.knowledge != knowledge ||
-        oldDelegate.mindset != mindset ||
-        oldDelegate.refusal != refusal ||
+    return oldDelegate.knowledgeProgress != knowledgeProgress ||
+        oldDelegate.mindsetProgress != mindsetProgress ||
+        oldDelegate.refusalProgress != refusalProgress ||
+        oldDelegate.idleProgress != idleProgress ||
         oldDelegate.isDark != isDark;
   }
 }
 
-// ============================================================================
 // WIDGET 2.0: StimulantRushVisual (Heart Rate Rush)
 // ============================================================================
 class StimulantRushVisual extends StatefulWidget {

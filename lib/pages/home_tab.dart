@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import '../state/app_state.dart';
 import '../constants/app_colors.dart';
@@ -378,68 +380,92 @@ class _HomeTabState extends State<HomeTab> {
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: borderColor, width: 1.5),
                         ),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 500),
-                          child: Column(
-                            key: ValueKey<String>(_featuredFact.id),
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.lightbulb_outline_rounded, color: Colors.amber, size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'รู้หรือไม่? — ${_featuredFact.title}',
-                                    style: TextStyle(
-                                      fontSize: 13.5 * state.fontScale,
-                                      fontWeight: FontWeight.w800,
-                                      color: isDark ? Colors.amberAccent : AppColors.textDark,
-                                      fontFamily: 'Prompt',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                _featuredFact.message,
-                                style: TextStyle(
-                                  fontSize: 12.5 * state.fontScale,
-                                  color: subTextColor,
-                                  height: 1.5,
-                                  fontFamily: 'Prompt',
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-                              InkWell(
-                                onTap: () {
-                                  widget.onNavigateToTab?.call(1); // Go to Explore Tab
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 500),
+                            child: Column(
+                              key: ValueKey<String>(_featuredFact.id),
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
                                   children: [
-                                    Text(
-                                      'สำรวจความรู้เพิ่มเติม',
-                                      style: TextStyle(
-                                        fontSize: 12 * state.fontScale,
-                                        fontWeight: FontWeight.w800,
-                                        color: isDark ? AppColors.success : AppColors.primary,
-                                        fontFamily: 'Prompt',
+                                    const Icon(Icons.lightbulb_outline_rounded, color: Colors.amber, size: 20),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'รู้หรือไม่? — ${_featuredFact.title}',
+                                        style: TextStyle(
+                                          fontSize: 13.5 * state.fontScale,
+                                          fontWeight: FontWeight.w800,
+                                          color: isDark ? Colors.amberAccent : AppColors.textDark,
+                                          fontFamily: 'Prompt',
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Icon(
-                                      Icons.arrow_forward_rounded,
-                                      size: 14,
-                                      color: isDark ? AppColors.success : AppColors.primary,
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 10),
+                                Text(
+                                  _featuredFact.message,
+                                  style: TextStyle(
+                                    fontSize: 12.5 * state.fontScale,
+                                    color: subTextColor,
+                                    height: 1.5,
+                                    fontFamily: 'Prompt',
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                InkWell(
+                                  onTap: () {
+                                    widget.onNavigateToTab?.call(1); // Go to Explore Tab
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'สำรวจความรู้เพิ่มเติม',
+                                        style: TextStyle(
+                                          fontSize: 12 * state.fontScale,
+                                          fontWeight: FontWeight.w800,
+                                          color: isDark ? AppColors.success : AppColors.primary,
+                                          fontFamily: 'Prompt',
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Icon(
+                                        Icons.arrow_forward_rounded,
+                                        size: 14,
+                                        color: isDark ? AppColors.success : AppColors.primary,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
+                      Text(
+                        'หน่วยงานช่วยเหลือ',
+                        style: TextStyle(
+                          fontSize: 16 * state.fontScale,
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildConsolidatedHelplinesCard(
+                        context: context,
+                        isDark: isDark,
+                        cardBg: cardBg,
+                        borderColor: borderColor,
+                        fontScale: state.fontScale,
+                      ),
+                      const SizedBox(height: 32),
                     ],
                   ),
                 );
@@ -671,4 +697,355 @@ class _HomeTabState extends State<HomeTab> {
       },
     );
   }
+
+  List<HelplineInfo> _getHelplines() {
+    return [
+      const HelplineInfo(
+        name: 'สายด่วนบำบัดยาเสพติด',
+        number: '1165',
+        desc: 'สายด่วนขอความช่วยเหลือและให้คำปรึกษา',
+        details: 'โทร 1165 หรือคุยผ่าน LINE Official: @1165huangyai (ให้บริการตลอด 24 ชั่วโมง)',
+        icon: Icons.healing_rounded,
+        color: Colors.transparent,
+      ),
+      const HelplineInfo(
+        name: 'ศูนย์บูรณาการรับแจ้งเข้าบำบัดรักษายาเสพติด',
+        number: '1330 กด 67',
+        desc: 'สำนักงานหลักประกันสุขภาพแห่งชาติ โทรฟรี 24 ชม.',
+        details: 'สำนักงานหลักประกันสุขภาพแห่งชาติ โทรฟรี 24 ชั่วโมง (โทร 1330 กด 67)',
+        icon: Icons.health_and_safety_rounded,
+        color: Colors.transparent,
+      ),
+      const HelplineInfo(
+        name: 'ศูนย์รับแจ้งขอความช่วยเหลือ/เบาะแสยาเสพติด',
+        number: '1386',
+        desc: 'สำนักงาน ป.ป.ส.',
+        details: 'ศูนย์รับแจ้งขอความช่วยเหลือ/เบาะแสยาเสพติด โทร 1386 (สำนักงาน ป.ป.ส.)',
+        icon: Icons.gavel_rounded,
+        color: Colors.transparent,
+      ),
+      const HelplineInfo(
+        name: 'กรณีฉุกเฉิน (คลุ้มคลั่งหรือลงแดง)',
+        number: '1669 หรือ 191',
+        desc: 'โทรแจ้ง 191 หรือ 1669 เพื่อนำส่งโรงพยาบาลทันที',
+        details: 'กรณีฉุกเฉิน (คลุ้มคลั่งหรือลงแดง): โทรแจ้ง 191 หรือ 1669 เพื่อนำส่งโรงพยาบาลทันที',
+        icon: Icons.warning_amber_rounded,
+        color: Colors.transparent,
+      ),
+    ];
+  }
+
+  Widget _buildConsolidatedHelplinesCard({
+    required BuildContext context,
+    required bool isDark,
+    required Color cardBg,
+    required Color borderColor,
+    required double fontScale,
+  }) {
+    final textColor = isDark ? Colors.white : AppColors.textDark;
+    final subTextColor = isDark ? Colors.white70 : AppColors.textGrey;
+    final helplines = _getHelplines();
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 1.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: List.generate(helplines.length, (index) {
+          final item = helplines[index];
+          final isLast = index == helplines.length - 1;
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: () => _showHelplineBottomSheet(context, item, isDark, fontScale),
+                borderRadius: BorderRadius.only(
+                  topLeft: index == 0 ? const Radius.circular(20) : Radius.zero,
+                  topRight: index == 0 ? const Radius.circular(20) : Radius.zero,
+                  bottomLeft: isLast ? const Radius.circular(20) : Radius.zero,
+                  bottomRight: isLast ? const Radius.circular(20) : Radius.zero,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  child: Row(
+                    children: [
+                      Icon(item.icon, color: isDark ? Colors.white60 : Colors.black54, size: 16),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          item.name,
+                          style: TextStyle(
+                            fontSize: 12.0 * fontScale,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Prompt',
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        item.number,
+                        style: TextStyle(
+                          fontSize: 12.5 * fontScale,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Prompt',
+                          color: subTextColor,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: isDark ? Colors.white30 : Colors.black26,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (!isLast) Divider(color: borderColor.withValues(alpha: 0.5), height: 1, thickness: 0.8),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  void _showHelplineBottomSheet(BuildContext context, HelplineInfo item, bool isDark, double fontScale) {
+    final textColor = isDark ? Colors.white : AppColors.textDark;
+    final subTextColor = isDark ? Colors.white70 : AppColors.textGrey;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white24 : Colors.black12,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(item.icon, color: isDark ? Colors.white70 : Colors.black87, size: 26),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.name,
+                            style: TextStyle(
+                              fontSize: 16 * fontScale,
+                              fontWeight: FontWeight.w900,
+                              fontFamily: 'Prompt',
+                              color: textColor,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            item.desc,
+                            style: TextStyle(
+                              fontSize: 12 * fontScale,
+                              color: subTextColor,
+                              fontFamily: 'Prompt',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : AppColors.border,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'รายละเอียดบริการ:',
+                        style: TextStyle(
+                          fontSize: 11 * fontScale,
+                          fontWeight: FontWeight.w800,
+                          color: subTextColor,
+                          fontFamily: 'Prompt',
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        item.details,
+                        style: TextStyle(
+                          fontSize: 12.5 * fontScale,
+                          color: textColor,
+                          height: 1.45,
+                          fontFamily: 'Prompt',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: SizedBox(
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final String dialNumber = RegExp(r'\d+').firstMatch(item.number)?.group(0) ?? item.number;
+                            final Uri launchUri = Uri(
+                              scheme: 'tel',
+                              path: dialNumber,
+                            );
+                            Navigator.pop(context);
+                            if (await canLaunchUrl(launchUri)) {
+                              await launchUrl(launchUri);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'ไม่สามารถโทรออกได้บนอุปกรณ์นี้ (เบอร์คือ ${item.number})',
+                                    style: const TextStyle(fontFamily: 'Prompt'),
+                                  ),
+                                  backgroundColor: AppColors.error,
+                                ),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.phone_in_talk_rounded, size: 20),
+                          label: Text(
+                            'โทรเลย (${item.number})',
+                            style: const TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Prompt',
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isDark ? AppColors.success : AppColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 1,
+                      child: SizedBox(
+                        height: 52,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            final String copyText = RegExp(r'\d+').firstMatch(item.number)?.group(0) ?? item.number;
+                            Clipboard.setData(ClipboardData(text: copyText));
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    const Icon(Icons.copy_rounded, color: Colors.white, size: 18),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'คัดลอกเบอร์โทร $copyText เรียบร้อยแล้ว',
+                                        style: const TextStyle(fontFamily: 'Prompt', fontSize: 13),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: isDark ? const Color(0xFF334155) : AppColors.primary,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.copy_rounded, size: 16),
+                          label: const Text(
+                            'คัดลอก',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Prompt',
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: textColor,
+                            side: BorderSide(
+                              color: isDark ? const Color(0xFF334155) : AppColors.border,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class HelplineInfo {
+  final String name;
+  final String number;
+  final String desc;
+  final String details;
+  final IconData icon;
+  final Color color;
+
+  const HelplineInfo({
+    required this.name,
+    required this.number,
+    required this.desc,
+    required this.details,
+    required this.icon,
+    required this.color,
+  });
 }
